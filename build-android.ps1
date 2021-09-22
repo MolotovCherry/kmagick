@@ -50,11 +50,27 @@ if ($arch -eq "aarch64") {
     $target = "aarch64-linux-android"
 }
 
-$env:IMAGE_MAGICK_DIR = $imdir
-$env:IMAGE_MAGICK_LIBS = "magickwand-7${sep}magickcore-7"
-$env:IMAGE_MAGICK_LIB_DIRS = $libdirs
-$env:IMAGE_MAGICK_INCLUDE_DIRS = "$imdir$sep$imdir/configs/$includearch"
-$env:IMAGE_MAGICK_STATIC = $static
+$IMAGE_MAGICK_DIR = $imdir
+$IMAGE_MAGICK_LIBS = "magickwand-7${sep}magickcore-7"
+$IMAGE_MAGICK_LIB_DIRS = $libdirs
+$IMAGE_MAGICK_INCLUDE_DIRS = "$imdir$sep$imdir/configs/$includearch"
+$IMAGE_MAGICK_STATIC = $static
+
+if ($env:IMAGE_MAGICK_DIR -ne $IMAGE_MAGICK_DIR) {
+    $env:IMAGE_MAGICK_DIR = $IMAGE_MAGICK_DIR
+}
+if ($env:IMAGE_MAGICK_LIBS -ne $IMAGE_MAGICK_LIBS) {
+    $env:IMAGE_MAGICK_LIBS = $IMAGE_MAGICK_LIBS
+}
+if ($env:IMAGE_MAGICK_LIB_DIRS -ne $IMAGE_MAGICK_LIB_DIRS) {
+    $env:IMAGE_MAGICK_LIB_DIRS = $IMAGE_MAGICK_LIB_DIRS
+}
+if ($env:IMAGE_MAGICK_INCLUDE_DIRS -ne $IMAGE_MAGICK_INCLUDE_DIRS) {
+    $env:IMAGE_MAGICK_INCLUDE_DIRS = $IMAGE_MAGICK_INCLUDE_DIRS
+}
+if ($env:IMAGE_MAGICK_STATIC -ne $IMAGE_MAGICK_STATIC) {
+    $env:IMAGE_MAGICK_STATIC = $IMAGE_MAGICK_STATIC
+}
 
 $flags = ""
 if ($release) {
