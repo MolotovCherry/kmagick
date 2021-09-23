@@ -3,6 +3,7 @@
 mod drawing_wand;
 mod magick_wand;
 mod pixel_wand;
+#[macro_use]
 mod utils;
 mod cacher;
 
@@ -13,11 +14,13 @@ use magick_rust::{
 };
 
 use log::{
-    Level, LevelFilter, error, warn, info
+    LevelFilter, info
 };
 
 #[cfg(target_os="android")]
 use android_logger::Config;
+#[cfg(target_os="android")]
+use log::Level;
 #[cfg(not(target_os="android"))]
 use simplelog::*;
 

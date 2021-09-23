@@ -1,4 +1,4 @@
-package com.cherryleafroad.jmagick
+package com.cherryleafroad.kmagick
 
 // base exception class for all imagemagick exceptions
 class MagickException(message: String) : Exception(message)

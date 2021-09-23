@@ -1,8 +1,8 @@
-package com.cherryleafroad.jmagick
+package com.cherryleafroad.kmagick
 
-class PixelWandException(message: String) : MagickException(message)
+class MagickWandException(message: String) : MagickException(message)
 
-class PixelWand {
+class MagickWand {
     init {
         new()
     }
@@ -25,7 +25,7 @@ class PixelWand {
     /**
      * Clone the wand into a new one.
      */
-    external fun clone(): PixelWand
+    external fun clone(): MagickWand
 
     /**
      * While this automatically gets called by the `finalize()` destructor,

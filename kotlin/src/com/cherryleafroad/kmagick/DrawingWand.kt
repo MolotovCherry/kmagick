@@ -1,4 +1,4 @@
-package com.cherryleafroad.jmagick
+package com.cherryleafroad.kmagick
 
 class DrawingWandException(message: String) : MagickException(message)
 
