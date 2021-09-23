@@ -7,12 +7,10 @@ object Magick {
     init {
         // load library and start genesis
         System.loadLibrary("jmagick")
-        nativeInit()
     }
 
     private external fun nativeInit();
-    private external fun magickWandGenesis()
-    private external fun magickWandTerminus()
+    private external fun nativeTerminate();
 
     @Throws(MagickException::class)
     external fun magickQueryFonts(pattern: String): List<String>
@@ -20,10 +18,10 @@ object Magick {
     fun initialize() {
         // note: While we do genesis, there is NO destructor for terminus!
         // This MUST be called manually by the user
-        magickWandGenesis()
+        nativeInit()
     }
 
     fun terminate() {
-        magickWandTerminus()
+        nativeTerminate()
     }
 }
