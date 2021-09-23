@@ -1,17 +1,13 @@
-use lazy_static::lazy_static;
-
+use std::collections::HashMap;
 use std::sync::Mutex;
+
 use jni::{
     JNIEnv,
     objects::{
-        GlobalRef, JStaticMethodID, JMethodID, JClass, JObject
-    },
-    signature::{
-        JavaType, Primitive
+        GlobalRef, JClass, JMethodID, JObject, JStaticMethodID
     }
 };
-use std::collections::HashMap;
-use jni::objects::{JFieldID, JStaticFieldID, JValue};
+use lazy_static::lazy_static;
 
 lazy_static! {
     pub static ref CLASS_CACHE: Mutex<HashMap<String, GlobalRef>> = Mutex::new(HashMap::new());
@@ -24,8 +20,18 @@ pub struct SendPtr<T>(T);
 unsafe impl<T> Send for SendPtr<T> {}
 unsafe impl<T> Sync for SendPtr<T> {}
 
+pub fn clear_cache() {
+    let cls_cache = &mut *CLASS_CACHE.lock().unwrap();
+    let mid_cache = &mut *METHOD_ID_CACHE.lock().unwrap();
+    let smid_cache = &mut *STATIC_METHOD_ID_CACHE.lock().unwrap();
+    // all references inside will auto drop afterwards
+    cls_cache.clear();
+    mid_cache.clear();
+    smid_cache.clear();
+}
+
 pub fn get_cls<'a>(env: &'a JNIEnv, cls: &str) -> JClass<'a> {
-    let mut cache = &mut *CLASS_CACHE.lock().unwrap();
+    let cache = &mut *CLASS_CACHE.lock().unwrap();
     match cache.get(cls) {
         Some(gref) => {
             JClass::from(*gref.as_obj())
@@ -44,7 +50,7 @@ pub fn get_cls<'a>(env: &'a JNIEnv, cls: &str) -> JClass<'a> {
 }
 
 pub fn get_obj_cls<'a>(env: &'a JNIEnv, obj: &JObject, cls: &str) -> JClass<'a> {
-    let mut cache = &mut *CLASS_CACHE.lock().unwrap();
+    let cache = &mut *CLASS_CACHE.lock().unwrap();
     let identifier = &*format!("{}__object", cls);
     match cache.get(identifier) {
         Some(gref) => {
@@ -62,7 +68,7 @@ pub fn get_obj_cls<'a>(env: &'a JNIEnv, obj: &JObject, cls: &str) -> JClass<'a> 
 }
 
 pub fn get_smid<'a>(env: &'a JNIEnv, cls: &str, method: &str, sig: &str) -> JStaticMethodID<'a> {
-    let mut cache = &mut *STATIC_METHOD_ID_CACHE.lock().unwrap();
+    let cache = &mut *STATIC_METHOD_ID_CACHE.lock().unwrap();
     let identifier = &*format!("{}.{}{}", cls, method, sig);
 
     match cache.get(identifier) {
@@ -82,7 +88,7 @@ pub fn get_smid<'a>(env: &'a JNIEnv, cls: &str, method: &str, sig: &str) -> JSta
 }
 
 pub fn get_mid<'a>(env: &'a JNIEnv, obj: &JObject, cls: &str, method: &str, sig: &str) -> JMethodID<'a> {
-    let mut cache = &mut *METHOD_ID_CACHE.lock().unwrap();
+    let cache = &mut *METHOD_ID_CACHE.lock().unwrap();
     let identifier = &*format!("{}.{}{}", cls, method, sig);
 
     match cache.get(identifier) {

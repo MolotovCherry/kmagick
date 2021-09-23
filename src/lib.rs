@@ -6,6 +6,7 @@ mod pixel_wand;
 mod utils;
 mod cacher;
 
+use jni::sys::jobject;
 use magick_rust::{
     magick_wand_genesis, magick_wand_terminus,
     magick_query_fonts
@@ -24,9 +25,10 @@ use std::sync::Once;
 use jni::{
     JNIEnv
 };
-use jni::sys::*;
-use jni::objects::{JObject, JString, JClass};
-use crate::utils::get_jstring;
+use jni::objects::{JObject, JString};
+
+use utils::get_jstring;
+
 
 static INIT: Once = Once::new();
 
@@ -70,14 +72,7 @@ pub extern fn Java_com_cherryleafroad_jmagick_Magick_nativeInit(_: JNIEnv, _: JO
 pub extern fn Java_com_cherryleafroad_jmagick_Magick_nativeTerminate(env: JNIEnv, _: JObject) {
     info!("Magick::nativeTerminate() Terminating environment");
     magick_wand_terminus();
-
-    let cls_cache = &mut *cacher::CLASS_CACHE.lock().unwrap();
-    let mid_cache = &mut *cacher::METHOD_ID_CACHE.lock().unwrap();
-    let smid_cache = &mut *cacher::STATIC_METHOD_ID_CACHE.lock().unwrap();
-    // all references inside will auto drop afterwards
-    cls_cache.clear();
-    mid_cache.clear();
-    smid_cache.clear();
+    cacher::clear_cache();
 }
 
 /*#[no_mangle]
