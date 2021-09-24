@@ -1,13 +1,15 @@
 use jni::{
     JNIEnv
 };
+use magick_rust::MagickWand;
 use std::ffi::{
     CString, CStr
 };
 use jni::objects::{JString, JObject};
 
+use crate::cacher;
+
 /// If in debug mode, sends first param to function. If in release mode, sends 2nd param to function
-#[macro_export]
 macro_rules! debug_cond {
     ($a:expr, $b:expr) => {
         if cfg!(debug_assertions) {
@@ -30,7 +32,6 @@ pub fn get_jstring(env: JNIEnv, string: JString) -> String {
     }
 }
 
-#[macro_export]
 macro_rules! throw_magick_exc {
     ($env:ident, $m:expr) => {
         {
@@ -40,7 +41,6 @@ macro_rules! throw_magick_exc {
     }
 }
 
-#[macro_export]
 macro_rules! throw_magickwand_exc {
     ($env:ident, $m:expr) => {
         {
@@ -50,7 +50,6 @@ macro_rules! throw_magickwand_exc {
     }
 }
 
-#[macro_export]
 macro_rules! throw_pixelwand_exc {
     ($env:ident, $m:expr) => {
         {
@@ -60,7 +59,6 @@ macro_rules! throw_pixelwand_exc {
     }
 }
 
-#[macro_export]
 macro_rules! throw_drawingwand_exc {
     ($env:ident, $m:expr) => {
         {
@@ -70,8 +68,29 @@ macro_rules! throw_drawingwand_exc {
     }
 }
 
+fn get_class_name<T>() -> &'static str {
+
+}
+
 /// Takes the object, gets the Long handle field, and converts back into our Rust type
-pub fn get_handle<T>(env: JNIEnv, obj: JObject) -> &'static mut T {
+pub fn get_handle<T>(env: &JNIEnv, obj: &JObject) -> &'static mut T {
+    let class = match std::any::type_name::<T>() {
+        "MagickWand" => {
+            "com/cherryleafroad/kmagick/MagickWand"
+        }
+
+        "DrawingWand" => {
+            "com/cherryleafroad/kmagick/DrawingWand"
+        }
+
+        "PixelWand" => {
+            "com/cherryleafroad/kmagick/PixelWand"
+        }
+
+        _ => ""
+    };
+
+    let f = cacher::get_rust_field::<T>(env, cls, obj, field);
     let val = env.get_field(obj, "HANDLE", "Ljava/lang/Long;").unwrap();
     let l = val.j().unwrap() as usize as *mut T;
     unsafe { &mut *l }
