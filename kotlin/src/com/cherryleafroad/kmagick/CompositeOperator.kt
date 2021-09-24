@@ -1,5 +1,6 @@
 package com.cherryleafroad.kmagick
 
+@Suppress("unused")
 enum class CompositeOperator(val id: Int) {
     UndefinedCompositeOp(0),
     AlphaCompositeOp(1),

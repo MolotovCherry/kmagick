@@ -1,5 +1,6 @@
 package com.cherryleafroad.kmagick
 
+@Suppress("unused")
 enum class FilterType(val id: Int) {
     UndefinedFilter(0),
     PointFilter(1),

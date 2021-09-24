@@ -1,5 +1,6 @@
 package com.cherryleafroad.kmagick
 
+@Suppress("unused")
 enum class StyleType(val id: Int) {
     UndefinedStyle(0),
     NormalStyle(1),

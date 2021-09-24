@@ -1,5 +1,6 @@
 package com.cherryleafroad.kmagick
 
+@Suppress("unused")
 enum class ClipPathUnits(val id: Int) {
     UndefinedPathUnits(0),
     UserSpace(1),

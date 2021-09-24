@@ -1,5 +1,6 @@
 package com.cherryleafroad.kmagick
 
+@Suppress("unused")
 enum class MetricType(val id: Int) {
     UndefinedErrorMetric(0),
     AbsoluteErrorMetric(1),

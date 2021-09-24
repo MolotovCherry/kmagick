@@ -1,5 +1,6 @@
 package com.cherryleafroad.kmagick
 
+@Suppress("unused")
 enum class StretchType(val id: Int) {
     UndefinedStretch(0),
     NormalStretch(1),

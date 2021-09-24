@@ -1,5 +1,6 @@
 package com.cherryleafroad.kmagick
 
+@Suppress("unused")
 enum class ResourceType(val id: Int) {
     UndefinedResource(0),
     AreaResource(1),

@@ -1,5 +1,6 @@
 package com.cherryleafroad.kmagick
 
+@Suppress("unused")
 enum class GravityType(val id: Int) {
     UndefinedGravity(0),
     ForgetGravity(0),

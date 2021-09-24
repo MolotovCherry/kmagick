@@ -1,5 +1,6 @@
 package com.cherryleafroad.kmagick
 
+@Suppress("unused")
 enum class PixelInterpolateMethod(val id: Int) {
     UndefinedInterpolatePixel(0),
     AverageInterpolatePixel(1),
