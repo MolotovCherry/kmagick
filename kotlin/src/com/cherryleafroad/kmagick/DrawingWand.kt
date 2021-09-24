@@ -3,9 +3,7 @@ package com.cherryleafroad.kmagick
 class DrawingWandException(message: String) : MagickException(message)
 
 /**
- * A DrawingWand.
- *
- * @constructor Creates a new DrawingWand
+ * DrawingWand API. For drawing things on the image (such as text).
  */
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class DrawingWand {
@@ -16,7 +14,7 @@ class DrawingWand {
     /**
      * Holds the pointer to internal object in memory.
      */
-    private var handle: ULong = 0u
+    private var handle: ULong? = null
 
     /**
      * Create a new DrawingWand.
