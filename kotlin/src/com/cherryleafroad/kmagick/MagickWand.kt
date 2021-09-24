@@ -577,4 +577,10 @@ class MagickWand {
     @OptIn(ExperimentalUnsignedTypes::class)
     @Throws(MagickWandException::class)
     external fun writeImagesBlob(format: String): UByteArray?
+
+    /**
+     * Gets the number of unique colors in the image.
+     */
+    @Throws(MagickWandException::class)
+    external fun getImageColors(): ULong
 }
