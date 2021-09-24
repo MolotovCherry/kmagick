@@ -1,3 +1,5 @@
+package com.cherryleafroad.kmagick
+
 enum class DecorationType(val id: Int) {
     UndefinedDecoration(0),
     NoDecoration(1),

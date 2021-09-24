@@ -2,6 +2,7 @@ package com.cherryleafroad.kmagick
 
 class PixelWandException(message: String) : MagickException(message)
 
+@Suppress("unused", "PrivatePropertyName", "MemberVisibilityCanBePrivate")
 class PixelWand {
     init {
         new()
@@ -10,7 +11,7 @@ class PixelWand {
     /**
      * Holds the pointer to internal object in memory.
      */
-    private var HANDLE: Long = 0
+    private var handle: ULong = 0u
 
     /**
      * Call the internal function to create the new wand.

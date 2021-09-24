@@ -1,3 +1,5 @@
+package com.cherryleafroad.kmagick
+
 enum class StretchType(val id: Int) {
     UndefinedStretch(0),
     NormalStretch(1),

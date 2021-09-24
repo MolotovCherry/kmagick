@@ -1,3 +1,5 @@
+package com.cherryleafroad.kmagick
+
 enum class GravityType(val id: Int) {
     UndefinedGravity(0),
     ForgetGravity(0),

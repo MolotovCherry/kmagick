@@ -1,7 +1,7 @@
 package com.cherryleafroad.kmagick
 
 // base exception class for all imagemagick exceptions
-class MagickException(message: String) : Exception(message)
+open class MagickException(message: String) : Exception(message)
 
 object Magick {
     init {

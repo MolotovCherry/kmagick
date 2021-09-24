@@ -1,3 +1,5 @@
+package com.cherryleafroad.kmagick
+
 enum class LineCap(val id: Int) {
     UndefinedCap(0),
     ButtCap(1),
