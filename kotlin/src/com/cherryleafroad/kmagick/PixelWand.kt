@@ -40,7 +40,6 @@ class PixelWand {
      * `finalize()` is not guaranteed to be called at all, nor called on time.
      * It's recommended to manually destroy all wands when finished.
      */
-    @Throws(PixelWandException::class)
     external fun destroy()
 
     /**

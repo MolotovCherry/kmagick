@@ -48,7 +48,6 @@ class DrawingWand {
      * `finalize()` is not guaranteed to be called at all, nor called on time.
      * It's recommended to manually destroy all wands when finished.
      */
-    @Throws(DrawingWandException::class)
     external fun destroy()
 
     /**
