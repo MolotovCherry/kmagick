@@ -13,7 +13,7 @@ object Magick {
     private external fun nativeTerminate();
 
     @Throws(MagickException::class)
-    external fun magickQueryFonts(pattern: String): Array<String>
+    external fun magickQueryFonts(pattern: String): Array<String>?
 
     /**
      * Initialize the environment
