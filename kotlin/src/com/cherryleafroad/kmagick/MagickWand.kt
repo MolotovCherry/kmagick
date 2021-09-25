@@ -583,4 +583,392 @@ class MagickWand {
      */
     @Throws(MagickWandException::class)
     external fun getImageColors(): ULong
+
+    /**
+     * The filename associated with an image sequence.
+     */
+    var filename: String
+        get() = magickGetFilename()
+        set(value) = magickSetFilename(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetFilename(): String
+    @Throws(MagickWandException::class)
+    private external fun magickSetFilename(filename: String)
+
+    /**
+     * The font associated with the MagickWand.
+     */
+    var font: String
+        get() = magickGetFont()
+        set(value) = magickSetFont(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetFont(): String
+    @Throws(MagickWandException::class)
+    private external fun magickSetFont(font: String)
+
+    /**
+     * The format of the magick wand.
+     */
+    var format: String
+        get() = magickGetFormat()
+        set(value) = magickSetFormat(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetFormat(): String
+    @Throws(MagickWandException::class)
+    private external fun magickSetFormat(format: String)
+
+    /**
+     * The filename of a particular image in a sequence.
+     */
+    var imageFilename: String
+        get() = magickGetImageFilename()
+        set(value) = magickSetImageFilename(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetImageFilename(): String
+    @Throws(MagickWandException::class)
+    private external fun magickSetImageFilename(filename: String)
+
+    /**
+     * The format of a particular image in a sequence.
+     */
+    var imageFormat: String
+        get() = magickGetImageFormat()
+        set(value) = magickSetImageFormat(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetImageFormat(): String
+    @Throws(MagickWandException::class)
+    private external fun magickSetImageFormat(format: String)
+
+    /**
+     * The wand colorspace type.
+     */
+    var colorspace: ColorspaceType
+        get() = magickGetColorspace()
+        set(value) = magickSetColorspace(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetColorspace(): ColorspaceType
+    @Throws(MagickWandException::class)
+    private external fun magickSetColorspace(colorspace: ColorspaceType)
+
+    /**
+     * The wand compression type.
+     */
+    var compression: CompressionType
+        get() = magickGetCompression()
+        set(value) = magickSetCompression(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetCompression(): CompressionType
+    @Throws(MagickWandException::class)
+    private external fun magickSetCompression(compression: CompressionType)
+
+    /**
+     * The wand compression quality.
+     */
+    var compressionQuality: ULong
+        get() = magickGetCompressionQuality()
+        set(value) = magickSetCompressionQuality(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetCompressionQuality(): ULong
+    @Throws(MagickWandException::class)
+    private external fun magickSetCompressionQuality(quality: ULong)
+
+    /**
+     * The gravity type.
+     */
+    var gravity: GravityType
+        get() = magickGetGravity()
+        set(value) = magickSetGravity(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetGravity(): GravityType
+    @Throws(MagickWandException::class)
+    private external fun magickSetGravity(gravity: GravityType)
+
+    /**
+     * The image colorspace. Setting does not modify the image data.
+     */
+    var imageColorspace: ColorspaceType
+        get() = magickGetImageColorspace()
+        set(value) = magickSetImageColorspace(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetImageColorspace(): ColorspaceType
+    @Throws(MagickWandException::class)
+    private external fun magickSetImageColorspace(colorspace: ColorspaceType)
+
+    /**
+     * The image composite operator, useful for specifying how to composite the image thumbnail when using the
+     * `MagickMontageImage()` method.
+     */
+    var imageCompose: CompositeOperator
+        get() = magickGetImageCompose()
+        set(value) = magickSetImageCompose(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetImageCompose(): CompositeOperator
+    @Throws(MagickWandException::class)
+    private external fun magickSetImageCompose(compose: CompositeOperator)
+
+    /**
+     * The image compression.
+     */
+    var imageCompression: CompressionType
+        get() = magickGetImageCompression()
+        set(value) = magickSetImageCompression(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetImageCompression(): CompressionType
+    @Throws(MagickWandException::class)
+    private external fun magickSetImageCompression(compression: CompressionType)
+
+    /**
+     * The image compression quality.
+     */
+    var imageCompressionQuality: ULong
+        get() = magickGetImageCompressionQuality()
+        set(value) = magickSetImageCompressionQuality(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetImageCompressionQuality(): ULong
+    @Throws(MagickWandException::class)
+    private external fun magickSetImageCompressionQuality(quality: ULong)
+
+    /**
+     * The image delay.
+     */
+    var imageDelay: ULong
+        get() = magickGetImageDelay()
+        set(value) = magickSetImageDelay(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetImageDelay(): ULong
+    @Throws(MagickWandException::class)
+    private external fun magickSetImageDelay(delay: ULong)
+
+    /**
+     * The image depth.
+     */
+    var imageDepth: ULong
+        get() = magickGetImageDepth()
+        set(value) = magickSetImageDepth(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetImageDepth(): ULong
+    @Throws(MagickWandException::class)
+    private external fun magickSetImageDepth(depth: ULong)
+
+    /**
+     * The image disposal method.
+     */
+    var imageDispose: DisposeType
+        get() = magickGetImageDispose()
+        set(value) = magickSetImageDispose(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetImageDispose(): DisposeType
+    @Throws(MagickWandException::class)
+    private external fun magickSetImageDispose(dispose: DisposeType)
+
+    /**
+     * The image endian method.
+     */
+    var imageEndian: EndianType
+        get() = magickGetImageEndian()
+        set(value) = magickSetImageEndian(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetImageEndian(): EndianType
+    @Throws(MagickWandException::class)
+    private external fun magickSetImageEndian(imageEndian: EndianType)
+
+    /**
+     * The image fuzz.
+     */
+    var imageFuzz: Double
+        get() = magickGetImageFuzz()
+        set(value) = magickSetImageFuzz(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetImageFuzz(): Double
+    @Throws(MagickWandException::class)
+    private external fun magickSetImageFuzz(fuzz: Double)
+
+    /**
+     *
+     */
+    var imageGamma: Double
+        get() = magickGetImageGamma()
+        set(value) = magickSetImageGamma(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetImageGamma(): Double
+    @Throws(MagickWandException::class)
+    private external fun magickSetImageGamma(gamma: Double)
+
+    /**
+     * The image gravity type.
+     */
+    var imageGravity: GravityType
+        get() = magickGetImageGravity()
+        set(value) = magickSetImageGravity(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetImageGravity(): GravityType
+    @Throws(MagickWandException::class)
+    private external fun magickSetImageGravity(gravity: GravityType)
+
+    /**
+     * The image interlace scheme.
+     */
+    var imageInterlaceScheme: InterlaceType
+        get() = magickGetImageInterlaceScheme()
+        set(value) = magickSetImageInterlaceScheme(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetImageInterlaceScheme(): InterlaceType
+    @Throws(MagickWandException::class)
+    private external fun magickSetImageInterlaceScheme(imageInterlaceScheme: InterlaceType)
+
+    /**
+     * The interpolation method for the specified image.
+     */
+    var imageInterpolateMethod: PixelInterpolateMethod
+        get() = magickGetImageInterpolateMethod()
+        set(value) = magickSetImageInterpolateMethod(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetImageInterpolateMethod(): PixelInterpolateMethod
+    @Throws(MagickWandException::class)
+    private external fun magickSetImageInterpolateMethod(method: PixelInterpolateMethod)
+
+    /**
+     * The image iterations.
+     * The image delay is set in 1/100th of a second.
+     */
+    var imageIterations: ULong
+        get() = magickGetImageIterations()
+        set(value) = magickSetImageIterations(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetImageIterations(): ULong
+    @Throws(MagickWandException::class)
+    private external fun magickSetImageIterations(delay: ULong)
+
+    /**
+     * The image orientaiton.
+     */
+    var imageOrientation: OrientationType
+        get() = magickGetImageOrientation()
+        set(value) = magickSetImageOrientation(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetImageOrientation(): OrientationType
+    @Throws(MagickWandException::class)
+    private external fun magickSetImageOrientation(orientation: OrientationType)
+
+    /**
+     * Image rendering intent.
+     */
+    var imageRenderingIntent: RenderingIntent
+        get() = magickGetImageRenderingIntent()
+        set(value) = magickSetImageRenderingIntent(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetImageRenderingIntent(): RenderingIntent
+    @Throws(MagickWandException::class)
+    private external fun magickSetImageRenderingIntent(renderingIntent: RenderingIntent)
+
+    /**
+     * The image scene.
+     */
+    var imageScene: ULong
+        get() = magickGetImageScene()
+        set(value) = magickSetImageScene(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetImageScene(): ULong
+    @Throws(MagickWandException::class)
+    private external fun magickSetImageScene(delay: ULong)
+
+    /**
+     * The potential image type.
+     */
+    var imageType: ImageType
+        get() = magickGetImageType()
+        set(value) = magickSetImageType(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetImageType(): ImageType
+    @Throws(MagickWandException::class)
+    private external fun magickSetImageType(imageType: ImageType)
+
+    /**
+     * The image units of resolution.
+     */
+    var imageUnits: ResolutionType
+        get() = magickGetImageUnits()
+        set(value) = magickSetImageUnits(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetImageUnits(): ResolutionType
+    @Throws(MagickWandException::class)
+    private external fun magickSetImageUnits(units: ResolutionType)
+
+    /**
+     * The image interlace scheme.
+     */
+    var interlaceScheme: InterlaceType
+        get() = magickGetInterlaceScheme()
+        set(value) = magickSetInterlaceScheme(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetInterlaceScheme(): InterlaceType
+    @Throws(MagickWandException::class)
+    private external fun magickSetInterlaceScheme(interlaceScheme: InterlaceType)
+
+    /**
+     * The image interpolate pixel method.
+     */
+    var interpolateMethod: PixelInterpolateMethod
+        get() = magickGetInterpolateMethod()
+        set(value) = magickSetInterpolateMethod(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetInterpolateMethod(): PixelInterpolateMethod
+    @Throws(MagickWandException::class)
+    private external fun magickSetInterpolateMethod(method: PixelInterpolateMethod)
+
+    /**
+     * The position of the iterator in the image list.
+     *
+     * Also, you can set the iterator to the given position in the image list specified with the index parameter. A zero
+     * index will set the first image as current, and so on. Negative indexes can be used to specify an image relative
+     * to the end of the images in the wand, with -1 being the last image in the wand.
+     *
+     * If the index is invalid (range too large for number of images in wand) the function will return MagickFalse, but
+     * no 'exception' will be raised, as it is not actually an error. In that case the current image will not change.
+     *
+     * After using any images added to the wand using `addImage()` or `readImage()` will be added after the image
+     * indexed, regardless of if a zero (first image in list) or negative index (from end) is used.
+     *
+     * Jumping to index 0 is similar to `resetIterator()` but differs in how `nextImage()` behaves afterward.
+     */
+    var iteratorIndex: Long
+        get() = magickGetIteratorIndex()
+        set(value) = magickSetIteratorIndex(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetIteratorIndex(): Long
+    @Throws(MagickWandException::class)
+    private external fun magickSetIteratorIndex(index: Long)
+
+    /**
+     * Wand orientation type.
+     */
+    var orientation: OrientationType
+        get() = magickGetOrientation()
+        set(value) = magickSetOrientation(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetOrientation(): OrientationType
+    @Throws(MagickWandException::class)
+    private external fun magickSetOrientation(orientation: OrientationType)
+
+    /**
+     * The font pointsize associated with the MagickWand.
+     */
+    var pointsize: Double
+        get() = magickGetPointsize()
+        set(value) = magickSetPointsize(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetPointsize(): Double
+    @Throws(MagickWandException::class)
+    private external fun magickSetPointsize(pointsize: Double)
+
+    /**
+     * The magick wand image type attribute.
+     */
+    var type: ImageType
+        get() = magickGetType()
+        set(value) = magickSetType(value)
+    @Throws(MagickWandException::class)
+    private external fun magickGetType(): ImageType
+    @Throws(MagickWandException::class)
+    private external fun magickSetType(type: ImageType)
 }
