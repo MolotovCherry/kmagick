@@ -8,6 +8,7 @@ class PixelWandException(message: String) : MagickException(message)
  * PixelWand API. Used for specifying certain colors.
  */
 @Suppress("unused", "PrivatePropertyName", "MemberVisibilityCanBePrivate")
+@kotlin.ExperimentalUnsignedTypes
 class PixelWand {
     init {
         new()

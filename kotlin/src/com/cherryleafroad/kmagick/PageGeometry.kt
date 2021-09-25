@@ -3,6 +3,7 @@ package com.cherryleafroad.kmagick
 /**
  * Retrieve the page geometry ([width], [height], [x] offset, [y] offset) of the image.
  */
+@kotlin.ExperimentalUnsignedTypes
 data class PageGeometry(
     val width: ULong,
     val height: ULong,

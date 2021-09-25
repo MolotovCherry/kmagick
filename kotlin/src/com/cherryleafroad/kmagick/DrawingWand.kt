@@ -6,6 +6,7 @@ class DrawingWandException(message: String) : MagickException(message)
  * DrawingWand API. For drawing things on the image (such as text).
  */
 @Suppress("unused", "MemberVisibilityCanBePrivate")
+@kotlin.ExperimentalUnsignedTypes
 class DrawingWand {
     init {
         new()

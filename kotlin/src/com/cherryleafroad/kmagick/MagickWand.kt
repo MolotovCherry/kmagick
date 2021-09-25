@@ -2,7 +2,8 @@ package com.cherryleafroad.kmagick
 
 class MagickWandException(message: String) : MagickException(message)
 
-@Suppress("unused", "PrivatePropertyName", "MemberVisibilityCanBePrivate", "EXPERIMENTAL_IS_NOT_ENABLED")
+@Suppress("unused", "PrivatePropertyName", "MemberVisibilityCanBePrivate")
+@kotlin.ExperimentalUnsignedTypes
 class MagickWand {
     init {
         new()
@@ -137,11 +138,8 @@ class MagickWand {
     external fun readImage(path: String)
 
     /**
-     * Reads an image or image sequence from a blob. In all other respects it is like `readImage()`.
-     *
-     * @param
+     * Reads an image or image sequence from a [blob]. In all other respects it is like `readImage()`.
      */
-    @OptIn(ExperimentalUnsignedTypes::class)
     @Throws(MagickWandException::class)
     external fun readImageBlob(blob: UByteArray)
 
@@ -156,11 +154,8 @@ class MagickWand {
     external fun pingImage(path: String)
 
     /**
-     * Pings an image or image sequence from a blob.
-     *
-     * @param blob The image blob.
+     * Pings an image or image sequence from a [blob].
      */
-    @OptIn(ExperimentalUnsignedTypes::class)
     @Throws(MagickWandException::class)
     external fun pingImageBlob(blob: UByteArray)
 
@@ -264,7 +259,6 @@ class MagickWand {
      * @param name The name of the profile. '*' to select all
      * @param profile The data to add/remove to the profile. NULL will remove the profile.
      */
-    @OptIn(ExperimentalUnsignedTypes::class)
     @Throws(MagickWandException::class)
     external fun profileImage(name: String, profile: UByteArray?)
 
@@ -462,7 +456,6 @@ class MagickWand {
      *            R = red, G = green, B = blue, A = alpha (0 is transparent), O = alpha (0 is opaque), C = cyan,
      *            Y = yellow, M = magenta, K = black, I = intensity (for grayscale), P = pad.
      */
-    @OptIn(ExperimentalUnsignedTypes::class)
     @Throws(MagickWandException::class)
     external fun exportImagePixels(
         x: Long,
@@ -510,7 +503,7 @@ class MagickWand {
         y: Double,
         filter: FilterType
     )
-    
+
     /**
      * Rescale the image using seam carving algorithm.
      *
@@ -565,7 +558,6 @@ class MagickWand {
      *
      * @param format Any ImageMagick supported image format (e.g. GIF, JPEG, PNG, etc.).
      */
-    @OptIn(ExperimentalUnsignedTypes::class)
     @Throws(MagickWandException::class)
     external fun writeImageBlob(format: String): UByteArray?
 
@@ -574,7 +566,6 @@ class MagickWand {
      *
      * @param format Any ImageMagick supported image format (e.g. GIF, JPEG, PNG, etc.).
      */
-    @OptIn(ExperimentalUnsignedTypes::class)
     @Throws(MagickWandException::class)
     external fun writeImagesBlob(format: String): UByteArray?
 
