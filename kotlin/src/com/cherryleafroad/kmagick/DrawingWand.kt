@@ -15,7 +15,7 @@ class DrawingWand {
     /**
      * Holds the pointer to internal object in memory.
      */
-    private var handle: ULong? = null
+    private var handle: Long? = null
 
     /**
      * Create a new DrawingWand.

@@ -17,7 +17,7 @@ class PixelWand {
     /**
      * Holds the pointer to internal object in memory.
      */
-    private var handle: ULong? = null
+    private var handle: Long? = null
 
     /**
      * Call the internal function to create the new wand.
