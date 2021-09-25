@@ -165,10 +165,10 @@ class MagickWand {
      *
      * @param reference Reference wand.
      * @param metric The metric.
-     * @return A pair containing the computed distortion(Double) and the diffImage(MagickWand) if there was a difference
+     * @return A data class containing the computed distortion and the diffImage if there was a difference.
      */
     @Throws(MagickWandException::class)
-    external fun compareImages(reference: MagickWand, metric: MetricType): Pair<Double, MagickWand?>
+    external fun compareImages(reference: MagickWand, metric: MetricType): Comparison
 
     /**
      * Compose another image onto self at (x,y) using composition_operator
@@ -391,7 +391,7 @@ class MagickWand {
      * Returns the image histogram as a List of `PixelWand` instances for every unique color.
      */
     @Throws(MagickWandException::class)
-    external fun getImageHistogram(): List<PixelWand>?
+    external fun getImageHistogram(): Array<PixelWand>?
 
     /**
      * Sharpens an image. We convolve the image with a Gaussian operator of the
