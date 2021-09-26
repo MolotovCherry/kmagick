@@ -1,17 +1,16 @@
 #![allow(non_snake_case)]
+#![feature(hash_drain_filter)]
 
 mod drawing_wand;
 mod magick_wand;
 mod pixel_wand;
-#[macro_use]
 mod utils;
-mod cacher;
+#[macro_use]
+mod macros;
+mod env;
 
-use jni::sys::jobject;
-use magick_rust::{
-    magick_wand_genesis, magick_wand_terminus,
-    magick_query_fonts
-};
+use jni::sys::{jobject, jobjectArray};
+use magick_rust;
 
 use log::{
     LevelFilter, info
@@ -30,7 +29,9 @@ use jni::{
 };
 use jni::objects::{JObject, JString};
 
-use utils::get_jstring;
+use crate::env::Cacher;
+
+//use utils::get_jstring;
 
 
 static INIT: Once = Once::new();
@@ -65,22 +66,29 @@ fn init_logger() {
 }
 
 #[no_mangle]
-pub extern fn Java_com_cherryleafroad_jmagick_Magick_nativeInit(_: JNIEnv, _: JObject) {
+pub extern fn Java_com_cherryleafroad_kmagick_Magick_nativeInit(_: JNIEnv, _: JObject) {
     init();
-    magick_wand_genesis();
+    magick_rust::magick_wand_genesis();
     info!("Magick::nativeInit() Initialized native environment");
 }
 
 #[no_mangle]
-pub extern fn Java_com_cherryleafroad_jmagick_Magick_nativeTerminate(env: JNIEnv, _: JObject) {
+pub extern fn Java_com_cherryleafroad_kmagick_Magick_nativeTerminate(env: JNIEnv, _: JObject) {
     info!("Magick::nativeTerminate() Terminating environment");
-    magick_wand_terminus();
-    cacher::clear_cache();
+    magick_rust::magick_wand_terminus();
+    env.clear_cache();
 }
 
 /*#[no_mangle]
-pub extern fn Java_com_cherryleafroad_jmagick_Magick_magickQueryFonts(env: JNIEnv, _: JObject, pattern: JString) -> jobject {
+pub extern fn Java_com_cherryleafroad_kmagick_Magick_magickQueryFonts(env: JNIEnv, _: JObject, pattern: JString) -> jobjectArray {
     let pat = get_jstring(env, pattern);
 
-    throw_magick_exc!(env, "foo");
+    if let Some(v) = check_magick_exc!(env, magick_rust::magick_query_fonts(&*pat)) {
+        let arr = check_magick_exc!(
+            env.new_object_array(v.len(), "java/lang/String", initial_element)
+        );
+        
+    } else {
+        std::ptr::null_mut()
+    }
 }*/
