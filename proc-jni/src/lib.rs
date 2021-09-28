@@ -23,7 +23,7 @@ pub fn jnimethod(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let name = &item_fn.sig.ident;
     let name_str = name.to_string();
-    let (java_return, is_result) = match utils::extract_return(&item_fn.sig.output) {
+    let (java_return, is_result) = match utils::extract_return(&item_fn.sig.output, &name, None) {
         Ok(v) => v,
         Err(e) => return e.to_compile_error().into()
     };
@@ -174,7 +174,7 @@ pub fn jniclass(attr: TokenStream, item: TokenStream) -> TokenStream {
         Err(e) => return e.to_compile_error().into()
     };
 
-    let impl_returns = utils::validate_impl_returns(&item_impl_mod.items);
+    let impl_returns = utils::validate_impl_returns(&item_impl_mod.items, &*item_impl_mod.self_ty);
     let impl_returns = match impl_returns {
         Ok(v) => v,
         Err(e) => return e.to_compile_error().into()

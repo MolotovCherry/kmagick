@@ -55,7 +55,7 @@ pub fn class_to_ident(class: &str, fn_name: &str) -> Ident {
 }
 
 // Ok result is (ReturnType, is_result_type)
-pub fn extract_return(ret: &ReturnType) -> syn::Result<(ReturnType, bool)> {
+pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>) -> syn::Result<(ReturnType, bool)> {
     let allowed_ret = vec![
         "jarray", "jboolean", "jbooleanArray", "jbyte", "jbyteArray",
         "jchar", "jcharArray", "jclass", "jdouble", "jdoubleArray",
@@ -77,7 +77,16 @@ pub fn extract_return(ret: &ReturnType) -> syn::Result<(ReturnType, bool)> {
 
                     let ident = &segment.ident;
                     if ident.to_string() != "Result" && !allowed_ret.contains(&&*ident.to_string()) {
-                        return Err(syn::Error::new_spanned(ident, "Return type must be a Result<> type, primitive j type (jni::sys::*), or empty"))
+                        // special case - allow new() functions to return Self for the jniclass implementation
+                        if name.to_string() != "new" {
+                            return Err(syn::Error::new_spanned(ident, "Return type must be a Result<> type, primitive j type (jni::sys::*), or empty"))
+                        } else if impl_name.is_some() {
+                            if ident.to_string() != "Self" && ident.to_string() != impl_name.unwrap().to_string() {
+                                return Err(syn::Error::new_spanned(ident, "Return type must be a Result<> type, primitive j type (jni::sys::*), Self type, or empty"))
+                            }
+                        } else {
+                            return Err(syn::Error::new_spanned(ident, "Return type must be a Result<> type, primitive j type (jni::sys::*), or empty"))
+                        }
                     }
 
                     let args = &segment.arguments;
@@ -268,11 +277,27 @@ pub fn validate_impl_args(items: &Vec<ImplItem>) -> syn::Result<Vec<Ident>> {
     Ok(env_idents)
 }
 
-pub fn validate_impl_returns(items: &Vec<ImplItem>) -> syn::Result<Vec<(ReturnType, bool)>> {
+pub fn validate_impl_returns(items: &Vec<ImplItem>, self_type: &Type) -> syn::Result<Vec<(ReturnType, bool)>> {
+    // extract name of impl Self
+    let type_ident: &Ident;
+    match self_type {
+        Type::Path(t) => {
+            let segments = &t.path.segments;
+            if segments.len() == 0 {
+                return Err(syn::Error::new_spanned(self_type, "Segments empty"))
+            }
+
+            let last = t.path.segments.last().unwrap();
+            type_ident = &last.ident;
+        }
+
+        _ => return Err(syn::Error::new_spanned(self_type, "Missed match")),
+    }
+
     let mut impl_returns = vec![];
     for item in items {
         if let ImplItem::Method(m) = item {
-            impl_returns.push(extract_return(&m.sig.output)?);
+            impl_returns.push(extract_return(&m.sig.output, &m.sig.ident, Some(type_ident))?);
         }
     }
 
