@@ -57,6 +57,15 @@ pub fn class_to_ident(class: &str, fn_name: &str) -> Ident {
     Ident::new(&name, proc_macro2::Span::call_site())
 }
 
+pub fn fix_class_path(class: &String, slashes: bool) -> String {
+    // if not slashes, then underscores
+    if !slashes {
+        class.replace("/", "_").replace(".", "_")
+    } else {
+        class.replace(".", "/").replace("_", "/")
+    }
+}
+
 // Ok result is (ReturnType, is_result_type)
 pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>) -> syn::Result<(ReturnType, bool)> {
     let allowed_ret = vec![
@@ -580,6 +589,8 @@ pub fn generate_impl_functions(
                     ns.to_owned()
                 };
 
+                let handle_cls = fix_class_path(&class, true);
+
                 let java_name = class_to_ident(&class, &fn_name.to_string());
 
                 let handler_trait: TokenStream = match handler_trait {
@@ -659,7 +670,7 @@ pub fn generate_impl_functions(
 
                             let panic_res = ::std::panic::catch_unwind(|| {
                                 let r_obj = #impl_name::#fn_name(#fn_call_args);
-                                let res = env.set_handle(#class, obj, r_obj);
+                                let res = env.set_handle(#handle_cls, obj, r_obj);
 
                                 match res {
                                     Ok(_) => (),
@@ -712,7 +723,7 @@ pub fn generate_impl_functions(
                             use #handler_trait;
 
                             let panic_res = ::std::panic::catch_unwind(|| {
-                                let res = env.take_handle::<#impl_name>(#class, obj);
+                                let res = env.take_handle::<#impl_name>(#handle_cls, obj);
 
                                 let #mut_kwrd r_obj = match res {
                                     Ok(v) => v,
@@ -748,7 +759,7 @@ pub fn generate_impl_functions(
                             use #handler_trait;
 
                             let panic_res = ::std::panic::catch_unwind(|| {
-                                let res = env.get_handle::<#impl_name>(#class, obj);
+                                let res = env.get_handle::<#impl_name>(#handle_cls, obj);
 
                                 let #mut_kwrd r_obj = match res {
                                     Ok(v) => v,

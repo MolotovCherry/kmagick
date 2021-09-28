@@ -156,8 +156,8 @@ pub fn jniclass(attr: TokenStream, item: TokenStream) -> TokenStream {
         Err(e) => return e.to_compile_error().into()
     };
 
-    let pkg = args.get("pkg");
-    let cls = args.get("cls");
+    let mut pkg = args.get("pkg");
+    let mut cls = args.get("cls");
     let handler_trait = args.get("handler_trait");
     if let Some(_) = pkg {
         if let Some(_) = cls {
@@ -168,6 +168,17 @@ pub fn jniclass(attr: TokenStream, item: TokenStream) -> TokenStream {
         if let None = cls {
             return syn::Error::new(Span::call_site(), "Must specify either pkg or cls attributes").to_compile_error().into();
         }
+    }
+
+    let mut f: String;
+    let mut c: String;
+    if let Some(v) = pkg {
+        f = utils::fix_class_path(v, false);
+        pkg = Some(&f);
+    }
+    if let Some(v) = cls {
+        c = utils::fix_class_path(v, false);
+        cls = Some(&c);
     }
 
     let name = utils::extract_impl_name(&*item_impl_mod.self_ty);
@@ -200,8 +211,8 @@ pub fn jniclass(attr: TokenStream, item: TokenStream) -> TokenStream {
     };
     
     let exc = match args.get("exc") {
-        Some(v) => &*v,
-        None => "java/lang/RuntimeException"
+        Some(v) => utils::fix_class_path(&*v, true),
+        None => "java/lang/RuntimeException".to_owned()
     };
 
     let funcs = utils::generate_impl_functions(&item_impl_mod.items, &impl_returns, namespace, &exc, handler_trait);
