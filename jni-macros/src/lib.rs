@@ -15,18 +15,16 @@ pub fn jnimethod(attr: TokenStream, item: TokenStream) -> TokenStream {
         Err(e) => return e.to_compile_error().into()
     };
 
-    let fn_inputs = &item_fn.sig.inputs;
-    let res = utils::validate_fn_args(fn_inputs);
+    let fn_inputs = utils::fn_full_args(&item_fn.sig.inputs);
+    let (fn_call, fn_inputs) = match fn_inputs {
+        Err(e) => return e.to_compile_error().into(),
+        Ok(v) => v
+    };
+    let res = utils::validate_fn_args(&item_fn.sig.inputs, false, &vec![]);
     match res {
         Err(e) => return e.to_compile_error().into(),
         Ok(v) => v
     }
-
-    let env_ident = utils::extract_two_params(fn_inputs, &item_fn.sig.ident);
-    let env_ident = match env_ident {
-        Err(e) => return e.to_compile_error().into(),
-        Ok(v) => v.0
-    };
 
     let name = &item_fn.sig.ident;
     let name_str = name.to_string();
@@ -52,12 +50,6 @@ pub fn jnimethod(attr: TokenStream, item: TokenStream) -> TokenStream {
         None => return syn::Error::new(Span::call_site(), "cls is a required attribute").to_compile_error().into()
     }
 
-    let fn_call = utils::fn_call(fn_inputs, name);
-    let fn_call = match fn_call {
-        Ok(v) => v,
-        Err(e) => return syn::Error::new(Span::call_site(), e.to_string()).to_compile_error().into()
-    };
-
     let exc = args.get("exc");
     let exc = match exc {
         Some(v) => format!("\"{}\"", v),
@@ -73,11 +65,11 @@ pub fn jnimethod(attr: TokenStream, item: TokenStream) -> TokenStream {
     let inner_body = match is_result {
         true => {
             quote! {
-                let res = #fn_call;
+                let res = #name(#fn_call);
                 match res {
                     Ok(v) => return v,
                     Err(e) => {
-                        #env_ident.throw_new(#exc, e.to_string()).ok();
+                        env.throw_new(#exc, e.to_string()).ok();
                         return ::std::ptr::null_mut();
                     }
                 }
@@ -87,11 +79,11 @@ pub fn jnimethod(attr: TokenStream, item: TokenStream) -> TokenStream {
         false => {
             if is_returning {
                 quote! {
-                    return #fn_call;
+                    return #name(#fn_call);
                 }
             } else {
                 quote! {
-                    #fn_call;
+                    #name(#fn_call);
                 }
             }
         }
@@ -103,7 +95,7 @@ pub fn jnimethod(attr: TokenStream, item: TokenStream) -> TokenStream {
                 match panic_res {
                     Ok(_) => ::std::ptr::null_mut(),
                     Err(e) => {
-                        #env_ident.throw_new("java/lang/RuntimeException", &format!("`{}()` panicked", #name_str)).ok();
+                        env.throw_new("java/lang/RuntimeException", &format!("`{}()` panicked", #name_str)).ok();
                         ::std::ptr::null_mut()
                     }
                 }
@@ -115,7 +107,7 @@ pub fn jnimethod(attr: TokenStream, item: TokenStream) -> TokenStream {
                 match panic_res {
                     Ok(_) => (),
                     Err(e) => {
-                        #env_ident.throw_new("java/lang/RuntimeException", &format!("`{}()` panicked", #name_str)).ok();
+                        env.throw_new("java/lang/RuntimeException", &format!("`{}()` panicked", #name_str)).ok();
                     }
                 }
             }
@@ -126,7 +118,7 @@ pub fn jnimethod(attr: TokenStream, item: TokenStream) -> TokenStream {
         #item_fn
 
         #[no_mangle]
-        pub extern "C" fn #java_fn(#fn_inputs) #java_return {
+        pub extern "C" fn #java_fn(env: JNIEnv#fn_inputs) #java_return {
             let panic_res = ::std::panic::catch_unwind(|| {
                 #inner_body
             });
@@ -141,6 +133,13 @@ pub fn jnimethod(attr: TokenStream, item: TokenStream) -> TokenStream {
 /// Don't generate an implementation for a method in an impl
 #[proc_macro_attribute]
 pub fn jniignore(_: TokenStream, item: TokenStream) -> TokenStream {
+    // even though this is a no-op, this validates that it is an ItemFn and not something else
+    let item_fn = syn::parse_macro_input!(item as syn::ItemFn);
+    item_fn.to_token_stream().into()
+}
+
+#[proc_macro_attribute]
+pub fn jnistatic(_: TokenStream, item: TokenStream) -> TokenStream {
     // even though this is a no-op, this validates that it is an ItemFn and not something else
     let item_fn = syn::parse_macro_input!(item as syn::ItemFn);
     item_fn.to_token_stream().into()
@@ -194,12 +193,6 @@ pub fn jniclass(attr: TokenStream, item: TokenStream) -> TokenStream {
         Err(e) => return e.to_compile_error().into()
     };
 
-    let env_idents = utils::impl_extract_two_params(&item_impl_mod.items);
-    let env_idents = match env_idents {
-        Ok(v) => v,
-        Err(e) => return e.to_compile_error().into()
-    };
-
     let impl_returns = utils::validate_impl_returns(&item_impl_mod.items, &name);
     let impl_returns = match impl_returns {
         Ok(v) => v,
@@ -211,7 +204,7 @@ pub fn jniclass(attr: TokenStream, item: TokenStream) -> TokenStream {
         None => "java/lang/RuntimeException"
     };
 
-    let funcs = utils::generate_impl_functions(&item_impl_mod.items, &impl_returns, &env_idents, namespace, &exc, handler_trait);
+    let funcs = utils::generate_impl_functions(&item_impl_mod.items, &impl_returns, namespace, &exc, handler_trait);
     let funcs = match funcs {
         Ok(v) => v,
         Err(e) => return e.to_compile_error().into()

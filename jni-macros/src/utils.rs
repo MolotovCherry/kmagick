@@ -3,8 +3,11 @@ use std::collections::HashMap;
 use proc_macro2::{Ident, Span, TokenStream};
 use syn::punctuated::Punctuated;
 use syn::token::Comma;
-use syn::{FnArg, ImplItem, ItemImpl, Meta, NestedMeta, Pat, PathArguments, ReturnType, Type};
+use syn::{Attribute, FnArg, ImplItem, ItemImpl, Meta, NestedMeta, Pat, PatIdent, PathArguments, ReturnType, Type};
 use quote::{quote, ToTokens};
+use rand::Rng;
+
+const CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 pub fn get_args(args: Vec<NestedMeta>) -> syn::Result<HashMap<String, String>> {
     let mut hm: HashMap<String, String> = HashMap::new();
@@ -180,7 +183,7 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>)
 }
 
 // returns the first JNIEnv ident (skips &self)
-pub fn validate_fn_args(fn_args: &Punctuated<FnArg, Comma>) -> syn::Result<()> {
+pub fn validate_fn_args(fn_args: &Punctuated<FnArg, Comma>, is_impl: bool, attrs: &Vec<String>) -> syn::Result<()> {
     let allowed_types_second_param = vec![
         "JObject", "jobject", "JClass", "jclass"
     ];
@@ -213,7 +216,13 @@ pub fn validate_fn_args(fn_args: &Punctuated<FnArg, Comma>) -> syn::Result<()> {
                         }
                     } else if pos == 2 {
                         if !allowed_types_second_param.contains(&&*ty.ident.to_string()) {
-                            return Err(syn::Error::new_spanned(v, "Param must be JObject or JClass"));
+                            return Err(syn::Error::new_spanned(v, "Param must be JObject or JClass (methods only)"));
+                        }
+
+                        if is_impl && ty.ident.to_string().to_lowercase() == "jclass" {
+                            if !attrs.contains(&"jnistatic".to_string()) {
+                                return Err(syn::Error::new_spanned(v, "JClass is not allowed in second position on impl methods"));
+                            }
                         }
                     } else {
                         if !allowed_types.contains(&&*ty.ident.to_string()) {
@@ -233,18 +242,23 @@ pub fn validate_fn_args(fn_args: &Punctuated<FnArg, Comma>) -> syn::Result<()> {
     Ok(())
 }
 
-pub fn extract_two_params(fn_args: &Punctuated<FnArg, Comma>, name: &Ident) -> syn::Result<(Ident, Ident)> {
-    let mut idents: Vec<&Ident> = vec![];
-
-    for (i, arg) in fn_args.iter().enumerate() {
+pub fn extract_second_type<'a>(fn_args: &Punctuated<FnArg, Comma>) -> Option<Ident> {
+    let mut i = 0usize;
+    for arg in fn_args {
         match arg {
             FnArg::Typed(v) => {
-                if let Pat::Ident(v) = &*v.pat {
-                    idents.push(&v.ident);
-                    if i == 2 {
-                        break;
+
+                if i == 1 {
+                    if let Type::Path(r) = &*v.ty {
+                        if let Some(s) = r.path.segments.last() {
+                            return Some(s.ident.clone());
+                        }
                     }
+                } else if i > 1 {
+                    break;
                 }
+
+                i += 1;
             }
 
             // self arg, just ignore that
@@ -252,23 +266,7 @@ pub fn extract_two_params(fn_args: &Punctuated<FnArg, Comma>, name: &Ident) -> s
         }
     }
 
-    let tk: Box<dyn ToTokens> = if idents.len() > 0 {
-        Box::new(fn_args)
-    } else {
-        Box::new(name)
-    };
-
-    if idents.len() < 2 {
-        return Err(syn::Error::new_spanned(tk, "Missing minimum amount of required args (2; JNIEnv and JObject/JClass)"));
-    }
-
-    Ok((idents[0].clone(), idents[1].clone()))
-}
-
-pub fn fn_call(fn_args: &Punctuated<FnArg, Comma>, fn_name: &Ident) -> syn::Result<TokenStream> {
-    let ident_params = get_fn_args(fn_args);
-    let args = ident_params.join(", ");
-    syn::parse_str(&format!("{}({})", fn_name.to_string(), args))
+    None
 }
 
 pub fn filter_out_ignored(item_impl: &mut ItemImpl) {
@@ -294,7 +292,8 @@ pub fn filter_out_ignored(item_impl: &mut ItemImpl) {
 pub fn validate_impl_args(items: &Vec<ImplItem>) -> syn::Result<()> {
     for item in items {
         if let ImplItem::Method(m) = item {
-            validate_fn_args(&m.sig.inputs)?;
+            let attrs = top_attrs(&m.attrs);
+            validate_fn_args(&m.sig.inputs, true, &attrs)?;
         }
     }
 
@@ -331,45 +330,60 @@ pub fn validate_impl_returns(items: &Vec<ImplItem>, name: &Ident) -> syn::Result
     Ok(impl_returns)
 }
 
-pub fn impl_extract_two_params(items: &Vec<ImplItem>) -> syn::Result<Vec<(Ident, Ident)>> {
+pub fn impl_extract_second_types(items: &Vec<ImplItem>) -> syn::Result<Vec<Option<Ident>>> {
     let mut impl_idents = vec![];
 
     for item in items {
         if let ImplItem::Method(m) = item {
-            let two_params = extract_two_params(&m.sig.inputs, &m.sig.ident)?;
-            impl_idents.push(two_params);
+            let second_type = extract_second_type(&m.sig.inputs);
+            impl_idents.push(second_type);
         }
     }
 
     Ok(impl_idents)
 }
 
-pub fn get_fn_args(input: &Punctuated<FnArg, Comma>) -> Vec<String> {
-    let mut ident_params: Vec<String> = vec![];
+pub fn impl_fn_args(input: &Punctuated<FnArg, Comma>) -> syn::Result<Vec<(String, String)>> {
+    let mut new_punc: Vec<(String, String)> = vec![];
 
+    let mut i = 0usize;
     for arg in input {
         match arg {
             FnArg::Typed(v) => {
-                if let Pat::Ident(v) = &*v.pat {
-                    ident_params.push(v.ident.to_string());
+                i += 1;
+
+                // only process after the first 2
+                if i >= 3 {
+                    let mut ty: String = "".to_string();
+                    if let Type::Path(d) = &*v.ty {
+                        let seg = &d.path.segments;
+                        if seg.len() == 0{
+                            return Err(syn::Error::new_spanned(v, "Segments empty"))
+                        }
+                        ty = seg.last().unwrap().ident.to_string()
+                    }
+
+                    if let Pat::Ident(b) = &*v.pat {
+                        let ident = b.ident.to_string();
+
+                        new_punc.push((ident, ty.clone()))
+                    }
+
+                    if let Pat::Wild(_) = &*v.pat {
+                        let id: String;
+
+                        id = (0..10)
+                            .map(|_| {
+                                let idx = rand::thread_rng().gen_range(0..CHARSET.len());
+                                CHARSET[idx] as char
+                            })
+                            .collect();
+                        
+                        new_punc.push(
+                            (id, ty.clone())
+                        );
+                    }
                 }
-            }
-
-            // self arg, just ignore that
-            _ => {}
-        }
-    }
-
-    ident_params
-}
-
-pub fn impl_fn_args(input: &Punctuated<FnArg, Comma>) -> Punctuated<FnArg, Comma> {
-    let mut new_punc: Punctuated<FnArg, Comma> = Punctuated::new();
-
-    for arg in input {
-        match arg {
-            FnArg::Typed(_) => {
-                new_punc.push(arg.clone())
             }
 
             // ignore self param
@@ -377,7 +391,7 @@ pub fn impl_fn_args(input: &Punctuated<FnArg, Comma>) -> Punctuated<FnArg, Comma
         }
     }
 
-    new_punc
+    Ok(new_punc)
 }
 
 pub fn impl_is_fn_mut(input: &Punctuated<FnArg, Comma>) -> bool {
@@ -395,34 +409,163 @@ pub fn impl_is_fn_mut(input: &Punctuated<FnArg, Comma>) -> bool {
     false
 }
 
+pub fn fn_full_args(args: &Punctuated<FnArg, Comma>) -> syn::Result<(TokenStream, TokenStream)> {
+    let mut fn_sig_vec = vec![];
+    let mut fn_call_vec = vec![];
+    
+    let mut num = 0usize;
+    for arg in args {
+        match arg {
+            // covers both typed and wildcards
+            FnArg::Typed(b) => {
+                let mut ty = String::new();
+                let mut ident = String::new();
+                if let Type::Path(d) = &*b.ty {
+                    let seg = &d.path.segments;
+                    if seg.len() == 0 {
+                        return Err(syn::Error::new_spanned(b, "Segments empty"))
+                    }
+                    ty = seg.last().unwrap().ident.to_string();
+                }
+
+                if let Pat::Ident(b) = &*b.pat {
+                    ident = b.ident.to_string();
+                }
+
+                if let Pat::Wild(_) = &*b.pat {
+                    ident = (0..10)
+                        .map(|_| {
+                            let idx = rand::thread_rng().gen_range(0..CHARSET.len());
+                            CHARSET[idx] as char
+                        })
+                        .collect();
+                }
+
+                if num == 0 {
+                    //fn_sig.extend(syn::parse_str::<TokenStream>("env: JNIEnv"));
+                    fn_call_vec.push("env".to_string());
+                } else if num == 1 {
+                    fn_sig_vec.push(format!(", obj: {}", ty));
+                    fn_call_vec.push("obj".to_string());
+                } else {
+                    fn_sig_vec.push(format!("{}: {}", ident, ty));
+                    fn_call_vec.push(ident);
+                }
+
+                num += 1;
+            }
+
+            // ignore self
+            FnArg::Receiver(_) =>  ()
+        }
+    }
+
+    if fn_sig_vec.len() == 0 {
+        fn_sig_vec.push(", obj: JObject".to_string());
+    }
+
+    let fn_sig_str = fn_sig_vec.join(", ");
+    let fn_call_str = fn_call_vec.join(", ");
+
+    let fn_sig: TokenStream = syn::parse_str(&fn_sig_str)?;
+    let fn_call: TokenStream = syn::parse_str(&fn_call_str)?;
+
+    Ok((fn_call, fn_sig))
+}
+
+pub fn impl_fn_fill_args(args: &Punctuated<FnArg, Comma>, rest: &Vec<(String, String)>) -> syn::Result<TokenStream> {
+    let mut tk = TokenStream::new();
+    
+    let mut num = 0usize;
+    for arg in args {
+        match arg {
+            // covers both typed and wildcards
+            FnArg::Typed(b) => {
+                num += 1;
+            }
+
+            // ignore self
+            FnArg::Receiver(_) =>  ()
+        }
+    }
+
+    if num >= 1 {
+        tk.extend(syn::parse_str::<TokenStream>("env"));
+    }
+    if num >= 2 {
+        tk.extend(syn::parse_str::<TokenStream>(", obj"));
+    }
+
+    tk.extend(
+        syn::parse_str::<TokenStream>(&rest.iter().map(|v| { format!(", {}", v.0) }).collect::<String>())?
+    );
+
+    Ok(tk)
+}
+
+pub fn top_attrs(attributes: &Vec<Attribute>) -> Vec<String> {
+    let mut attrs = vec![];
+
+    for attr in attributes {
+        for seg in &attr.path.segments {
+            attrs.push(seg.ident.to_string());
+        }
+    }
+
+    attrs
+}
+
 pub fn generate_impl_functions(
     items: &Vec<ImplItem>,
     returns: &Vec<(ReturnType, bool)>,
-    env_idents: &Vec<(Ident, Ident)>,
     namespace: (&String, bool, &Ident),
     exc: &str,
     handler_trait: Option<&String>
 ) -> syn::Result<Vec<TokenStream>> {
     let mut funcs: Vec<TokenStream> = vec![];
 
+    let second_types = impl_extract_second_types(items)?;
+
     for (i, _fn) in items.iter().enumerate() {
         match _fn {
             ImplItem::Method(m) => {
                 let fn_name = &m.sig.ident;
-                let env_ident = &env_idents[i].0;
-                let second_ident = &env_idents[i].1;
+
                 let ret_type = &returns[i].0;
                 let is_result = returns[i].1;
 
-                let fn_inputs = impl_fn_args(&m.sig.inputs);
+                let attrs = top_attrs(&m.attrs);
+
+                let fn_inputs = impl_fn_args(&m.sig.inputs)?;
                 let fn_is_mut = impl_is_fn_mut(&m.sig.inputs);
 
-                let fn_call = fn_call(&m.sig.inputs, fn_name)?;
+                let fn_call_args = impl_fn_fill_args(&m.sig.inputs, &fn_inputs)?;
+
+                let inputs = match &second_types[i] {
+                    Some(v) => {
+                        let mut tk = quote!{
+                            , obj: #v
+                        };
+
+                        let res: TokenStream = syn::parse_str(&fn_inputs.iter().map(|v| { format!(", {}: {}", v.0, v.1) }).collect::<String>())?;
+                        tk.extend(res);
+
+                        tk
+                    }
+
+                    None => {
+                        quote! {
+                            , obj: JObject
+                        }
+                    }
+                };
 
                 let ns = namespace.0;
                 let is_pkg = namespace.1;
                 let impl_name = namespace.2;
                 let impl_name_str = impl_name.to_string();
+
+                println!("{:#?}", fn_inputs);
 
                 let diag = format!("{}::{}()", impl_name_str, fn_name);
 
@@ -444,23 +587,84 @@ pub fn generate_impl_functions(
                     None => syn::parse_str("crate::env::Utils")
                 }?;
 
+                
+                //
+                // special changing syntax
+                //
+                let null_mut = if is_returning {
+                    quote! {
+                        ::std::ptr::null_mut()
+                    }
+                } else {
+                    TokenStream::new()
+                };
+
+                let ok_or_null = if is_returning {
+                    quote! {
+                        ::std::ptr::null_mut()
+                    }
+                } else {
+                    quote! {
+                        ()
+                    }
+                };
+
+
+                //
+                // matching for result types
+                //
+                let res_binding = if is_result {
+                    quote! {
+                        let c_res =
+                    }
+                } else {
+                    TokenStream::new()
+                };
+
+                let match_res = if is_result {
+                    quote! {
+                        match c_res {
+                            Ok(v) => return v,
+                            Err(e) => {
+                                env.throw_new(#exc, format!("`{}` threw an exception : {}", #diag, e.to_string())).ok();
+                                return ::std::ptr::null_mut();
+                            }
+                        }
+                    }
+                } else {
+                    TokenStream::new()
+                };
+                //
+                // end matching for result types
+                //
+
+                let ret_no_result = if is_returning && !is_result {
+                    quote! { return }
+                } else {
+                    TokenStream::new()
+                };
+
+                //
+                //
+
+
                 // special case for new fn
                 let stream: TokenStream;
                 if fn_name == "new" {
 
                     stream = quote! {
                         #[no_mangle]
-                        pub extern "C" fn #java_name(#fn_inputs) {
+                        pub extern "C" fn #java_name(env: JNIEnv#inputs) {
                             use #handler_trait;
 
                             let panic_res = ::std::panic::catch_unwind(|| {
-                                let r_obj = #impl_name::#fn_call;
-                                let res = #env_ident.set_handle(#class, #second_ident, r_obj);
+                                let r_obj = #impl_name::#fn_name(#fn_call_args);
+                                let res = env.set_handle(#class, obj, r_obj);
 
                                 match res {
                                     Ok(_) => (),
                                     Err(e) => {
-                                        #env_ident.throw_new(#exc, format!("Failed to set handle for `{}` : {}", #diag, e.to_string())).ok();
+                                        env.throw_new(#exc, format!("Failed to set handle for `{}` : {}", #diag, e.to_string())).ok();
                                     }
                                 }
                             });
@@ -468,11 +672,32 @@ pub fn generate_impl_functions(
                             match panic_res {
                                 Ok(_) => (),
                                 Err(e) => {
-                                    #env_ident.throw_new("java/lang/RuntimeException", &format!("`{}` panicked", #diag)).ok();
+                                    env.throw_new("java/lang/RuntimeException", &format!("`{}` panicked", #diag)).ok();
                                 }
                             }
                         }
                     };
+                } else if attrs.contains(&"jnistatic".to_string()) {
+
+                    stream = quote! {
+                        #[no_mangle]
+                        pub extern "C" fn #java_name(env: JNIEnv#inputs) #ret_type {
+                            let panic_res = ::std::panic::catch_unwind(|| {
+                                #res_binding #ret_no_result #impl_name::#fn_name(#fn_call_args);
+
+                                #match_res
+                            });
+
+                            match panic_res {
+                                Ok(_) => #ok_or_null,
+                                Err(e) => {
+                                    env.throw_new("java/lang/RuntimeException", &format!("`{}` panicked", #diag)).ok();
+                                    #null_mut
+                                }
+                            }
+                        }
+                    };
+                
                 } else if fn_name == "destroy" {
 
                     let mut_kwrd = if fn_is_mut {
@@ -483,57 +708,33 @@ pub fn generate_impl_functions(
 
                     stream = quote! {
                         #[no_mangle]
-                        pub extern "C" fn #java_name(#fn_inputs) {
+                        pub extern "C" fn #java_name(env: JNIEnv#inputs) {
                             use #handler_trait;
 
                             let panic_res = ::std::panic::catch_unwind(|| {
-                                let res = #env_ident.take_handle::<#impl_name>(#class, #second_ident);
+                                let res = env.take_handle::<#impl_name>(#class, obj);
 
                                 let #mut_kwrd r_obj = match res {
                                     Ok(v) => v,
                                     Err(e) => {
-                                        #env_ident.throw_new(#exc, format!("Failed to take handle for `{}` : {}", #diag, e.to_string())).ok();
+                                        env.throw_new(#exc, format!("Failed to take handle for `{}` : {}", #diag, e.to_string())).ok();
                                         return;
                                     }
                                 };
 
-                                r_obj.#fn_call;
+                                r_obj.#fn_name(#fn_call_args);
                             });
 
                             match panic_res {
                                 Ok(_) => (),
                                 Err(e) => {
-                                    #env_ident.throw_new("java/lang/RuntimeException", &format!("`{}` panicked", #diag)).ok();
+                                    env.throw_new("java/lang/RuntimeException", &format!("`{}` panicked", #diag)).ok();
                                 }
                             }
                         }
                     };
 
                 } else {
-                    
-                    let ret_no_result = if is_returning && !is_result {
-                        quote! { return }
-                    } else {
-                        TokenStream::new()
-                    };
-
-                    let null_mut = if is_returning {
-                        quote! {
-                            ::std::ptr::null_mut()
-                        }
-                    } else {
-                        TokenStream::new()
-                    };
-
-                    let ok_or_null = if is_returning {
-                        quote! {
-                            ::std::ptr::null_mut()
-                        }
-                    } else {
-                        quote! {
-                            ()
-                        }
-                    };
 
                     let mut_kwrd = if fn_is_mut {
                         quote! { mut }
@@ -541,50 +742,23 @@ pub fn generate_impl_functions(
                         TokenStream::new()
                     };
 
-                    //
-                    // matching for result types
-                    //
-                    let res_binding = if is_result {
-                        quote! {
-                            let c_res =
-                        }
-                    } else {
-                        TokenStream::new()
-                    };
-
-                    let match_res = if is_result {
-                        quote! {
-                            match c_res {
-                                Ok(v) => return v,
-                                Err(e) => {
-                                    #env_ident.throw_new(#exc, format!("`{}` threw an exception : {}", #diag, e.to_string())).ok();
-                                    return ::std::ptr::null_mut();
-                                }
-                            }
-                        }
-                    } else {
-                        TokenStream::new()
-                    };
-                    //
-                    // end matching for result types
-
                     stream = quote! {
                         #[no_mangle]
-                        pub extern "C" fn #java_name(#fn_inputs) #ret_type {
+                        pub extern "C" fn #java_name(env: JNIEnv#inputs) #ret_type {
                             use #handler_trait;
 
                             let panic_res = ::std::panic::catch_unwind(|| {
-                                let res = #env_ident.get_handle::<#impl_name>(#class, #second_ident);
+                                let res = env.get_handle::<#impl_name>(#class, obj);
 
                                 let #mut_kwrd r_obj = match res {
                                     Ok(v) => v,
                                     Err(e) => {
-                                        #env_ident.throw_new(#exc, format!("Failed to get handle for `{}` : {}", #diag, e.to_string())).ok();
+                                        env.throw_new(#exc, format!("Failed to get handle for `{}` : {}", #diag, e.to_string())).ok();
                                         return #null_mut;
                                     }
                                 };
 
-                                #res_binding #ret_no_result r_obj.#fn_call;
+                                #res_binding #ret_no_result r_obj.#fn_name(#fn_call_args);
 
                                 #match_res
                             });
@@ -592,7 +766,7 @@ pub fn generate_impl_functions(
                             match panic_res {
                                 Ok(_) => #ok_or_null,
                                 Err(e) => {
-                                    #env_ident.throw_new("java/lang/RuntimeException", &format!("`{}` panicked", #diag)).ok();
+                                    env.throw_new("java/lang/RuntimeException", &format!("`{}` panicked", #diag)).ok();
                                     #null_mut
                                 }
                             }
