@@ -79,6 +79,18 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>)
                     let ident = &segment.ident;
                     let ident_str = ident.to_string();
                     let name_str = name.to_string();
+
+                    if name_str == "destroy" {
+                        return Err(syn::Error::new_spanned(v, "Destroy method cannot have return type"))
+                    }
+
+                    if impl_name.is_some() {
+                        // restrict return type of Self::new()
+                        if ident_str != "Self" && ident_str != impl_name.unwrap().to_string() && name_str == "new" {
+                            return Err(syn::Error::new_spanned(v, "Return type must be a `Self` type"))
+                        }
+                    }
+
                     if ident_str != "Result" && !allowed_ret.contains(&&*ident_str) {
                         // special case - allow new() functions to return Self for the jniclass implementation
                         if name_str != "new" {
@@ -89,11 +101,6 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>)
                             }
                         } else {
                             return Err(syn::Error::new_spanned(ident, "Return type must be a Result<> type, primitive j type (jni::sys::*), or empty"))
-                        }
-                    } else if impl_name.is_some() {
-                        // restrict return type of Self::new()
-                        if ident_str != "Self" && ident_str != impl_name.unwrap().to_string() && name_str == "new" {
-                            return Err(syn::Error::new_spanned(v, "Return type must be a `Self` type"))
                         }
                     }
 
@@ -153,7 +160,13 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>)
 
                 }
 
-                _ => Err(syn::Error::new_spanned(_ty, "Return type must be a Result<> type, primitive j type (jni::sys::*), or empty"))
+                _ => {
+                    if name.to_string() == "destroy" {
+                        return Err(syn::Error::new_spanned(_ty, "Destroy method cannot have return type"));
+                    }
+
+                    Err(syn::Error::new_spanned(_ty, "Return type must be a Result<> type, primitive j type (jni::sys::*), or empty"))
+                }
             }
         }
 
@@ -443,6 +456,42 @@ pub fn generate_impl_functions(items: &Vec<ImplItem>, returns: &Vec<(ReturnType,
                             }
                         }
                     };
+                } else if fn_name == "destroy" {
+
+                    let mut_kwrd = if fn_is_mut {
+                        quote! { mut }
+                    } else {
+                        TokenStream::new()
+                    };
+
+                    stream = quote! {
+                        #[no_mangle]
+                        pub extern "C" fn #java_name(#fn_inputs) {
+                            use ::kmagick_rs::env::Utils;
+
+                            let panic_res = ::std::panic::catch_unwind(|| {
+                                let res = #env_ident.take_handle::<#impl_name>(#class, #second_ident);
+
+                                let #mut_kwrd r_obj = match res {
+                                    Ok(v) => v,
+                                    Err(e) => {
+                                        #env_ident.throw_new(#exc, format!("Failed to take handle for `{}` : {}", #diag, e.to_string())).ok();
+                                        return;
+                                    }
+                                };
+
+                                r_obj.#fn_call;
+                            });
+
+                            match panic_res {
+                                Ok(_) => (),
+                                Err(e) => {
+                                    #env_ident.throw_new("java/lang/RuntimeException", &format!("`{}` panicked", #diag)).ok();
+                                }
+                            }
+                        }
+                    };
+
                 } else {
                     
                     let ret_no_result = if is_returning && !is_result {
