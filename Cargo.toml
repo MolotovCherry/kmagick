@@ -1,30 +1,10 @@
-[package]
-name = "kmagick-rs"
-version = "1.0.0"
-edition = "2018"
+[workspace]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+members = [
+  "kmagick",
+  "proc-jni"
+]
 
-[lib]
-name ="kmagick"
-crate-type = ["cdylib"]
-
-[target.'cfg(target_os = "android")'.dependencies]
-android_logger = "0.10.1"
-
-[target.'cfg(not(target_os = "android"))'.dependencies]
-simplelog = "0.10.0"
-
-# disable hdri feature does not disable hdri. it only fixes a compile bug that happens
-# when hdri is disabled
-[dependencies]
-jni = "0.19.0"
-log = "0.4.14"
-lazy_static = "1.4.0"
-magick_rust = {version = "0.15.0", features = ["disable-hdri"] }
-
-[profile.release]
-opt-level = 3
-lto = true
-codegen-units = 1
-panic = 'abort'
+exclude = [
+  "bin_macro"
+]

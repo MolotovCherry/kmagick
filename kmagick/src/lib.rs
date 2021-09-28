@@ -1,15 +1,16 @@
 #![allow(non_snake_case)]
 #![feature(hash_drain_filter)]
+#![allow(dead_code)]
 
+#[macro_use]
+mod macros;
 mod drawing_wand;
 mod magick_wand;
 mod pixel_wand;
 mod utils;
-#[macro_use]
-mod macros;
 mod env;
+mod test;
 
-use jni::sys::{jobject, jobjectArray};
 use magick_rust;
 
 use log::{
@@ -27,9 +28,9 @@ use std::sync::Once;
 use jni::{
     JNIEnv
 };
-use jni::objects::{JObject, JString};
+use jni::objects::JObject;
 
-use crate::env::Cacher;
+use env::Cacher;
 
 //use utils::get_jstring;
 
@@ -81,7 +82,7 @@ pub extern fn Java_com_cherryleafroad_kmagick_Magick_nativeTerminate(env: JNIEnv
 
 /*#[no_mangle]
 pub extern fn Java_com_cherryleafroad_kmagick_Magick_magickQueryFonts(env: JNIEnv, _: JObject, pattern: JString) -> jobjectArray {
-    let pat = get_jstring(env, pattern);
+    let pat: String = env.get_string(pattern).unwrap().into();
 
     if let Some(v) = check_magick_exc!(env, magick_rust::magick_query_fonts(&*pat)) {
         let arr = check_magick_exc!(
