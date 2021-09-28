@@ -2,15 +2,14 @@ use std::collections::HashMap;
 
 use proc_macro2::{Ident, Span, TokenStream};
 use syn::punctuated::Punctuated;
-use syn::spanned::Spanned;
-use syn::token::{self, Comma};
-use syn::{FnArg, ImplItem, ItemImpl, Meta, NestedMeta, Pat, PathArguments, Receiver, ReturnType, Token, Type};
-use quote::{ToTokens, quote};
+use syn::token::Comma;
+use syn::{FnArg, ImplItem, ItemImpl, Meta, NestedMeta, Pat, PathArguments, ReturnType, Type};
+use quote::{quote, ToTokens};
 
 pub fn get_args(args: Vec<NestedMeta>) -> syn::Result<HashMap<String, String>> {
     let mut hm: HashMap<String, String> = HashMap::new();
 
-    let allowed_args = vec!["cls", "exc", "pkg"];
+    let allowed_args = vec!["cls", "exc", "pkg", "handler_trait"];
 
     if args.is_empty() {
         return Err(syn::Error::new(proc_macro2::Span::call_site(), format!("Attributes are required")))
@@ -234,7 +233,7 @@ pub fn validate_fn_args(fn_args: &Punctuated<FnArg, Comma>) -> syn::Result<()> {
     Ok(())
 }
 
-pub fn extract_two_params(fn_args: &Punctuated<FnArg, Comma>) -> syn::Result<(Ident, Ident)> {
+pub fn extract_two_params(fn_args: &Punctuated<FnArg, Comma>, name: &Ident) -> syn::Result<(Ident, Ident)> {
     let mut idents: Vec<&Ident> = vec![];
 
     for (i, arg) in fn_args.iter().enumerate() {
@@ -253,8 +252,14 @@ pub fn extract_two_params(fn_args: &Punctuated<FnArg, Comma>) -> syn::Result<(Id
         }
     }
 
+    let tk: Box<dyn ToTokens> = if idents.len() > 0 {
+        Box::new(fn_args)
+    } else {
+        Box::new(name)
+    };
+
     if idents.len() < 2 {
-        return Err(syn::Error::new_spanned(fn_args, "Missing minimum amount of required args (2; JNIEnv and JObject/JClass)"));
+        return Err(syn::Error::new_spanned(tk, "Missing minimum amount of required args (2; JNIEnv and JObject/JClass)"));
     }
 
     Ok((idents[0].clone(), idents[1].clone()))
@@ -331,7 +336,7 @@ pub fn impl_extract_two_params(items: &Vec<ImplItem>) -> syn::Result<Vec<(Ident,
 
     for item in items {
         if let ImplItem::Method(m) = item {
-            let two_params = extract_two_params(&m.sig.inputs)?;
+            let two_params = extract_two_params(&m.sig.inputs, &m.sig.ident)?;
             impl_idents.push(two_params);
         }
     }
@@ -363,7 +368,7 @@ pub fn impl_fn_args(input: &Punctuated<FnArg, Comma>) -> Punctuated<FnArg, Comma
 
     for arg in input {
         match arg {
-            FnArg::Typed(v) => {
+            FnArg::Typed(_) => {
                 new_punc.push(arg.clone())
             }
 
@@ -390,7 +395,14 @@ pub fn impl_is_fn_mut(input: &Punctuated<FnArg, Comma>) -> bool {
     false
 }
 
-pub fn generate_impl_functions(items: &Vec<ImplItem>, returns: &Vec<(ReturnType, bool)>, env_idents: &Vec<(Ident, Ident)>, namespace: (&String, bool, &Ident), exc: &str) -> syn::Result<Vec<TokenStream>> {
+pub fn generate_impl_functions(
+    items: &Vec<ImplItem>,
+    returns: &Vec<(ReturnType, bool)>,
+    env_idents: &Vec<(Ident, Ident)>,
+    namespace: (&String, bool, &Ident),
+    exc: &str,
+    handler_trait: Option<&String>
+) -> syn::Result<Vec<TokenStream>> {
     let mut funcs: Vec<TokenStream> = vec![];
 
     for (i, _fn) in items.iter().enumerate() {
@@ -427,6 +439,11 @@ pub fn generate_impl_functions(items: &Vec<ImplItem>, returns: &Vec<(ReturnType,
 
                 let java_name = class_to_ident(&class, &fn_name.to_string());
 
+                let handler_trait: TokenStream = match handler_trait {
+                    Some(v) => syn::parse_str(v),
+                    None => syn::parse_str("crate::env::Utils")
+                }?;
+
                 // special case for new fn
                 let stream: TokenStream;
                 if fn_name == "new" {
@@ -434,7 +451,7 @@ pub fn generate_impl_functions(items: &Vec<ImplItem>, returns: &Vec<(ReturnType,
                     stream = quote! {
                         #[no_mangle]
                         pub extern "C" fn #java_name(#fn_inputs) {
-                            use ::kmagick_rs::env::Utils;
+                            use #handler_trait;
 
                             let panic_res = ::std::panic::catch_unwind(|| {
                                 let r_obj = #impl_name::#fn_call;
@@ -467,7 +484,7 @@ pub fn generate_impl_functions(items: &Vec<ImplItem>, returns: &Vec<(ReturnType,
                     stream = quote! {
                         #[no_mangle]
                         pub extern "C" fn #java_name(#fn_inputs) {
-                            use ::kmagick_rs::env::Utils;
+                            use #handler_trait;
 
                             let panic_res = ::std::panic::catch_unwind(|| {
                                 let res = #env_ident.take_handle::<#impl_name>(#class, #second_ident);
@@ -554,7 +571,7 @@ pub fn generate_impl_functions(items: &Vec<ImplItem>, returns: &Vec<(ReturnType,
                     stream = quote! {
                         #[no_mangle]
                         pub extern "C" fn #java_name(#fn_inputs) #ret_type {
-                            use ::kmagick_rs::env::Utils;
+                            use #handler_trait;
 
                             let panic_res = ::std::panic::catch_unwind(|| {
                                 let res = #env_ident.get_handle::<#impl_name>(#class, #second_ident);

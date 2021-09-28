@@ -1,7 +1,7 @@
 use proc_macro::TokenStream;
 use proc_macro2::Span;
 use syn::{self, Expr, ReturnType};
-use quote::{ToTokens, TokenStreamExt, quote};
+use quote::{ToTokens, quote};
 
 mod utils;
 
@@ -22,7 +22,7 @@ pub fn jnimethod(attr: TokenStream, item: TokenStream) -> TokenStream {
         Ok(v) => v
     }
 
-    let env_ident = utils::extract_two_params(fn_inputs);
+    let env_ident = utils::extract_two_params(fn_inputs, &item_fn.sig.ident);
     let env_ident = match env_ident {
         Err(e) => return e.to_compile_error().into(),
         Ok(v) => v.0
@@ -159,6 +159,7 @@ pub fn jniclass(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let pkg = args.get("pkg");
     let cls = args.get("cls");
+    let handler_trait = args.get("handler_trait");
     if let Some(_) = pkg {
         if let Some(_) = cls {
             return syn::Error::new(Span::call_site(), "Can't use both pkg and cls attributes at same time").to_compile_error().into();
@@ -210,17 +211,13 @@ pub fn jniclass(attr: TokenStream, item: TokenStream) -> TokenStream {
         None => "java/lang/RuntimeException"
     };
 
-    let funcs = utils::generate_impl_functions(&item_impl_mod.items, &impl_returns, &env_idents, namespace, &exc);
+    let funcs = utils::generate_impl_functions(&item_impl_mod.items, &impl_returns, &env_idents, namespace, &exc, handler_trait);
     let funcs = match funcs {
         Ok(v) => v,
         Err(e) => return e.to_compile_error().into()
     };
 
-    //println!("{:#?}", funcs);
-
-    let mut stream = quote! {
-        #item_impl
-    };
+    let mut stream = item_impl.to_token_stream();
 
     for f in funcs {
         stream.extend(f);
