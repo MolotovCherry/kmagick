@@ -161,9 +161,9 @@ pub fn validate_fn_args(fn_args: &Punctuated<FnArg, Comma>, name: &Ident) -> syn
     ];
 
     let mut pos = 1;
-    let mut ident: Ident = Ident::new("", Span::call_site());
+    let mut ident: Ident = name.clone();
 
-    if fn_args.len() <= 2 {
+    if fn_args.len() < 2 {
         let span = if fn_args.len() == 0 {
             name.span()
         } else {
