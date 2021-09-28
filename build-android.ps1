@@ -79,11 +79,11 @@ if ($release) {
 
 
 if (!$expand) {
-    if ($release) {
-      xargo build --color=always --target=$target $flags
-    } else {
+    #if ($release) {
+    #  xargo build --color=always --target=$target $flags
+    #} else {
       cargo build --color=always --target=$target $flags
-    }
+    #}
 } else {
     cargo expand --color=always --target=$target $flags
 }

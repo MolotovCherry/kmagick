@@ -50,11 +50,11 @@ if ($release) {
 }
 
 if (!$expand) {
-    if ($release) {
-      xargo build --target=$target $flags
-    } else {
+    #if ($release) {
+    #  xargo build --target=$target $flags
+    #} else {
       cargo build --target=$target $flags
-    }
+    #}
 } else {
     cargo expand --target=$target $flags
 }

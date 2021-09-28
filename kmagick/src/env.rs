@@ -14,8 +14,7 @@ use log::error;
 use super::magick_wand::MagickWand;
 use super::pixel_wand::PixelWand;
 use super::drawing_wand::DrawingWand;
-
-type Result<T> = std::result::Result<T, Box<dyn Error>>;
+use super::utils::Result;
 
 lazy_static! {
     pub static ref CLASS_CACHE: Mutex<HashMap<String, GlobalRef>> = Mutex::new(HashMap::new());
