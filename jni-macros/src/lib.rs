@@ -180,7 +180,7 @@ pub fn jniclass(attr: TokenStream, item: TokenStream) -> TokenStream {
         Err(e) => return e.to_compile_error().into()
     };
 
-    //println!("{:#?}", item_impl);
+    let funcs = utils::generate_impl_functions(&item_impl_mod.items, &impl_returns, &env_idents);
 
     f
 }

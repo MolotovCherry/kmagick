@@ -2,9 +2,5 @@
 
 members = [
   "kmagick",
-  "proc-jni"
-]
-
-exclude = [
-  "bin_macro"
+  "jni-macros"
 ]

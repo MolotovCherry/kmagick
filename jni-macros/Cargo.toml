@@ -1,5 +1,5 @@
 [package]
-name = "proc-jni"
+name = "jni-macros"
 version = "0.1.0"
 edition = "2018"
 

@@ -303,3 +303,14 @@ pub fn validate_impl_returns(items: &Vec<ImplItem>, self_type: &Type) -> syn::Re
 
     Ok(impl_returns)
 }
+
+pub fn generate_impl_functions(items: &Vec<ImplItem>, returns: &Vec<(ReturnType, bool)>, env_idents: &Vec<Ident>) {
+    let funcs: Vec<TokenStream> = vec![];
+
+    for _fn in items {
+        let is_returning = match java_return {
+            ReturnType::Default => false,
+            ReturnType::Type(_, _) => true
+        };
+    }
+}
