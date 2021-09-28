@@ -1,7 +1,7 @@
 use proc_macro::TokenStream;
 use proc_macro2::Span;
 use syn::{self, Expr, ReturnType};
-use quote::{ToTokens, quote};
+use quote::{ToTokens, TokenStreamExt, quote};
 
 mod utils;
 
@@ -16,9 +16,16 @@ pub fn jnimethod(attr: TokenStream, item: TokenStream) -> TokenStream {
     };
 
     let fn_inputs = &item_fn.sig.inputs;
-    let env_ident = match utils::validate_fn_args(fn_inputs, &item_fn.sig.ident) {
+    let res = utils::validate_fn_args(fn_inputs);
+    match res {
         Err(e) => return e.to_compile_error().into(),
         Ok(v) => v
+    }
+
+    let env_ident = utils::extract_two_params(fn_inputs);
+    let env_ident = match env_ident {
+        Err(e) => return e.to_compile_error().into(),
+        Ok(v) => v.0
     };
 
     let name = &item_fn.sig.ident;
@@ -66,7 +73,7 @@ pub fn jnimethod(attr: TokenStream, item: TokenStream) -> TokenStream {
     let inner_body = match is_result {
         true => {
             quote! {
-                let res = #fn_call
+                let res = #fn_call;
                 match res {
                     Ok(v) => return v,
                     Err(e) => {
@@ -80,11 +87,11 @@ pub fn jnimethod(attr: TokenStream, item: TokenStream) -> TokenStream {
         false => {
             if is_returning {
                 quote! {
-                    return #fn_call
+                    return #fn_call;
                 }
             } else {
                 quote! {
-                    #fn_call
+                    #fn_call;
                 }
             }
         }
@@ -141,8 +148,6 @@ pub fn jniignore(_: TokenStream, item: TokenStream) -> TokenStream {
 
 #[proc_macro_attribute]
 pub fn jniclass(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let f = item.clone();
-    
     let item_impl = syn::parse_macro_input!(item as syn::ItemImpl);
     let mut item_impl_mod = item_impl.clone();
     let attrs = syn::parse_macro_input!(attr as syn::AttributeArgs);
@@ -165,22 +170,61 @@ pub fn jniclass(attr: TokenStream, item: TokenStream) -> TokenStream {
         }
     }
 
+    let name = utils::extract_impl_name(&*item_impl_mod.self_ty);
+    let name = match name {
+        Ok(v) => v,
+        Err(e) => return e.to_compile_error().into()
+    };
+
+    // (data, is_pkg *, ident)
+    // * as opposed to is_cls
+    let namespace = if pkg.is_some() {
+        (pkg.unwrap(), true, &name)
+    } else {
+        (cls.unwrap(), false, &name)
+    };
+
     // filter out ignored methods
     utils::filter_out_ignored(&mut item_impl_mod);
 
-    let env_idents = utils::validate_impl_args(&item_impl_mod.items);
+    let vl = utils::validate_impl_args(&item_impl_mod.items);
+    match vl {
+        Ok(v) => v,
+        Err(e) => return e.to_compile_error().into()
+    };
+
+    let env_idents = utils::impl_extract_two_params(&item_impl_mod.items);
     let env_idents = match env_idents {
         Ok(v) => v,
         Err(e) => return e.to_compile_error().into()
     };
 
-    let impl_returns = utils::validate_impl_returns(&item_impl_mod.items, &*item_impl_mod.self_ty);
+    let impl_returns = utils::validate_impl_returns(&item_impl_mod.items, &name);
     let impl_returns = match impl_returns {
         Ok(v) => v,
         Err(e) => return e.to_compile_error().into()
     };
+    
+    let exc = match args.get("exc") {
+        Some(v) => &*v,
+        None => "java/lang/RuntimeException"
+    };
 
-    let funcs = utils::generate_impl_functions(&item_impl_mod.items, &impl_returns, &env_idents);
+    let funcs = utils::generate_impl_functions(&item_impl_mod.items, &impl_returns, &env_idents, namespace, &exc);
+    let funcs = match funcs {
+        Ok(v) => v,
+        Err(e) => return e.to_compile_error().into()
+    };
 
-    f
+    //println!("{:#?}", funcs);
+
+    let mut stream = quote! {
+        #item_impl
+    };
+
+    for f in funcs {
+        stream.extend(f);
+    }
+
+    stream.into()
 }
