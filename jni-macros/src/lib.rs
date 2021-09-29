@@ -28,7 +28,7 @@ pub fn jnimethod(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let name = &item_fn.sig.ident;
     let name_str = name.to_string();
-    let (java_return, is_result) = match utils::extract_return(&item_fn.sig.output, &name, None) {
+    let (java_return, is_result) = match utils::extract_return(&item_fn.sig.output, &name, None, &utils::top_attrs(&item_fn.attrs)) {
         Ok(v) => v,
         Err(e) => return e.to_compile_error().into()
     };
@@ -140,6 +140,20 @@ pub fn jniignore(_: TokenStream, item: TokenStream) -> TokenStream {
 
 #[proc_macro_attribute]
 pub fn jnistatic(_: TokenStream, item: TokenStream) -> TokenStream {
+    // even though this is a no-op, this validates that it is an ItemFn and not something else
+    let item_fn = syn::parse_macro_input!(item as syn::ItemFn);
+    item_fn.to_token_stream().into()
+}
+
+#[proc_macro_attribute]
+pub fn jnidestroy(_: TokenStream, item: TokenStream) -> TokenStream {
+    // even though this is a no-op, this validates that it is an ItemFn and not something else
+    let item_fn = syn::parse_macro_input!(item as syn::ItemFn);
+    item_fn.to_token_stream().into()
+}
+
+#[proc_macro_attribute]
+pub fn jninew(_: TokenStream, item: TokenStream) -> TokenStream {
     // even though this is a no-op, this validates that it is an ItemFn and not something else
     let item_fn = syn::parse_macro_input!(item as syn::ItemFn);
     item_fn.to_token_stream().into()

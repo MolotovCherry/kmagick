@@ -13,7 +13,7 @@ mod utils;
 use jni_tools::Cacher;
 use utils::Result;
 use jni::sys::jobjectArray;
-use jni_macros::jniclass;
+use jni_macros::{jniclass, jnidestroy, jninew};
 use magick_rust;
 
 use log::{LevelFilter, info};
@@ -30,7 +30,7 @@ use jni::{
     JNIEnv
 };
 use jni::objects::{JObject, JString};
-use std::panic;
+use jni_tools::setup_panic;
 
 
 static INIT: Once = Once::new();
@@ -39,7 +39,8 @@ fn init() {
     INIT.call_once(|| {
         init_logger();
 
-        panic::set_hook(Box::new(|_| { }));
+        // empty panic handler
+        setup_panic!();
     });
 }
 
@@ -73,26 +74,16 @@ struct Magick {
 
 #[jniclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad.kmagick/MagickException")]
 impl Magick {
-    fn new() -> Self {
-        Self {
-            is_init: false
-        }
-    }
-
-    fn nativeInit(&mut self) {
+    #[jninew]
+    fn nativeInit() -> Self {
         init();
         magick_rust::magick_wand_genesis();
-        self.is_init = true;
-        
-        
-        info!("Magick::nativeInit() Initialized native environment");
-    }
 
-    fn nativeTerminate(&self, env: JNIEnv) {
-        info!("Magick::nativeTerminate() Terminating environment");
-        info!("I got a new var : {}", self.is_init);
-        magick_rust::magick_wand_terminus();
-        env.clear_cache();
+        info!("Magick::nativeInit() Initialized native environment");
+
+        Self {
+            is_init: true
+        }
     }
 
     fn magickQueryFonts(&self, env: JNIEnv, _: JObject, pattern: JString) -> Result<jobjectArray> {
@@ -105,7 +96,11 @@ impl Magick {
         Ok(std::ptr::null_mut())
     }
 
-    fn destroy(&self) {
-        println!("destroy");
+    #[jnidestroy]
+    fn nativeTerminate(&self, env: JNIEnv) {
+        info!("Magick::nativeTerminate() Terminating environment");
+        info!("I got a new var : {}", self.is_init);
+        magick_rust::magick_wand_terminus();
+        env.clear_cache();
     }
 }

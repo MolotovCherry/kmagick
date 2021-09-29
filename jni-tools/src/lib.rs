@@ -12,6 +12,8 @@ use jni::{
 use lazy_static::lazy_static;
 use log::error;
 
+pub mod macros;
+
 pub type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
 lazy_static! {

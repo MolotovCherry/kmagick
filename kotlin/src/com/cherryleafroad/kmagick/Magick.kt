@@ -3,14 +3,18 @@ package com.cherryleafroad.kmagick
 // base exception class for all imagemagick exceptions
 open class MagickException(message: String) : Exception(message)
 
-object Magick {
+class Magick {
     init {
         // load library and start genesis
-        System.loadLibrary("jmagick")
+        System.loadLibrary("kmagick")
     }
 
-    private external fun nativeInit();
-    private external fun nativeTerminate();
+    var handle: Long? = null
+
+    @Throws(MagickException::class)
+    private external fun nativeInit()
+    @Throws(MagickException::class)
+    private external fun nativeTerminate()
 
     @Throws(MagickException::class)
     external fun magickQueryFonts(pattern: String): Array<String>?

@@ -67,7 +67,7 @@ pub fn fix_class_path(class: &String, slashes: bool) -> String {
 }
 
 // Ok result is (ReturnType, is_result_type)
-pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>) -> syn::Result<(ReturnType, bool)> {
+pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>, attributes: &Vec<String>) -> syn::Result<(ReturnType, bool)> {
     let allowed_ret = vec![
         "jarray", "jboolean", "jbooleanArray", "jbyte", "jbyteArray",
         "jchar", "jcharArray", "jclass", "jdouble", "jdoubleArray",
@@ -89,22 +89,21 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>)
 
                     let ident = &segment.ident;
                     let ident_str = ident.to_string();
-                    let name_str = name.to_string();
 
-                    if name_str == "destroy" {
+                    if attributes.contains(&"jnidestroy".to_string()) {
                         return Err(syn::Error::new_spanned(v, "Destroy method cannot have return type"))
                     }
 
                     if impl_name.is_some() {
                         // restrict return type of Self::new()
-                        if ident_str != "Self" && ident_str != impl_name.unwrap().to_string() && name_str == "new" {
+                        if ident_str != "Self" && ident_str != impl_name.unwrap().to_string() && attributes.contains(&"jninew".to_string()) {
                             return Err(syn::Error::new_spanned(v, "Return type must be a `Self` type"))
                         }
                     }
 
                     if ident_str != "Result" && !allowed_ret.contains(&&*ident_str) {
                         // special case - allow new() functions to return Self for the jniclass implementation
-                        if name_str != "new" {
+                        if !attributes.contains(&"jninew".to_string()) {
                             return Err(syn::Error::new_spanned(ident, "Return type must be a Result<> type, primitive j type (jni::sys::*), or empty"))
                         } else if impl_name.is_some() {
                             if ident_str != "Self" && ident_str != impl_name.unwrap().to_string() {
@@ -172,7 +171,7 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>)
                 }
 
                 _ => {
-                    if name.to_string() == "destroy" {
+                    if attributes.contains(&"jnidestroy".to_string()) {
                         return Err(syn::Error::new_spanned(_ty, "Destroy method cannot have return type"));
                     }
 
@@ -182,7 +181,7 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>)
         }
 
         _ => {
-            if impl_name.is_some() && name.to_string() == "new" {
+            if impl_name.is_some() && attributes.contains(&"jninew".to_string()) {
                 Err(syn::Error::new_spanned(name, "Impl new() must return `Self` type"))
             } else {
                 Ok((ReturnType::Default, false))
@@ -332,7 +331,7 @@ pub fn validate_impl_returns(items: &Vec<ImplItem>, name: &Ident) -> syn::Result
     let mut impl_returns = vec![];
     for item in items {
         if let ImplItem::Method(m) = item {
-            impl_returns.push(extract_return(&m.sig.output, &m.sig.ident, Some(name))?);
+            impl_returns.push(extract_return(&m.sig.output, &m.sig.ident, Some(name), &top_attrs(&m.attrs))?);
         }
     }
 
@@ -652,7 +651,7 @@ pub fn generate_impl_functions(
 
                 // special case for new fn
                 let stream: TokenStream;
-                if fn_name == "new" {
+                if attrs.contains(&"jninew".to_string()) {
 
                     stream = quote! {
                         #[no_mangle]
@@ -701,7 +700,7 @@ pub fn generate_impl_functions(
                         }
                     };
                 
-                } else if fn_name == "destroy" {
+                } else if attrs.contains(&"jnidestroy".to_string()) {
 
                     let mut_kwrd = if fn_is_mut {
                         quote! { mut }
