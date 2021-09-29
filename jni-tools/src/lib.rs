@@ -5,6 +5,7 @@ use std::collections::HashMap;
 
 use jni::objects::{JFieldID, JStaticFieldID, JString};
 use jni::signature::JavaType;
+use jni::sys::jobject;
 use jni::{
     objects::{GlobalRef, JClass, JMethodID, JObject, JStaticMethodID, JValue},
     JNIEnv,
@@ -311,7 +312,7 @@ impl<'a> Kotlin for JNIEnv<'a> {
             // get a new one as long as we're in the guarded scope.
             drop(mbox.try_lock().unwrap());
 
-            self.cache_set_field(cls, obj, field, "Ljava/lang/Long;", JValue::from(JObject::null()))?;
+            self.cache_set_field(cls, obj, field, "Ljava/lang/Long;", JValue::from(::std::ptr::null_mut() as jobject))?;
 
             mbox
         };
