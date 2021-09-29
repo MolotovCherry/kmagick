@@ -142,7 +142,18 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
                                             ok_res = v.clone();
                                         }
 
-                                        _ => return Err(syn::Error::new_spanned(&segment, "Wrong type"))
+                                        syn::Type::Tuple(t) => {
+                                            // this is an empty () ok type
+                                            // so just return no return type then
+                                            if t.elems.len() == 0 {
+                                                return Ok((ReturnType::Default, true));
+                                            }
+                                            return Err(syn::Error::new_spanned(_ok_res, "Must be an empty ok () type"))
+                                        }
+
+                                        _ => {
+                                            return Err(syn::Error::new_spanned(_ok_res, "Illegal type"))
+                                        }
                                     }
                                 }
 
@@ -168,6 +179,15 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
                         }
                     }
 
+                }
+
+                syn::Type::Tuple(t) => {
+                    // this is an empty () ok type
+                    // so just return no return type then
+                    if t.elems.len() == 0 {
+                        return Ok((ReturnType::Default, false));
+                    }
+                    return Err(syn::Error::new_spanned(_ty, "Must be an empty ok () type"))
                 }
 
                 _ => {
@@ -630,6 +650,21 @@ pub fn generate_impl_functions(
 
 
                 //
+                //
+
+                let v_or_underscore = if is_returning {
+                    quote! { v }
+                } else {
+                    quote! { _ }
+                };
+
+                let v_or_unit = if is_returning {
+                    quote! { v }
+                } else {
+                    quote! { () }
+                };
+
+                //
                 // matching for result types
                 //
                 let res_binding = if is_result {
@@ -643,10 +678,10 @@ pub fn generate_impl_functions(
                 let match_res = if is_result {
                     quote! {
                         match c_res {
-                            Ok(v) => v,
+                            Ok(#v_or_underscore) => #v_or_unit,
                             Err(e) => {
                                 env.throw_new(#exc, format!("`{}` threw an exception : {}", #diag, e.to_string())).ok();
-                                ::std::ptr::null_mut()
+                                #null_mut
                             }
                         }
                     }
@@ -665,21 +700,6 @@ pub fn generate_impl_functions(
                     }
                 } else {
                     quote! { ; }
-                };
-
-                //
-                //
-
-                let v_or_underscore = if is_returning {
-                    quote! { v }
-                } else {
-                    quote! { _ }
-                };
-
-                let v_or_unit = if is_returning {
-                    quote! { v }
-                } else {
-                    quote! { () }
                 };
 
 
