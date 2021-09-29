@@ -90,20 +90,20 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
                     let ident = &segment.ident;
                     let ident_str = ident.to_string();
 
-                    if attributes.contains(&"jnidestroy".to_string()) {
+                    if attributes.contains(&"jni_destroy".to_string()) {
                         return Err(syn::Error::new_spanned(v, "Destroy method cannot have return type"))
                     }
 
                     if impl_name.is_some() {
                         // restrict return type of Self::new()
-                        if ident_str != "Self" && ident_str != impl_name.unwrap().to_string() && attributes.contains(&"jninew".to_string()) {
+                        if ident_str != "Self" && ident_str != impl_name.unwrap().to_string() && attributes.contains(&"jni_new".to_string()) {
                             return Err(syn::Error::new_spanned(v, "Return type must be a `Self` type"))
                         }
                     }
 
                     if ident_str != "Result" && !allowed_ret.contains(&&*ident_str) {
                         // special case - allow new() functions to return Self for the jniclass implementation
-                        if !attributes.contains(&"jninew".to_string()) {
+                        if !attributes.contains(&"jni_new".to_string()) {
                             return Err(syn::Error::new_spanned(ident, "Return type must be a Result<> type, primitive j type (jni::sys::*), or empty"))
                         } else if impl_name.is_some() {
                             if ident_str != "Self" && ident_str != impl_name.unwrap().to_string() {
@@ -171,7 +171,7 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
                 }
 
                 _ => {
-                    if attributes.contains(&"jnidestroy".to_string()) {
+                    if attributes.contains(&"jni_destroy".to_string()) {
                         return Err(syn::Error::new_spanned(_ty, "Destroy method cannot have return type"));
                     }
 
@@ -181,7 +181,7 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
         }
 
         _ => {
-            if impl_name.is_some() && attributes.contains(&"jninew".to_string()) {
+            if impl_name.is_some() && attributes.contains(&"jni_new".to_string()) {
                 Err(syn::Error::new_spanned(name, "Impl new() must return `Self` type"))
             } else {
                 Ok((ReturnType::Default, false))
@@ -228,7 +228,7 @@ pub fn validate_fn_args(fn_args: &Punctuated<FnArg, Comma>, is_impl: bool, attrs
                         }
 
                         if is_impl && ty.ident.to_string().to_lowercase() == "jclass" {
-                            if !attrs.contains(&"jnistatic".to_string()) {
+                            if !attrs.contains(&"jni_static".to_string()) {
                                 return Err(syn::Error::new_spanned(v, "JClass is not allowed in second position on impl methods"));
                             }
                         }
@@ -284,7 +284,7 @@ pub fn filter_out_ignored(item_impl: &mut ItemImpl) {
                 let s = &attr.path.segments;
                 for seg in s {
                     let ident = seg.ident.to_string();
-                    if ident == "jniignore" {
+                    if ident == "jni_ignore" {
                         return false;
                     }
                 }
@@ -600,16 +600,6 @@ pub fn generate_impl_functions(
                     TokenStream::new()
                 };
 
-                let ok_or_null = if is_returning {
-                    quote! {
-                        ::std::ptr::null_mut()
-                    }
-                } else {
-                    quote! {
-                        ()
-                    }
-                };
-
 
                 //
                 // matching for result types
@@ -625,10 +615,10 @@ pub fn generate_impl_functions(
                 let match_res = if is_result {
                     quote! {
                         match c_res {
-                            Ok(v) => return v,
+                            Ok(v) => v,
                             Err(e) => {
                                 env.throw_new(#exc, format!("`{}` threw an exception : {}", #diag, e.to_string())).ok();
-                                return ::std::ptr::null_mut();
+                                ::std::ptr::null_mut()
                             }
                         }
                     }
@@ -639,27 +629,43 @@ pub fn generate_impl_functions(
                 // end matching for result types
                 //
 
-                let ret_no_result = if is_returning && !is_result {
-                    quote! { return }
+                let res_semicolon = if is_returning {
+                    if is_result {
+                        quote! { ; }
+                    } else {
+                        TokenStream::new()
+                    }
                 } else {
-                    TokenStream::new()
+                    quote! { ; }
                 };
 
                 //
                 //
 
+                let v_or_underscore = if is_returning {
+                    quote! { v }
+                } else {
+                    quote! { _ }
+                };
+
+                let v_or_unit = if is_returning {
+                    quote! { v }
+                } else {
+                    quote! { () }
+                };
+
 
                 // special case for new fn
                 let stream: TokenStream;
-                if attrs.contains(&"jninew".to_string()) {
+                if attrs.contains(&"jni_new".to_string()) {
 
                     stream = quote! {
                         #[no_mangle]
-                        pub extern "C" fn #java_name(env: JNIEnv#inputs) {
+                        pub extern "system" fn #java_name(env: JNIEnv#inputs) {
                             use ::jni_tools::Handle;
                             use ::jni_tools::Cacher;
 
-                            let panic_res = ::std::panic::catch_unwind(|| {
+                            let p_res = ::std::panic::catch_unwind(|| {
                                 let r_obj = #impl_name::#fn_name(#fn_call_args);
                                 let res = env.set_handle(#handle_cls, obj, r_obj);
 
@@ -671,7 +677,7 @@ pub fn generate_impl_functions(
                                 }
                             });
 
-                            match panic_res {
+                            match p_res {
                                 Ok(_) => (),
                                 Err(e) => {
                                     env.throw_new("java/lang/RuntimeException", &format!("`{}` panicked", #diag)).ok();
@@ -679,19 +685,19 @@ pub fn generate_impl_functions(
                             }
                         }
                     };
-                } else if attrs.contains(&"jnistatic".to_string()) {
+                } else if attrs.contains(&"jni_static".to_string()) {
 
                     stream = quote! {
                         #[no_mangle]
-                        pub extern "C" fn #java_name(env: JNIEnv#inputs) #ret_type {
-                            let panic_res = ::std::panic::catch_unwind(|| {
-                                #res_binding #ret_no_result #impl_name::#fn_name(#fn_call_args);
+                        pub extern "system" fn #java_name(env: JNIEnv#inputs) #ret_type {
+                            let p_res = ::std::panic::catch_unwind(|| {
+                                #res_binding #impl_name::#fn_name(#fn_call_args)#res_semicolon
 
                                 #match_res
                             });
 
-                            match panic_res {
-                                Ok(_) => #ok_or_null,
+                            match p_res {
+                                Ok(#v_or_underscore) => #v_or_unit,
                                 Err(e) => {
                                     env.throw_new("java/lang/RuntimeException", &format!("`{}` panicked", #diag)).ok();
                                     #null_mut
@@ -700,7 +706,7 @@ pub fn generate_impl_functions(
                         }
                     };
                 
-                } else if attrs.contains(&"jnidestroy".to_string()) {
+                } else if attrs.contains(&"jni_destroy".to_string()) {
 
                     let mut_kwrd = if fn_is_mut {
                         quote! { mut }
@@ -710,11 +716,11 @@ pub fn generate_impl_functions(
 
                     stream = quote! {
                         #[no_mangle]
-                        pub extern "C" fn #java_name(env: JNIEnv#inputs) {
+                        pub extern "system" fn #java_name(env: JNIEnv#inputs) {
                             use ::jni_tools::Handle;
                             use ::jni_tools::Cacher;
 
-                            let panic_res = ::std::panic::catch_unwind(|| {
+                            let p_res = ::std::panic::catch_unwind(|| {
                                 let res = env.take_handle::<#impl_name>(#handle_cls, obj);
 
                                 let #mut_kwrd r_obj = match res {
@@ -728,7 +734,7 @@ pub fn generate_impl_functions(
                                 r_obj.#fn_name(#fn_call_args);
                             });
 
-                            match panic_res {
+                            match p_res {
                                 Ok(_) => (),
                                 Err(e) => {
                                     env.throw_new("java/lang/RuntimeException", &format!("`{}` panicked", #diag)).ok();
@@ -747,11 +753,11 @@ pub fn generate_impl_functions(
 
                     stream = quote! {
                         #[no_mangle]
-                        pub extern "C" fn #java_name(env: JNIEnv#inputs) #ret_type {
+                        pub extern "system" fn #java_name(env: JNIEnv#inputs) #ret_type {
                             use ::jni_tools::Handle;
                             use ::jni_tools::Cacher;
 
-                            let panic_res = ::std::panic::catch_unwind(|| {
+                            let p_res = ::std::panic::catch_unwind(|| {
                                 let res = env.get_handle::<#impl_name>(#handle_cls, obj);
 
                                 let #mut_kwrd r_obj = match res {
@@ -763,13 +769,13 @@ pub fn generate_impl_functions(
                                     }
                                 };
 
-                                #res_binding #ret_no_result r_obj.#fn_name(#fn_call_args);
+                                #res_binding r_obj.#fn_name(#fn_call_args)#res_semicolon
 
                                 #match_res
                             });
 
-                            match panic_res {
-                                Ok(_) => #ok_or_null,
+                            match p_res {
+                                Ok(#v_or_underscore) => #v_or_unit,
                                 Err(e) => {
                                     env.throw_new("java/lang/RuntimeException", &format!("`{}` panicked", #diag)).ok();
                                     #null_mut

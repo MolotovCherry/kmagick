@@ -10,10 +10,10 @@ mod magick_wand;
 mod pixel_wand;
 mod utils;
 
-use jni_tools::Cacher;
+use jni_tools::{Cacher, Utils};
 use utils::Result;
-use jni::sys::jobjectArray;
-use jni_macros::{jniclass, jnidestroy, jninew};
+use jni::sys::{jobjectArray, jsize};
+use jni_macros::{jni_class, jni_static};
 use magick_rust;
 
 use log::{LevelFilter, info};
@@ -68,39 +68,38 @@ fn init_logger() {
     );
 }
 
-struct Magick {
-    is_init: bool
-}
+struct Magick { }
 
-#[jniclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad.kmagick/MagickException")]
+#[jni_class(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad.kmagick/MagickException")]
 impl Magick {
-    #[jninew]
-    fn nativeInit() -> Self {
+    #[jni_static]
+    fn nativeInit() {
         init();
         magick_rust::magick_wand_genesis();
 
         info!("Magick::nativeInit() Initialized native environment");
-
-        Self {
-            is_init: true
-        }
     }
 
-    fn magickQueryFonts(&self, env: JNIEnv, _: JObject, pattern: JString) -> Result<jobjectArray> {
-        let pat: String = env.get_string(pattern).unwrap().into();
+    #[jni_static]
+    fn magickQueryFonts(env: JNIEnv, _: JObject, pattern: JString) -> Result<jobjectArray> {
+        let pat: String = env.get_jstring(pattern)?;
 
         let fonts = magick_rust::magick_query_fonts(&*pat)?;
         
-        //let arr = env.new_object_array(v.len(), "java/lang/String", initial_element);
+        let arr = env.new_object_array(fonts.len() as jsize, "java/lang/String", JObject::null())?;
+        for (i, font) in fonts.iter().enumerate() {
+            let value = env.new_string(font)?;
+            env.set_object_array_element(arr, i as jsize, value)?;
+        }
 
-        Ok(std::ptr::null_mut())
+        Ok(arr)
     }
 
-    #[jnidestroy]
-    fn nativeTerminate(&self, env: JNIEnv) {
-        info!("Magick::nativeTerminate() Terminating environment");
-        info!("I got a new var : {}", self.is_init);
+    #[jni_static]
+    fn nativeTerminate(env: JNIEnv) {
         magick_rust::magick_wand_terminus();
         env.clear_cache();
+
+        info!("Magick::nativeTerminate() Terminated environment");
     }
 }

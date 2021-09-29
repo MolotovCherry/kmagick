@@ -6,7 +6,7 @@ use quote::{ToTokens, quote};
 mod utils;
 
 #[proc_macro_attribute]
-pub fn jnimethod(attr: TokenStream, item: TokenStream) -> TokenStream {
+pub fn jni_method(attr: TokenStream, item: TokenStream) -> TokenStream {
     let item_fn = syn::parse_macro_input!(item as syn::ItemFn);
     let attrs = syn::parse_macro_input!(attr as syn::AttributeArgs);
 
@@ -62,68 +62,76 @@ pub fn jnimethod(attr: TokenStream, item: TokenStream) -> TokenStream {
     };
 
     // change the function output depending on whether it's a result type or not
-    let inner_body = match is_result {
-        true => {
-            quote! {
-                let res = #name(#fn_call);
-                match res {
-                    Ok(v) => return v,
-                    Err(e) => {
-                        env.throw_new(#exc, e.to_string()).ok();
-                        return ::std::ptr::null_mut();
-                    }
+    let match_res = if is_result {
+        quote! {
+            match c_res {
+                Ok(v) => v,
+                Err(e) => {
+                    env.throw_new(#exc, e.to_string()).ok();
+                    ::std::ptr::null_mut()
                 }
             }
         }
-
-        false => {
-            if is_returning {
-                quote! {
-                    return #name(#fn_call);
-                }
-            } else {
-                quote! {
-                    #name(#fn_call);
-                }
-            }
-        }
+    } else {
+        proc_macro2::TokenStream::new()
     };
 
-    let panic_body = match is_returning {
-        true => {
-            quote! {
-                match panic_res {
-                    Ok(_) => ::std::ptr::null_mut(),
-                    Err(e) => {
-                        env.throw_new("java/lang/RuntimeException", &format!("`{}()` panicked", #name_str)).ok();
-                        ::std::ptr::null_mut()
-                    }
-                }
-            }
+    let res_binding = if is_result {
+        quote! {
+            let c_res =
         }
+    } else {
+        proc_macro2::TokenStream::new()
+    };
 
-        false => {
-            quote! {
-                match panic_res {
-                    Ok(_) => (),
-                    Err(e) => {
-                        env.throw_new("java/lang/RuntimeException", &format!("`{}()` panicked", #name_str)).ok();
-                    }
-                }
-            }
+    let res_semicolon = if is_returning {
+        if is_result {
+            quote! { ; }
+        } else {
+            proc_macro2::TokenStream::new()
         }
+    } else {
+        quote! { ; }
+    };
+
+    let null_mut = if is_returning {
+        quote! {
+            ::std::ptr::null_mut()
+        }
+    } else {
+        proc_macro2::TokenStream::new()
+    };
+
+    let v_or_underscore = if is_returning {
+        quote! { v }
+    } else {
+        quote! { _ }
+    };
+
+    let v_or_unit = if is_returning {
+        quote! { v }
+    } else {
+        quote! { () }
     };
 
     let new_tokens = quote! {
         #item_fn
 
         #[no_mangle]
-        pub extern "C" fn #java_fn(env: JNIEnv#fn_inputs) #java_return {
-            let panic_res = ::std::panic::catch_unwind(|| {
-                #inner_body
+        pub extern "system" fn #java_fn(env: JNIEnv#fn_inputs) #java_return {
+            let p_res = ::std::panic::catch_unwind(|| {
+                #res_binding #name(#fn_call)#res_semicolon
+
+                #match_res
             });
 
-            #panic_body
+            match p_res {
+                Ok(#v_or_underscore) => #v_or_unit,
+                Err(e) => {
+                    env.throw_new("java/lang/RuntimeException", &format!("`{}()` panicked", #name_str)).ok();
+                    #null_mut
+                }
+            }
         }
     };
 
@@ -132,35 +140,35 @@ pub fn jnimethod(attr: TokenStream, item: TokenStream) -> TokenStream {
 
 /// Don't generate an implementation for a method in an impl
 #[proc_macro_attribute]
-pub fn jniignore(_: TokenStream, item: TokenStream) -> TokenStream {
+pub fn jni_ignore(_: TokenStream, item: TokenStream) -> TokenStream {
     // even though this is a no-op, this validates that it is an ItemFn and not something else
     let item_fn = syn::parse_macro_input!(item as syn::ItemFn);
     item_fn.to_token_stream().into()
 }
 
 #[proc_macro_attribute]
-pub fn jnistatic(_: TokenStream, item: TokenStream) -> TokenStream {
+pub fn jni_static(_: TokenStream, item: TokenStream) -> TokenStream {
     // even though this is a no-op, this validates that it is an ItemFn and not something else
     let item_fn = syn::parse_macro_input!(item as syn::ItemFn);
     item_fn.to_token_stream().into()
 }
 
 #[proc_macro_attribute]
-pub fn jnidestroy(_: TokenStream, item: TokenStream) -> TokenStream {
+pub fn jni_destroy(_: TokenStream, item: TokenStream) -> TokenStream {
     // even though this is a no-op, this validates that it is an ItemFn and not something else
     let item_fn = syn::parse_macro_input!(item as syn::ItemFn);
     item_fn.to_token_stream().into()
 }
 
 #[proc_macro_attribute]
-pub fn jninew(_: TokenStream, item: TokenStream) -> TokenStream {
+pub fn jni_new(_: TokenStream, item: TokenStream) -> TokenStream {
     // even though this is a no-op, this validates that it is an ItemFn and not something else
     let item_fn = syn::parse_macro_input!(item as syn::ItemFn);
     item_fn.to_token_stream().into()
 }
 
 #[proc_macro_attribute]
-pub fn jniclass(attr: TokenStream, item: TokenStream) -> TokenStream {
+pub fn jni_class(attr: TokenStream, item: TokenStream) -> TokenStream {
     let item_impl = syn::parse_macro_input!(item as syn::ItemImpl);
     let mut item_impl_mod = item_impl.clone();
     let attrs = syn::parse_macro_input!(attr as syn::AttributeArgs);
