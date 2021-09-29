@@ -82,8 +82,8 @@ if (!$expand) {
     #if ($release) {
     #  xargo build --color=always --target=$target $flags
     #} else {
-      cargo build --color=always --target=$target $flags
+      cargo build --color=always --target=$target -p kmagick-rs $flags
     #}
 } else {
-    cargo expand --color=always --target=$target $flags
+    cargo expand --color=always --target=$target -p kmagick-rs $flags
 }
