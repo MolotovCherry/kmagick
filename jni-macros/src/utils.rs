@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use proc_macro2::{Ident, Span, TokenStream};
 use syn::punctuated::Punctuated;
 use syn::token::Comma;
-use syn::{Attribute, FnArg, ImplItem, ItemImpl, Meta, NestedMeta, Pat, PatIdent, PathArguments, ReturnType, Type};
-use quote::{quote, ToTokens};
+use syn::{Attribute, FnArg, ImplItem, ItemImpl, Meta, NestedMeta, Pat, PathArguments, ReturnType, Type};
+use quote::quote;
 use rand::Rng;
 
 const CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -12,7 +12,7 @@ const CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 pub fn get_args(args: Vec<NestedMeta>) -> syn::Result<HashMap<String, String>> {
     let mut hm: HashMap<String, String> = HashMap::new();
 
-    let allowed_args = vec!["cls", "exc", "pkg", "handler_trait"];
+    let allowed_args = vec!["cls", "exc", "pkg"];
 
     if args.is_empty() {
         return Err(syn::Error::new(proc_macro2::Span::call_site(), format!("Attributes are required")))
@@ -489,7 +489,7 @@ pub fn impl_fn_fill_args(args: &Punctuated<FnArg, Comma>, rest: &Vec<(String, St
     for arg in args {
         match arg {
             // covers both typed and wildcards
-            FnArg::Typed(b) => {
+            FnArg::Typed(_) => {
                 num += 1;
             }
 
@@ -528,8 +528,7 @@ pub fn generate_impl_functions(
     items: &Vec<ImplItem>,
     returns: &Vec<(ReturnType, bool)>,
     namespace: (&String, bool, &Ident),
-    exc: &str,
-    handler_trait: Option<&String>
+    exc: &str
 ) -> syn::Result<Vec<TokenStream>> {
     let mut funcs: Vec<TokenStream> = vec![];
 
@@ -574,8 +573,6 @@ pub fn generate_impl_functions(
                 let impl_name = namespace.2;
                 let impl_name_str = impl_name.to_string();
 
-                println!("{:#?}", fn_inputs);
-
                 let diag = format!("{}::{}()", impl_name_str, fn_name);
 
                 let is_returning = match ret_type {
@@ -592,12 +589,6 @@ pub fn generate_impl_functions(
                 let handle_cls = fix_class_path(&class, true);
 
                 let java_name = class_to_ident(&class, &fn_name.to_string());
-
-                let handler_trait: TokenStream = match handler_trait {
-                    Some(v) => syn::parse_str(v),
-                    None => syn::parse_str("crate::env::Utils")
-                }?;
-
                 
                 //
                 // special changing syntax
@@ -666,7 +657,8 @@ pub fn generate_impl_functions(
                     stream = quote! {
                         #[no_mangle]
                         pub extern "C" fn #java_name(env: JNIEnv#inputs) {
-                            use #handler_trait;
+                            use ::jni_tools::Handle;
+                            use ::jni_tools::Cacher;
 
                             let panic_res = ::std::panic::catch_unwind(|| {
                                 let r_obj = #impl_name::#fn_name(#fn_call_args);
@@ -720,7 +712,8 @@ pub fn generate_impl_functions(
                     stream = quote! {
                         #[no_mangle]
                         pub extern "C" fn #java_name(env: JNIEnv#inputs) {
-                            use #handler_trait;
+                            use ::jni_tools::Handle;
+                            use ::jni_tools::Cacher;
 
                             let panic_res = ::std::panic::catch_unwind(|| {
                                 let res = env.take_handle::<#impl_name>(#handle_cls, obj);
@@ -756,7 +749,8 @@ pub fn generate_impl_functions(
                     stream = quote! {
                         #[no_mangle]
                         pub extern "C" fn #java_name(env: JNIEnv#inputs) #ret_type {
-                            use #handler_trait;
+                            use ::jni_tools::Handle;
+                            use ::jni_tools::Cacher;
 
                             let panic_res = ::std::panic::catch_unwind(|| {
                                 let res = env.get_handle::<#impl_name>(#handle_cls, obj);
@@ -764,6 +758,7 @@ pub fn generate_impl_functions(
                                 let #mut_kwrd r_obj = match res {
                                     Ok(v) => v,
                                     Err(e) => {
+                                        
                                         env.throw_new(#exc, format!("Failed to get handle for `{}` : {}", #diag, e.to_string())).ok();
                                         return #null_mut;
                                     }

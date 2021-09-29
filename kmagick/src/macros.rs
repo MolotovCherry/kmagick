@@ -44,39 +44,3 @@ macro_rules! wand_wrapper {
         }
     }
 }
-
-macro_rules! throw_magick_exc {
-    ($env:ident, $m:expr) => {
-        {
-            let cls = $env.cache_find_class("com/cherryleafroad/kmagick/MagickException").unwrap();
-            $env.throw_new(cls, $m).ok();
-        }
-    }
-}
-
-macro_rules! throw_magickwand_exc {
-    ($env:ident, $m:expr) => {
-        {
-            let cls = $env.cache_find_class(&$env, &"com/cherryleafroad/kmagick/MagickWandException").unwrap();
-            $env.throw_new(cls, $m).ok();
-        }
-    }
-}
-
-macro_rules! throw_pixelwand_exc {
-    ($env:ident, $m:expr) => {
-        {
-            let cls = $env.cache_find_class($env, "com/cherryleafroad/kmagick/PixelWandException").unwrap();
-            $env.throw_new(cls, $m);
-        }
-    }
-}
-
-macro_rules! throw_drawingwand_exc {
-    ($env:ident, $m:expr) => {
-        {
-            let cls = $env.cache_find_class($env, "com/cherryleafroad/kmagick/DrawingWandException").unwrap();
-            $env.throw_new(cls, $m).ok();
-        }
-    }
-}

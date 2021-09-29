@@ -158,7 +158,6 @@ pub fn jniclass(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let mut pkg = args.get("pkg");
     let mut cls = args.get("cls");
-    let handler_trait = args.get("handler_trait");
     if let Some(_) = pkg {
         if let Some(_) = cls {
             return syn::Error::new(Span::call_site(), "Can't use both pkg and cls attributes at same time").to_compile_error().into();
@@ -170,8 +169,8 @@ pub fn jniclass(attr: TokenStream, item: TokenStream) -> TokenStream {
         }
     }
 
-    let mut f: String;
-    let mut c: String;
+    let f: String;
+    let c: String;
     if let Some(v) = pkg {
         f = utils::fix_class_path(v, false);
         pkg = Some(&f);
@@ -215,7 +214,7 @@ pub fn jniclass(attr: TokenStream, item: TokenStream) -> TokenStream {
         None => "java/lang/RuntimeException".to_owned()
     };
 
-    let funcs = utils::generate_impl_functions(&item_impl_mod.items, &impl_returns, namespace, &exc, handler_trait);
+    let funcs = utils::generate_impl_functions(&item_impl_mod.items, &impl_returns, namespace, &exc);
     let funcs = match funcs {
         Ok(v) => v,
         Err(e) => return e.to_compile_error().into()

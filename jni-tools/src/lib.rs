@@ -11,10 +11,8 @@ use jni::{
 };
 use lazy_static::lazy_static;
 use log::error;
-use super::magick_wand::MagickWand;
-use super::pixel_wand::PixelWand;
-use super::drawing_wand::DrawingWand;
-use super::utils::Result;
+
+pub type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
 lazy_static! {
     pub static ref CLASS_CACHE: Mutex<HashMap<String, GlobalRef>> = Mutex::new(HashMap::new());
@@ -52,12 +50,9 @@ impl Error for CacherError {
     }
 }
 
+#[allow(non_snake_case)]
 pub mod CacheClasses {
     pub const LONG: &'static str = "java/lang/Long";
-    pub const MAGICKWAND: &'static str = "com/cherryleafroad/kmagick/MagickWand";
-    pub const PIXELWAND: &'static str = "com/cherryleafroad/kmagick/PixelWand";
-    pub const DRAWINGWAND: &'static str = "com/cherryleafroad/kmagick/DrawingWand";
-    pub const TEST: &'static str = "com/cherryleafroad/kmagick/Test";
 }
 
 
@@ -324,7 +319,17 @@ impl<'a> Kotlin for JNIEnv<'a> {
 }
 
 pub trait Utils {
-    fn get_jstring(&self, val: JString) -> String;
+    fn get_jstring(&self, val: JString) -> Result<String>;
+}
+
+impl<'a> Utils for JNIEnv<'a> {
+    // silently fails if there was an error, but also throws MagickException
+    fn get_jstring(&self, val: JString) -> Result<String> {
+        Ok(Into::<String>::into(self.get_string(val)?))
+    }
+}
+
+pub trait Handle {
     fn get_handle<R>(&self, cls: &str, obj: JObject) -> Result<MutexGuard<R>>
         where
             R: Send + 'static;
@@ -334,29 +339,9 @@ pub trait Utils {
     fn take_handle<R>(&self, cls: &str, obj: JObject) -> Result<R>
         where
             R: Send + 'static;
-    fn get_magickwand_handle(&self, obj: JObject) -> Result<MutexGuard<MagickWand>>;
-    fn get_pixelwand_handle(&self, obj: JObject) -> Result<MutexGuard<PixelWand>>;
-    fn get_drawingwand_handle(&self, obj: JObject) -> Result<MutexGuard<DrawingWand>>;
-    fn set_magickwand_handle(&self, obj: JObject, rust_obj: MagickWand) -> Result<()>;
-    fn set_pixelwand_handle(&self, obj: JObject, rust_obj: PixelWand) -> Result<()>;
-    fn set_drawingwand_handle(&self, obj: JObject, rust_obj: DrawingWand) -> Result<()>;
-    fn take_magickwand_handle(&self, obj: JObject) -> Result<MagickWand>;
-    fn take_pixelwand_handle(&self, obj: JObject) -> Result<PixelWand>;
-    fn take_drawingwand_handle(&self, obj: JObject) -> Result<DrawingWand>;
 }
 
-impl<'a> Utils for JNIEnv<'a> {
-    // silently fails if there was an error, but also throws MagickException
-    fn get_jstring(&self, val: JString) -> String {
-        let res = self.get_string(val);
-        if let Ok(v) = res {
-            v.into()
-        } else {
-            throw_magick_exc!(self, res.err().unwrap().to_string());
-            String::from("")
-        }
-    }
-
+impl<'a> Handle for JNIEnv<'a> {
     fn get_handle<R>(&self, cls: &str, obj: JObject) -> Result<MutexGuard<R>>
         where
             R: Send + 'static
@@ -376,41 +361,5 @@ impl<'a> Utils for JNIEnv<'a> {
             R: Send + 'static
     {
         Ok(self.take_rust_field_kt::<R>(cls, obj, "handle")?)
-    }
-
-    fn get_magickwand_handle(&self, obj: JObject) -> Result<MutexGuard<MagickWand>> {
-        self.get_handle::<MagickWand>(CacheClasses::MAGICKWAND, obj)
-    }
-
-    fn get_pixelwand_handle(&self, obj: JObject) -> Result<MutexGuard<PixelWand>> {
-        self.get_handle::<PixelWand>(CacheClasses::PIXELWAND, obj)
-    }
-
-    fn get_drawingwand_handle(&self, obj: JObject) -> Result<MutexGuard<DrawingWand>> {
-        self.get_handle::<DrawingWand>(CacheClasses::DRAWINGWAND, obj)
-    }
-
-    fn set_magickwand_handle(&self, obj: JObject, rust_obj: MagickWand) -> Result<()> {
-        self.set_handle(CacheClasses::MAGICKWAND, obj, rust_obj)
-    }
-
-    fn set_pixelwand_handle(&self, obj: JObject, rust_obj: PixelWand) -> Result<()> {
-        self.set_handle(CacheClasses::PIXELWAND, obj, rust_obj)
-    }
-
-    fn set_drawingwand_handle(&self, obj: JObject, rust_obj: DrawingWand) -> Result<()> {
-        self.set_handle(CacheClasses::DRAWINGWAND, obj, rust_obj)
-    }
-
-    fn take_magickwand_handle(&self, obj: JObject) -> Result<MagickWand> {
-        self.take_handle::<MagickWand>(CacheClasses::MAGICKWAND, obj)
-    }
-
-    fn take_pixelwand_handle(&self, obj: JObject) -> Result<PixelWand> {
-        self.take_handle::<PixelWand>(CacheClasses::PIXELWAND, obj)
-    }
-
-    fn take_drawingwand_handle(&self, obj: JObject) -> Result<DrawingWand> {
-        self.take_handle::<DrawingWand>(CacheClasses::DRAWINGWAND, obj)
     }
 }
