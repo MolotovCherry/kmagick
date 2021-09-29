@@ -54,8 +54,11 @@ impl Error for CacherError {
 }
 
 #[allow(non_snake_case)]
-pub mod CacheClasses {
+pub mod Settings {
     pub const LONG: &'static str = "java/lang/Long";
+    pub const LONG_SIG: &'static str = "Ljava/lang/Long;";
+
+    pub const HANDLE: &'static str = "handle";
 }
 
 
@@ -247,8 +250,8 @@ impl<'a> Kotlin for JNIEnv<'a> {
     {
         let _ = self.lock_obj(*obj)?;
 
-        let j_obj = self.cache_get_field(cls, obj, field, "Ljava/lang/Long;")?.l()?;
-        let ptr = self.cache_get_field(CacheClasses::LONG, j_obj, "value", "J")?.j()? as *mut Mutex<R>;
+        let j_obj = self.cache_get_field(cls, obj, field, Settings::LONG_SIG)?.l()?;
+        let ptr = self.cache_get_field(Settings::LONG, j_obj, "value", "J")?.j()? as *mut Mutex<R>;
 
         if j_obj.is_null() {
             error!("env::get_rust_field:: field {} is null", field.to_owned());
@@ -272,7 +275,7 @@ impl<'a> Kotlin for JNIEnv<'a> {
 
         // Check to see if we've already set this value. If it's not null, that
         // means that we're going to leak memory if it gets overwritten.
-        let handle_field = self.cache_get_field(cls, obj, field, "Ljava/lang/Long;")?.l()?;
+        let handle_field = self.cache_get_field(cls, obj, field, Settings::LONG_SIG)?.l()?;
         if !handle_field.is_null() {
             error!("env::set_rust_field:: field {} already set", field.to_owned());
             return Err(Box::new(jni::errors::Error::FieldAlreadySet(field.to_owned())));
@@ -281,10 +284,10 @@ impl<'a> Kotlin for JNIEnv<'a> {
         let mbox = Box::new(::std::sync::Mutex::new(rust_object));
         let ptr: *mut Mutex<R> = Box::into_raw(mbox);
 
-        let class = self.cache_find_class("java/lang/Long")?;
+        let class = self.cache_find_class(Settings::LONG)?;
         let jlong = self.new_object(class, "(J)V", &[(ptr as jni::sys::jlong).into()])?;
 
-        self.cache_set_field(cls, obj, field, "Ljava/lang/Long;", JValue::from(jlong))?;
+        self.cache_set_field(cls, obj, field, Settings::LONG_SIG, JValue::from(jlong))?;
         Ok(())
     }
 
@@ -295,8 +298,8 @@ impl<'a> Kotlin for JNIEnv<'a> {
         let mbox = {
             let _ = self.lock_obj(*obj)?;
 
-            let j_obj = self.cache_get_field(cls, obj, field, "Ljava/lang/Long;")?.l()?;
-            let ptr = self.cache_get_field(CacheClasses::LONG, j_obj, "value", "J")?.j()? as *mut Mutex<R>;
+            let j_obj = self.cache_get_field(cls, obj, field, Settings::LONG_SIG)?.l()?;
+            let ptr = self.cache_get_field(Settings::LONG, j_obj, "value", "J")?.j()? as *mut Mutex<R>;
 
             if ptr.is_null() {
                 error!("env::take_rust_field:: field {} is null", field.to_owned());
@@ -312,7 +315,7 @@ impl<'a> Kotlin for JNIEnv<'a> {
             // get a new one as long as we're in the guarded scope.
             drop(mbox.try_lock().unwrap());
 
-            self.cache_set_field(cls, obj, field, "Ljava/lang/Long;", JValue::from(::std::ptr::null_mut() as jobject))?;
+            self.cache_set_field(cls, obj, field, Settings::LONG_SIG, JValue::from(::std::ptr::null_mut() as jobject))?;
 
             mbox
         };
@@ -349,20 +352,20 @@ impl<'a> Handle for JNIEnv<'a> {
         where
             R: Send + 'static
     {
-        Ok(self.get_rust_field_kt::<R>(cls, obj, "handle")?)
+        Ok(self.get_rust_field_kt::<R>(cls, obj, Settings::HANDLE)?)
     }
 
     fn set_handle<R>(&self, cls: &str, obj: JObject, rust_object: R) -> Result<()>
         where
             R: Send + 'static
     {
-        Ok(self.set_rust_field_kt(cls, obj, "handle", rust_object)?)
+        Ok(self.set_rust_field_kt(cls, obj, Settings::HANDLE, rust_object)?)
     }
 
     fn take_handle<R>(&self, cls: &str, obj: JObject) -> Result<R>
         where
             R: Send + 'static
     {
-        Ok(self.take_rust_field_kt::<R>(cls, obj, "handle")?)
+        Ok(self.take_rust_field_kt::<R>(cls, obj, Settings::HANDLE)?)
     }
 }
