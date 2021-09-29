@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use proc_macro2::{Ident, Span, TokenStream};
+use proc_macro2::{Ident, Span, TokenStream, TokenTree};
 use syn::punctuated::Punctuated;
 use syn::token::Comma;
 use syn::{Attribute, FnArg, ImplItem, ItemImpl, Meta, NestedMeta, Pat, PathArguments, ReturnType, Type};
@@ -12,7 +12,7 @@ const CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 pub fn get_args(args: Vec<NestedMeta>) -> syn::Result<HashMap<String, String>> {
     let mut hm: HashMap<String, String> = HashMap::new();
 
-    let allowed_args = vec!["cls", "exc", "pkg"];
+    let allowed_args = vec!["cls", "exc", "pkg", "name"];
 
     if args.is_empty() {
         return Err(syn::Error::new(proc_macro2::Span::call_site(), format!("Attributes are required")))
@@ -523,6 +523,34 @@ pub fn top_attrs(attributes: &Vec<Attribute>) -> Vec<String> {
     attrs
 }
 
+pub fn rename_attr(ident: &Ident, attributes: &Vec<Attribute>) -> Ident {
+    let mut name = ident.to_string();
+
+    let mut is_rename = false;
+    for attr in attributes {
+        for seg in &attr.path.segments {
+            if seg.ident.to_string() == "jni_name" {
+                is_rename = true;
+            }
+        }
+
+        if is_rename {
+            for token in attr.tokens.clone() {
+                if let TokenTree::Group(g) = token {
+                    for t in g.stream() {
+                        if let TokenTree::Literal(l) = t {
+                            name = l.to_string().replace("\"", "");
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Ident::new(&name, ident.span())
+}
+
+
 pub fn generate_impl_functions(
     items: &Vec<ImplItem>,
     returns: &Vec<(ReturnType, bool)>,
@@ -536,7 +564,7 @@ pub fn generate_impl_functions(
     for (i, _fn) in items.iter().enumerate() {
         match _fn {
             ImplItem::Method(m) => {
-                let fn_name = &m.sig.ident;
+                let fn_name = rename_attr(&m.sig.ident, &m.attrs);
 
                 let ret_type = &returns[i].0;
                 let is_result = returns[i].1;

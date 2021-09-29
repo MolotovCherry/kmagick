@@ -1,5 +1,5 @@
 use proc_macro::TokenStream;
-use proc_macro2::Span;
+use proc_macro2::{Ident, Span};
 use syn::{self, Expr, ReturnType};
 use quote::{ToTokens, quote};
 
@@ -26,7 +26,7 @@ pub fn jni_method(attr: TokenStream, item: TokenStream) -> TokenStream {
         Ok(v) => v
     }
 
-    let name = &item_fn.sig.ident;
+    let name = utils::rename_attr(&item_fn.sig.ident, &item_fn.attrs);
     let name_str = name.to_string();
     let (java_return, is_result) = match utils::extract_return(&item_fn.sig.output, &name, None, &utils::top_attrs(&item_fn.attrs)) {
         Ok(v) => v,
@@ -136,6 +136,29 @@ pub fn jni_method(attr: TokenStream, item: TokenStream) -> TokenStream {
     };
 
     new_tokens.into()
+}
+
+// set the function name used for jni - this way you can use whatever actual function name you want
+#[proc_macro_attribute]
+pub fn jni_name(attr: TokenStream, item: TokenStream) -> TokenStream {
+    let mut item_fn = syn::parse_macro_input!(item as syn::ItemFn);
+    let attrs = syn::parse_macro_input!(attr as syn::AttributeArgs);
+
+    let args = match utils::get_args(attrs) {
+        Ok(v) => v,
+        Err(e) => return e.to_compile_error().into()
+    };
+
+    let name = args.get("name");
+    let name = match name {
+        Some(v) => v,
+        None => return syn::Error::new(Span::call_site(), "Need a name attribute").to_compile_error().into()
+    };
+
+    let ident = Ident::new(name, item_fn.sig.ident.span());
+    item_fn.sig.ident = ident;
+
+    item_fn.to_token_stream().into()
 }
 
 /// Don't generate an implementation for a method in an impl
