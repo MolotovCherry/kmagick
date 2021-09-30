@@ -737,6 +737,7 @@ pub fn generate_impl_functions(
                             Err(e) => {
                                 let cls = env.cache_find_class(#exc).ok();
                                 let msg = format!("`{}` threw an exception : {}", #diag, e.to_string());
+                                error!("{}", msg);
                                 if cls.is_some() {
                                     env.throw_new(cls.unwrap(), msg).ok();
                                 } else {
@@ -777,6 +778,7 @@ pub fn generate_impl_functions(
                                 Err(e) => {
                                     let cls = env.cache_find_class(#exc).ok();
                                     let msg = format!("Failed to create new obj for `{}` : {}", #diag, e.to_string());
+                                    error!("{}", msg);
                                     if cls.is_some() {
                                         env.throw_new(cls.unwrap(), msg).ok();
                                     } else {
@@ -798,6 +800,7 @@ pub fn generate_impl_functions(
                         pub extern "system" fn #java_name(env: JNIEnv#inputs) {
                             use ::jni_tools::Handle;
                             use ::jni_tools::Cacher;
+                            use ::log::error;
 
                             let p_res = ::std::panic::catch_unwind(|| {
                                 #mat_res
@@ -808,6 +811,7 @@ pub fn generate_impl_functions(
                                     Err(e) => {
                                         let cls = env.cache_find_class(#exc).ok();
                                         let msg = format!("Failed to set handle for `{}` : {}", #diag, e.to_string());
+                                        error!("{}", msg);
                                         if cls.is_some() {
                                             env.throw_new(cls.unwrap(), msg).ok();
                                         } else {
@@ -822,6 +826,7 @@ pub fn generate_impl_functions(
                                 Err(e) => {
                                     let cls = env.cache_find_class("java/lang/RuntimeException").ok();
                                     let msg = &format!("`{}` panicked", #diag);
+                                    error!("{}", msg);
                                     if cls.is_some() {
                                         env.throw_new(cls.unwrap(), msg).ok();
                                     } else {
@@ -838,6 +843,7 @@ pub fn generate_impl_functions(
                         #[no_mangle]
                         pub extern "system" fn #java_name(env: JNIEnv#inputs) #ret_type {
                             use ::jni_tools::Cacher;
+                            use ::log::error;
 
                             let p_res = ::std::panic::catch_unwind(|| {
                                 #res_binding #impl_name::#fn_name(#fn_call_args)#res_semicolon
@@ -850,6 +856,7 @@ pub fn generate_impl_functions(
                                 Err(e) => {
                                     let cls = env.cache_find_class("java/lang/RuntimeException").ok();
                                     let msg = &format!("`{}` panicked", #diag);
+                                    error!("{}", msg);
                                     if cls.is_some() {
                                         env.throw_new(cls.unwrap(), msg).ok();
                                     } else {
@@ -876,6 +883,7 @@ pub fn generate_impl_functions(
                         pub extern "system" fn #java_name(env: JNIEnv#inputs) {
                             use ::jni_tools::Handle;
                             use ::jni_tools::Cacher;
+                            use ::log::error;
 
                             let p_res = ::std::panic::catch_unwind(|| {
                                 let res = env.take_handle::<#impl_name>(#handle_cls, obj);
@@ -885,6 +893,7 @@ pub fn generate_impl_functions(
                                     Err(e) => {
                                         let cls = env.cache_find_class(#exc).ok();
                                         let msg = format!("Failed to take handle for `{}` : {}", #diag, e.to_string());
+                                        error!("{}", msg);
                                         if cls.is_some() {
                                             env.throw_new(cls.unwrap(), msg).ok();
                                         } else {
@@ -902,6 +911,7 @@ pub fn generate_impl_functions(
                                 Err(e) => {
                                     let cls = env.cache_find_class("java/lang/RuntimeException").ok();
                                     let msg = &format!("`{}` panicked", #diag);
+                                    error!("{}", msg);
                                     if cls.is_some() {
                                         env.throw_new(cls.unwrap(), msg).ok();
                                     } else {
@@ -926,6 +936,7 @@ pub fn generate_impl_functions(
                         pub extern "system" fn #java_name(env: JNIEnv#inputs) #ret_type {
                             use ::jni_tools::Handle;
                             use ::jni_tools::Cacher;
+                            use ::log::error;
 
                             let p_res = ::std::panic::catch_unwind(|| {
                                 let res = env.get_handle::<#impl_name>(#handle_cls, obj);
@@ -935,6 +946,7 @@ pub fn generate_impl_functions(
                                     Err(e) => {
                                         let cls = env.cache_find_class(#exc).ok();
                                         let msg = format!("Failed to get handle for `{}` : {}", #diag, e.to_string());
+                                        error!("{}", msg);
                                         if cls.is_some() {
                                             env.throw_new(cls.unwrap(), msg).ok();
                                         } else {
@@ -955,6 +967,7 @@ pub fn generate_impl_functions(
                                 Err(e) => {
                                     let cls = env.cache_find_class("java/lang/RuntimeException").ok();
                                     let msg = &format!("`{}` panicked", #diag);
+                                    error!("{}", msg);
                                     if cls.is_some() {
                                         env.throw_new(cls.unwrap(), msg).ok();
                                     } else {
