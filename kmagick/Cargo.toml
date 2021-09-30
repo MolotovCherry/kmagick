@@ -25,7 +25,11 @@ magick_rust = { version = "0.15.0", features = ["disable-hdri"] }
 jni-macros = { path = "../jni-macros" }
 jni-tools = { path = "../jni-tools" }
 
+[profile.dev]
+# Disabling debug info speeds up builds a bunch,
+# and we don't rely on it for debugging that much.
+debug = 0
+
 [profile.release]
-opt-level = 3
 lto = true
 codegen-units = 1

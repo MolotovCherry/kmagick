@@ -3,7 +3,6 @@ package com.cherryleafroad.kmagick
 class MagickWandException(message: String) : MagickException(message)
 
 @Suppress("unused", "PrivatePropertyName", "MemberVisibilityCanBePrivate")
-@kotlin.ExperimentalUnsignedTypes
 class MagickWand {
     init {
         new()
@@ -17,6 +16,7 @@ class MagickWand {
     /**
      * Call the internal function to create the new wand.
      */
+    @Throws(MagickWandException::class)
     private external fun new()
 
     /**
@@ -36,6 +36,7 @@ class MagickWand {
      * `finalize()` is not guaranteed to be called at all, nor called on time.
      * It's recommended to manually destroy all wands when finished.
      */
+    @Throws(MagickWandException::class)
     external fun destroy()
 
     /**
@@ -56,7 +57,7 @@ class MagickWand {
      * @param background The background color of the image.
      */
     @Throws(MagickWandException::class)
-    external fun newImage(width: ULong, height: ULong, background: PixelWand)
+    external fun newImage(width: Long, height: Long, background: PixelWand)
 
     /**
      * The limit for a particular resource.
@@ -65,7 +66,7 @@ class MagickWand {
      * @param limit The maximum limit for the resource.
      */
     @Throws(MagickWandException::class)
-    external fun setResourceLimit(type: ResourceType, limit: ULong)
+    external fun setResourceLimit(type: ResourceType, limit: Long)
 
     /**
      * Associates one or options with the wand (e.g. setOption("jpeg:perserve","yes")).
@@ -141,7 +142,7 @@ class MagickWand {
      * Reads an image or image sequence from a [blob]. In all other respects it is like `readImage()`.
      */
     @Throws(MagickWandException::class)
-    external fun readImageBlob(blob: UByteArray)
+    external fun readImageBlob(blob: ByteArray)
 
     /**
      * Is the same as `readImage()` except the only valid information returned is the image width, height, size, and
@@ -157,7 +158,7 @@ class MagickWand {
      * Pings an image or image sequence from a [blob].
      */
     @Throws(MagickWandException::class)
-    external fun pingImageBlob(blob: UByteArray)
+    external fun pingImageBlob(blob: ByteArray)
 
     /**
      * Compares two images and returns pair (distortion, diffImage)
@@ -222,7 +223,7 @@ class MagickWand {
      * @param rows The rows in pixels.
      */
     @Throws(MagickWandException::class)
-    external fun setSize(columns: ULong, rows: ULong)
+    external fun setSize(columns: Long, rows: Long)
 
     /**
      * Adjusts the levels of an image by scaling the colors falling between specified white and black points to the full
@@ -250,7 +251,7 @@ class MagickWand {
      * @param y The region y offset.
      */
     @Throws(MagickWandException::class)
-    external fun extentImage(width: ULong, height: ULong, x: Long, y: Long)
+    external fun extentImage(width: Long, height: Long, x: Long, y: Long)
 
     /**
      * Adds or removes an ICC, IPTC, or generic profile from an image. If the profile is NULL, it is removed from the
@@ -260,7 +261,7 @@ class MagickWand {
      * @param profile The data to add/remove to the profile. NULL will remove the profile.
      */
     @Throws(MagickWandException::class)
-    external fun profileImage(name: String, profile: UByteArray?)
+    external fun profileImage(name: String, profile: ByteArray?)
 
     /**
      * Creates a vertical mirror image by reflecting the pixels around the central x-axis.
@@ -309,7 +310,7 @@ class MagickWand {
      * @param height The height in pixels.
      */
     @Throws(MagickWandException::class)
-    external fun adaptiveResizeImage(width: ULong, height: ULong)
+    external fun adaptiveResizeImage(width: Long, height: Long)
 
     /**
      * Rotate the currently selected image by the given number of degrees,
@@ -336,13 +337,13 @@ class MagickWand {
      * Retrieve the width of the image.
      */
     @Throws(MagickWandException::class)
-    external fun getImageWidth(): ULong
+    external fun getImageWidth(): Long
 
     /**
      * Retrieve the height of the image.
      */
     @Throws(MagickWandException::class)
-    external fun getImageHeight(): ULong
+    external fun getImageHeight(): Long
 
     /**
      * Retrieve the page geometry (width, height, x offset, y offset) of the image.
@@ -446,7 +447,7 @@ class MagickWand {
     external fun sepiaToneImage(threshold: Double)
 
     /**
-     * Extracts pixel data from an image and returns it to you as a UByteArray.
+     * Extracts pixel data from an image and returns it to you as a ByteArray.
      *
      * @param x Defines the x perimeter of a region of pixels you want to extract.
      * @param y Defines the y perimeter of a region of pixels you want to extract.
@@ -460,17 +461,17 @@ class MagickWand {
     external fun exportImagePixels(
         x: Long,
         y: Long,
-        width: ULong,
-        height: ULong,
+        width: Long,
+        height: Long,
         map: String
-    ): UByteArray?
+    ): ByteArray?
 
     /**
      * Resize the image to the specified [width] and [height], using the
      * specified [filter] type.
      */
     @Throws(MagickWandException::class)
-    external fun resizeImage(width: ULong, height: ULong, filter: FilterType)
+    external fun resizeImage(width: Long, height: Long, filter: FilterType)
 
     /**
      * Extract a region of the image. The [width] and [height] is used as the size
@@ -478,8 +479,8 @@ class MagickWand {
      */
     @Throws(MagickWandException::class)
     external fun cropImage(
-        width: ULong,
-        height: ULong,
+        width: Long,
+        height: Long,
         x: Long,
         y: Long,
     )
@@ -491,7 +492,7 @@ class MagickWand {
      * upscales.
      */
     @Throws(MagickWandException::class)
-    external fun sampleImage(width: ULong, height: ULong)
+    external fun sampleImage(width: Long, height: Long)
 
     /**
      * Resample the image to the specified (horizontal) [x] and (vertical) [y] resolution, using the
@@ -513,7 +514,7 @@ class MagickWand {
      * @param rigidity Introduce a bias for non-straight seams (typically 0).
      */
     @Throws(MagickWandException::class)
-    external fun liquidRescaleImage(width: ULong, height: ULong, deltaX: Double, rigidity: Double)
+    external fun liquidRescaleImage(width: Long, height: Long, deltaX: Double, rigidity: Double)
 
     /**
      * Implodes the image towards the center by the specified percentage.
@@ -529,7 +530,7 @@ class MagickWand {
      * the current aspect ratio.
      */
     @Throws(MagickWandException::class)
-    external fun fit(width: ULong, height: ULong)
+    external fun fit(width: Long, height: Long)
 
     /**
      * Detect if the loaded image is not in top-left orientation, and
@@ -559,7 +560,7 @@ class MagickWand {
      * @param format Any ImageMagick supported image format (e.g. GIF, JPEG, PNG, etc.).
      */
     @Throws(MagickWandException::class)
-    external fun writeImageBlob(format: String): UByteArray?
+    external fun writeImageBlob(format: String): ByteArray?
 
     /**
      * Write the images in the desired format to a new blob.
@@ -567,13 +568,13 @@ class MagickWand {
      * @param format Any ImageMagick supported image format (e.g. GIF, JPEG, PNG, etc.).
      */
     @Throws(MagickWandException::class)
-    external fun writeImagesBlob(format: String): UByteArray?
+    external fun writeImagesBlob(format: String): ByteArray?
 
     /**
      * Gets the number of unique colors in the image.
      */
     @Throws(MagickWandException::class)
-    external fun getImageColors(): ULong
+    external fun getImageColors(): Long
 
     /**
      * The filename associated with an image sequence.
@@ -655,13 +656,13 @@ class MagickWand {
     /**
      * The wand compression quality.
      */
-    var compressionQuality: ULong
+    var compressionQuality: Long
         get() = magickGetCompressionQuality()
         set(value) = magickSetCompressionQuality(value)
     @Throws(MagickWandException::class)
-    private external fun magickGetCompressionQuality(): ULong
+    private external fun magickGetCompressionQuality(): Long
     @Throws(MagickWandException::class)
-    private external fun magickSetCompressionQuality(quality: ULong)
+    private external fun magickSetCompressionQuality(quality: Long)
 
     /**
      * The gravity type.
@@ -711,35 +712,35 @@ class MagickWand {
     /**
      * The image compression quality.
      */
-    var imageCompressionQuality: ULong
+    var imageCompressionQuality: Long
         get() = magickGetImageCompressionQuality()
         set(value) = magickSetImageCompressionQuality(value)
     @Throws(MagickWandException::class)
-    private external fun magickGetImageCompressionQuality(): ULong
+    private external fun magickGetImageCompressionQuality(): Long
     @Throws(MagickWandException::class)
-    private external fun magickSetImageCompressionQuality(quality: ULong)
+    private external fun magickSetImageCompressionQuality(quality: Long)
 
     /**
      * The image delay.
      */
-    var imageDelay: ULong
+    var imageDelay: Long
         get() = magickGetImageDelay()
         set(value) = magickSetImageDelay(value)
     @Throws(MagickWandException::class)
-    private external fun magickGetImageDelay(): ULong
+    private external fun magickGetImageDelay(): Long
     @Throws(MagickWandException::class)
-    private external fun magickSetImageDelay(delay: ULong)
+    private external fun magickSetImageDelay(delay: Long)
 
     /**
      * The image depth.
      */
-    var imageDepth: ULong
+    var imageDepth: Long
         get() = magickGetImageDepth()
         set(value) = magickSetImageDepth(value)
     @Throws(MagickWandException::class)
-    private external fun magickGetImageDepth(): ULong
+    private external fun magickGetImageDepth(): Long
     @Throws(MagickWandException::class)
-    private external fun magickSetImageDepth(depth: ULong)
+    private external fun magickSetImageDepth(depth: Long)
 
     /**
      * The image disposal method.
@@ -822,13 +823,13 @@ class MagickWand {
      * The image iterations.
      * The image delay is set in 1/100th of a second.
      */
-    var imageIterations: ULong
+    var imageIterations: Long
         get() = magickGetImageIterations()
         set(value) = magickSetImageIterations(value)
     @Throws(MagickWandException::class)
-    private external fun magickGetImageIterations(): ULong
+    private external fun magickGetImageIterations(): Long
     @Throws(MagickWandException::class)
-    private external fun magickSetImageIterations(delay: ULong)
+    private external fun magickSetImageIterations(delay: Long)
 
     /**
      * The image orientaiton.
@@ -855,13 +856,13 @@ class MagickWand {
     /**
      * The image scene.
      */
-    var imageScene: ULong
+    var imageScene: Long
         get() = magickGetImageScene()
         set(value) = magickSetImageScene(value)
     @Throws(MagickWandException::class)
-    private external fun magickGetImageScene(): ULong
+    private external fun magickGetImageScene(): Long
     @Throws(MagickWandException::class)
-    private external fun magickSetImageScene(delay: ULong)
+    private external fun magickSetImageScene(delay: Long)
 
     /**
      * The potential image type.

@@ -8,7 +8,6 @@ class PixelWandException(message: String) : MagickException(message)
  * PixelWand API. Used for specifying certain colors.
  */
 @Suppress("unused", "PrivatePropertyName", "MemberVisibilityCanBePrivate")
-@kotlin.ExperimentalUnsignedTypes
 class PixelWand {
     init {
         new()
@@ -22,6 +21,7 @@ class PixelWand {
     /**
      * Call the internal function to create the new wand.
      */
+    @Throws(PixelWandException::class)
     private external fun new()
 
     /**
@@ -41,6 +41,7 @@ class PixelWand {
      * `finalize()` is not guaranteed to be called at all, nor called on time.
      * It's recommended to manually destroy all wands when finished.
      */
+    @Throws(PixelWandException::class)
     external fun destroy()
 
     /**
@@ -101,13 +102,13 @@ class PixelWand {
     /**
      * The color count associated with this color.
      */
-    var colorCount: ULong
+    var colorCount: Long
         get() = pixelGetColorCount()
         set(value) = pixelSetColorCount(value)
     @Throws(PixelWandException::class)
-    private external fun pixelGetColorCount(): ULong
+    private external fun pixelGetColorCount(): Long
     @Throws(PixelWandException::class)
-    private external fun pixelSetColorCount(count: ULong)
+    private external fun pixelSetColorCount(count: Long)
 
     /**
      *The colormap index of the pixel wand.

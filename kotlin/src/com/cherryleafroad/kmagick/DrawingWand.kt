@@ -6,7 +6,6 @@ class DrawingWandException(message: String) : MagickException(message)
  * DrawingWand API. For drawing things on the image (such as text).
  */
 @Suppress("unused", "MemberVisibilityCanBePrivate")
-@kotlin.ExperimentalUnsignedTypes
 class DrawingWand {
     init {
         new()
@@ -20,6 +19,7 @@ class DrawingWand {
     /**
      * Create a new DrawingWand.
      */
+    @Throws(DrawingWandException::class)
     private external fun new()
 
     /**
@@ -49,6 +49,7 @@ class DrawingWand {
      * `finalize()` is not guaranteed to be called at all, nor called on time.
      * It's recommended to manually destroy all wands when finished.
      */
+    @Throws(DrawingWandException::class)
     external fun destroy()
 
     /**
@@ -270,13 +271,13 @@ class DrawingWand {
     /**
      * The font weight used when annotating with text. Font weight valid range: 100-900
      */
-    var fontWeight: ULong
+    var fontWeight: Long
         get() = drawGetFontWeight()
         set(value) = drawSetFontWeight(value)
     @Throws(DrawingWandException::class)
-    private external fun drawGetFontWeight(): ULong
+    private external fun drawGetFontWeight(): Long
     @Throws(DrawingWandException::class)
-    private external fun drawSetFontWeight(fontWeight: ULong)
+    private external fun drawSetFontWeight(fontWeight: Long)
 
     /**
      * The font stretch used when annotating with text. The AnyStretch enumeration acts as a wild-card.
@@ -327,13 +328,13 @@ class DrawingWand {
      * it is possible for the miter to extend far beyond the thickness of the line stroking the path. The miterLimit
      * imposes a limit on the ratio of the miter length to the `lineWidth`.
      */
-    var strokeMiterLimit: ULong
+    var strokeMiterLimit: Long
         get() = drawGetStrokeMiterLimit()
         set(value) = drawSetStrokeMiterLimit(value)
     @Throws(DrawingWandException::class)
-    private external fun drawGetStrokeMiterLimit(): ULong
+    private external fun drawGetStrokeMiterLimit(): Long
     @Throws(DrawingWandException::class)
-    private external fun drawSetStrokeMiterLimit(miterLimit: ULong)
+    private external fun drawSetStrokeMiterLimit(miterLimit: Long)
 
     /**
      * The alpha of stroked object outlines. The value 1.0 is opaque.

@@ -6,7 +6,6 @@ package com.cherryleafroad.kmagick
  * @property distortion The computed distortion between the images.
  * @property diffImage The difference between the two images. Null if there was no difference.
  */
-@kotlin.ExperimentalUnsignedTypes
 data class Comparison(
     val distortion: Double,
     val diffImage: MagickWand?
