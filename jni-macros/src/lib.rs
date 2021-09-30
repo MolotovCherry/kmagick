@@ -61,20 +61,6 @@ pub fn jni_method(attr: TokenStream, item: TokenStream) -> TokenStream {
         Err(e) => return syn::Error::new(Span::call_site(), e.to_string()).to_compile_error().into()
     };
 
-    // change the function output depending on whether it's a result type or not
-    let match_res = if is_result {
-        quote! {
-            match c_res {
-                Ok(v) => v,
-                Err(e) => {
-                    env.throw_new(#exc, e.to_string()).ok();
-                    ::std::ptr::null_mut()
-                }
-            }
-        }
-    } else {
-        proc_macro2::TokenStream::new()
-    };
 
     let res_binding = if is_result {
         quote! {
@@ -114,11 +100,28 @@ pub fn jni_method(attr: TokenStream, item: TokenStream) -> TokenStream {
         quote! { () }
     };
 
+    // change the function output depending on whether it's a result type or not
+    let match_res = if is_result {
+        quote! {
+            match c_res {
+                Ok(#v_or_underscore) => #v_or_unit,
+                Err(e) => {
+                    env.throw_new(#exc, e.to_string()).ok();
+                    #null_mut
+                }
+            }
+        }
+    } else {
+        proc_macro2::TokenStream::new()
+    };
+
     let new_tokens = quote! {
         #item_fn
 
         #[no_mangle]
         pub extern "system" fn #java_fn(env: JNIEnv#fn_inputs) #java_return {
+            use ::jni_tools::Cacher;
+            
             let p_res = ::std::panic::catch_unwind(|| {
                 #res_binding #name(#fn_call)#res_semicolon
 
@@ -128,7 +131,14 @@ pub fn jni_method(attr: TokenStream, item: TokenStream) -> TokenStream {
             match p_res {
                 Ok(#v_or_underscore) => #v_or_unit,
                 Err(e) => {
-                    env.throw_new("java/lang/RuntimeException", &format!("`{}()` panicked", #name_str)).ok();
+                    let cls = env.cache_find_class("java/lang/RuntimeException").ok();
+                    let msg = &format!("`{}()` panicked", #name_str);
+                    if cls.is_some() {
+                        env.throw_new(cls.unwrap(), msg).ok();
+                    } else {
+                        env.throw_new("java/lang/RuntimeException", msg).ok();
+                    }
+
                     #null_mut
                 }
             }

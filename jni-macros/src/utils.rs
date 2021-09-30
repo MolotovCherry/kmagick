@@ -757,6 +757,8 @@ pub fn generate_impl_functions(
                     stream = quote! {
                         #[no_mangle]
                         pub extern "system" fn #java_name(env: JNIEnv#inputs) #ret_type {
+                            use ::jni_tools::Cacher;
+
                             let p_res = ::std::panic::catch_unwind(|| {
                                 #res_binding #impl_name::#fn_name(#fn_call_args)#res_semicolon
 
