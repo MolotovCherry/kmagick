@@ -119,7 +119,7 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
                         PathArguments::AngleBracketed(a) => {
                             let a_args = &a.args;
                             if a_args.len() == 0 {
-                                return Err(syn::Error::new_spanned(args, "Angle brackets <> need an Ok type"))
+                                return Err(syn::Error::new_spanned(args, "Angle brackets <> need a primitive j type (jni::sys::*) or ()"))
                             }
 
                             let _ok_res = &a_args[0];
@@ -136,7 +136,7 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
 
                                             let ident = &*seg.first().unwrap().ident.to_string();
                                             if !allowed_ret.contains(&ident) {
-                                                return Err(syn::Error::new_spanned(v, "Return type must be a primitive j type (jni::sys::*)"))
+                                                return Err(syn::Error::new_spanned(v, "Return type must be a primitive j type (jni::sys::*) or ()"))
                                             }
 
                                             ok_res = v.clone();
@@ -152,13 +152,13 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
                                         }
 
                                         _ => {
-                                            return Err(syn::Error::new_spanned(_ok_res, "Illegal type"))
+                                            return Err(syn::Error::new_spanned(_ok_res, "Return type in brackets must be primitive j type (jni::sys::*) or ()"))
                                         }
                                     }
                                 }
 
                                 _ => {
-                                    return Err(syn::Error::new_spanned(args, "Wrong type"))
+                                    return Err(syn::Error::new_spanned(args, "Return type must be a primitive j type (jni::sys::*) or ()"))
                                 }
                             }
 
