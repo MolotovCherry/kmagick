@@ -127,8 +127,8 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
 
                     if impl_name.is_some() {
                         // restrict return type of Self::new()
-                        if ident_str != "Self" && ident_str != impl_name.unwrap().to_string() && attributes.contains(&"jni_new".to_string()) {
-                            return Err(syn::Error::new_spanned(v, "Return type must be a `Self` type"))
+                        if ident_str != "Result" && ident_str != "Self" && ident_str != impl_name.unwrap().to_string() && attributes.contains(&"jni_new".to_string()) {
+                            return Err(syn::Error::new_spanned(v, "Return type must be a `Self` type or Result<Self> type"))
                         }
                     }
 
@@ -138,7 +138,7 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
                             return Err(syn::Error::new_spanned(ident, "Return type must be a Result<> type, primitive j type (jni::sys::*), or empty"))
                         } else if impl_name.is_some() {
                             if ident_str != "Self" && ident_str != impl_name.unwrap().to_string() {
-                                return Err(syn::Error::new_spanned(ident, "Return type must be a Result<> type, primitive j type (jni::sys::*), `Self` type, or empty"))
+                                return Err(syn::Error::new_spanned(ident, "Return type must be a Result<Self> type, `Self` type, or empty"))
                             }
                         } else {
                             return Err(syn::Error::new_spanned(ident, "Return type must be a Result<> type, primitive j type (jni::sys::*), or empty"))
@@ -166,7 +166,11 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
                                             }
 
                                             let ident = &*seg.first().unwrap().ident.to_string();
-                                            if !allowed_ret.contains(&ident) {
+                                            if attributes.contains(&"jni_new".to_string()) {
+                                                if ident != "Self" && ident != impl_name.unwrap().to_string() {
+                                                    return Err(syn::Error::new_spanned(v, "Return type must be a Self type"))
+                                                }
+                                            } else if !allowed_ret.contains(&ident) {
                                                 return Err(syn::Error::new_spanned(v, "Return type must be a primitive j type (jni::sys::*) or ()"))
                                             }
 
@@ -174,6 +178,10 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
                                         }
 
                                         syn::Type::Tuple(t) => {
+                                            if attributes.contains(&"jni_new".to_string()) {
+                                                return Err(syn::Error::new_spanned(_ok_res, "Return type must be a Self type"));
+                                            }
+
                                             // this is an empty () ok type
                                             // so just return no return type then
                                             if t.elems.len() == 0 {
@@ -183,12 +191,20 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
                                         }
 
                                         _ => {
+                                            if attributes.contains(&"jni_new".to_string()) {
+                                                return Err(syn::Error::new_spanned(_ok_res, "Return type must be a Self type"));
+                                            }
+
                                             return Err(syn::Error::new_spanned(_ok_res, "Return type in brackets must be primitive j type (jni::sys::*) or ()"))
                                         }
                                     }
                                 }
 
                                 _ => {
+                                    if attributes.contains(&"jni_new".to_string()) {
+                                            return Err(syn::Error::new_spanned(args, "Return type must be a Self type"));
+                                    }
+
                                     return Err(syn::Error::new_spanned(args, "Return type must be a primitive j type (jni::sys::*) or ()"))
                                 }
                             }
@@ -213,6 +229,10 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
                 }
 
                 syn::Type::Tuple(t) => {
+                    if attributes.contains(&"jni_new".to_string()) {
+                        return Err(syn::Error::new_spanned(_ty, "Return type must be a Self type"));
+                    }
+
                     // this is an empty () ok type
                     // so just return no return type then
                     if t.elems.len() == 0 {
@@ -749,6 +769,29 @@ pub fn generate_impl_functions(
                 let stream: TokenStream;
                 if attrs.contains(&"jni_new".to_string()) {
 
+                    let mat_res = if is_result {
+                        quote! {
+                            let r_mat = #impl_name::#fn_name(#fn_call_args);
+                            let r_obj = match r_mat {
+                                Ok(v) => v,
+                                Err(e) => {
+                                    let cls = env.cache_find_class(#exc).ok();
+                                    let msg = format!("Failed to create new obj for `{}` : {}", #diag, e.to_string());
+                                    if cls.is_some() {
+                                        env.throw_new(cls.unwrap(), msg).ok();
+                                    } else {
+                                        env.throw_new(#exc, msg).ok();
+                                    }
+                                    return;
+                                }
+                            };
+                        }
+                    } else {
+                        quote! {
+                            let r_obj = #impl_name::#fn_name(#fn_call_args);
+                        }
+                    };
+
                     stream = quote! {
                         #target
                         #[no_mangle]
@@ -757,7 +800,7 @@ pub fn generate_impl_functions(
                             use ::jni_tools::Cacher;
 
                             let p_res = ::std::panic::catch_unwind(|| {
-                                let r_obj = #impl_name::#fn_name(#fn_call_args);
+                                #mat_res
                                 let res = env.set_handle(#handle_cls, obj, r_obj);
 
                                 match res {
