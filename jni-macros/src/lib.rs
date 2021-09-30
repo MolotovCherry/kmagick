@@ -10,6 +10,8 @@ pub fn jni_method(attr: TokenStream, item: TokenStream) -> TokenStream {
     let item_fn = syn::parse_macro_input!(item as syn::ItemFn);
     let attrs = syn::parse_macro_input!(attr as syn::AttributeArgs);
 
+    let target = utils::get_cfg_target(&item_fn.attrs);
+
     let args = match utils::get_args(attrs) {
         Ok(v) => v,
         Err(e) => return e.to_compile_error().into()
@@ -118,6 +120,7 @@ pub fn jni_method(attr: TokenStream, item: TokenStream) -> TokenStream {
     let new_tokens = quote! {
         #item_fn
 
+        #target
         #[no_mangle]
         pub extern "system" fn #java_fn(env: JNIEnv#fn_inputs) #java_return {
             use ::jni_tools::Cacher;
@@ -195,6 +198,13 @@ pub fn jni_destroy(_: TokenStream, item: TokenStream) -> TokenStream {
 
 #[proc_macro_attribute]
 pub fn jni_new(_: TokenStream, item: TokenStream) -> TokenStream {
+    // even though this is a no-op, this validates that it is an ItemFn and not something else
+    let item_fn = syn::parse_macro_input!(item as syn::ItemFn);
+    item_fn.to_token_stream().into()
+}
+
+#[proc_macro_attribute]
+pub fn jni_target(_: TokenStream, item: TokenStream) -> TokenStream {
     // even though this is a no-op, this validates that it is an ItemFn and not something else
     let item_fn = syn::parse_macro_input!(item as syn::ItemFn);
     item_fn.to_token_stream().into()

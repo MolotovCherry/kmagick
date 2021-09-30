@@ -13,6 +13,7 @@ pub fn get_args(args: Vec<NestedMeta>) -> syn::Result<HashMap<String, String>> {
     let mut hm: HashMap<String, String> = HashMap::new();
 
     let allowed_args = vec!["cls", "exc", "pkg", "name"];
+    let ignored_args = vec!["target_os"];
 
     if args.is_empty() {
         return Err(syn::Error::new(proc_macro2::Span::call_site(), format!("Attributes are required")))
@@ -26,6 +27,12 @@ pub fn get_args(args: Vec<NestedMeta>) -> syn::Result<HashMap<String, String>> {
                 }
 
                 let ident = nv.path.segments.first().unwrap().ident.clone();
+
+                // ignore this one
+                if ignored_args.contains(&&*ident.to_string()) {
+                    continue;
+                }
+
                 if !allowed_args.contains(&&*ident.to_string()) {
                     return Err(syn::Error::new_spanned(&nv.path, format!("`{}` is not a valid attribute", ident.to_string())));
                 }
@@ -46,6 +53,30 @@ pub fn get_args(args: Vec<NestedMeta>) -> syn::Result<HashMap<String, String>> {
     }
 
     Ok(hm)
+}
+
+pub fn get_cfg_target(attributes: &Vec<Attribute>) -> TokenStream {
+    let mut tk = TokenStream::new();
+
+    let mut found_cfg = false;
+    for attr in attributes {
+        for seg in &attr.path.segments {
+            if seg.ident.to_string() == "jni_target" {
+                found_cfg = true;
+            }
+        }
+
+        if found_cfg {
+            let cfg_tokens = &attr.tokens;
+            tk = quote! {
+                #[cfg#cfg_tokens]
+            };
+        }
+
+        found_cfg = false;
+    }
+
+    tk
 }
 
 pub fn class_to_ident(class: &str, fn_name: &str) -> Ident {
@@ -565,6 +596,8 @@ pub fn rename_attr(ident: &Ident, attributes: &Vec<Attribute>) -> Ident {
                 }
             }
         }
+
+        is_rename = false;
     }
 
     Ident::new(&name, ident.span())
@@ -585,6 +618,8 @@ pub fn generate_impl_functions(
         match _fn {
             ImplItem::Method(m) => {
                 let fn_name = rename_attr(&m.sig.ident, &m.attrs);
+
+                let target = get_cfg_target(&m.attrs);
 
                 let ret_type = &returns[i].0;
                 let is_result = returns[i].1;
@@ -715,6 +750,7 @@ pub fn generate_impl_functions(
                 if attrs.contains(&"jni_new".to_string()) {
 
                     stream = quote! {
+                        #target
                         #[no_mangle]
                         pub extern "system" fn #java_name(env: JNIEnv#inputs) {
                             use ::jni_tools::Handle;
@@ -755,6 +791,7 @@ pub fn generate_impl_functions(
                 } else if attrs.contains(&"jni_static".to_string()) {
 
                     stream = quote! {
+                        #target
                         #[no_mangle]
                         pub extern "system" fn #java_name(env: JNIEnv#inputs) #ret_type {
                             use ::jni_tools::Cacher;
@@ -791,6 +828,7 @@ pub fn generate_impl_functions(
                     };
 
                     stream = quote! {
+                        #target
                         #[no_mangle]
                         pub extern "system" fn #java_name(env: JNIEnv#inputs) {
                             use ::jni_tools::Handle;
@@ -840,6 +878,7 @@ pub fn generate_impl_functions(
                     };
 
                     stream = quote! {
+                        #target
                         #[no_mangle]
                         pub extern "system" fn #java_name(env: JNIEnv#inputs) #ret_type {
                             use ::jni_tools::Handle;
