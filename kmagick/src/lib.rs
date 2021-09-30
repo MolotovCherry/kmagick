@@ -12,8 +12,8 @@ mod utils;
 
 use jni_tools::{Cacher, Utils};
 use utils::Result;
-use jni::sys::{jobjectArray, jsize};
-use jni_macros::{jni_class, jni_static};
+use jni::sys::{jint, jobjectArray, jsize};
+use jni_macros::{jni_class, jni_name, jni_static};
 use magick_rust;
 
 use log::{LevelFilter, info};
@@ -35,37 +35,63 @@ use jni_tools::setup_panic;
 
 static INIT: Once = Once::new();
 
-fn init() {
+fn init() -> Result<()> {
+    let mut result = None;
     INIT.call_once(|| {
-        init_logger();
+        // hack to move the Result<> out since
+        // this closure won't allow us to return
+        result = Some(init_logger());
 
         // empty panic handler
         setup_panic!();
     });
+
+    // isn't it guaranteed to be Some?
+    // actually, no. If init() get's called again, it will == None
+    // so let's ignore an unwrap() otherwise it'll panic
+    match result {
+        Some(v) => Ok(v?),
+        None => Ok(())
+    }
 }
 
-
 #[cfg(not(target_os="android"))]
-fn init_logger() {
+fn init_logger() -> Result<()> {
     CombinedLogger::init(
         vec![
             TermLogger::new(
-                debug_cond!(LevelFilter::Debug, LevelFilter::Info),
+                LevelFilter::Trace,
                 Config::default(),
                 TerminalMode::Mixed,
                 ColorChoice::Auto
             ),
         ]
-    ).unwrap();
+    )?;
+
+    if cfg!(debug_assertions) {
+        log::set_max_level(LevelFilter::Debug);
+    } else {
+        log::set_max_level(LevelFilter::Info);
+    }
+    
+    Ok(())
 }
 
 #[cfg(target_os="android")]
-fn init_logger() {
+fn init_logger() -> Result<()> {
     android_logger::init_once(
         Config::default()
-            .with_min_level(debug_cond!(Level::Debug, Level::Info))
+            .with_min_level(Level::Trace)
             .with_tag("MAGICK")
     );
+
+    if cfg!(debug_assertions) {
+        log::set_max_level(LevelFilter::Debug);
+    } else {
+        log::set_max_level(LevelFilter::Info);
+    }
+
+    Ok(())
 }
 
 struct Magick { }
@@ -73,11 +99,14 @@ struct Magick { }
 #[jni_class(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad.kmagick/MagickException")]
 impl Magick {
     #[jni_static]
-    fn nativeInit() {
-        init();
+    fn nativeInit() -> Result<()> {
+        init()?;
+
         magick_rust::magick_wand_genesis();
 
         info!("Magick::nativeInit() Initialized native environment");
+
+        Ok(())
     }
 
     #[jni_static]
@@ -101,5 +130,21 @@ impl Magick {
         env.clear_cache();
 
         info!("Magick::nativeTerminate() Terminated environment");
+    }
+
+    #[jni_static]
+    #[jni_name(name="nativeSetLogLevel")]
+    fn setLogLevel(_: JNIEnv, _: JObject, level: jint) {
+        let level = match level {
+            x if x == LevelFilter::Off as i32 => LevelFilter::Off,
+            x if x == LevelFilter::Error as i32 => LevelFilter::Error,
+            x if x == LevelFilter::Warn as i32 => LevelFilter::Warn,
+            x if x == LevelFilter::Info as i32 => LevelFilter::Info,
+            x if x == LevelFilter::Debug as i32 => LevelFilter::Debug,
+            x if x == LevelFilter::Trace as i32 => LevelFilter::Trace,
+            _ => LevelFilter::Off
+        };
+
+        log::set_max_level(level);
     }
 }

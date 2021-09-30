@@ -27,6 +27,16 @@ object Magick : Closeable {
     external fun magickQueryFonts(pattern: String): Array<String>?
 
     /**
+     * Set the internal log level used. By default, a debug build = DEBUG log level,
+     * and a release build = INFO log level. But you can change it or even turn it off.
+     */
+    fun setLogLevel(level: LogLevel) {
+        nativeSetLogLevel(level.id)
+    }
+    @Throws(MagickException::class)
+    private external fun nativeSetLogLevel(level: Int)
+
+    /**
      * Initialize the environment - This ___MUST___ be called before calling anything else.
      * This ___IS NOT___ called automatically for you.
      *
