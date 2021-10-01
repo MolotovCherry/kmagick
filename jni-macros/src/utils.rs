@@ -61,7 +61,7 @@ pub fn get_cfg_target(attributes: &Vec<Attribute>) -> TokenStream {
     let mut found_cfg = false;
     for attr in attributes {
         for seg in &attr.path.segments {
-            if seg.ident.to_string() == "jni_target" {
+            if seg.ident.to_string() == "jtarget" {
                 found_cfg = true;
             }
         }
@@ -121,20 +121,20 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
                     let ident = &segment.ident;
                     let ident_str = ident.to_string();
 
-                    if attributes.contains(&"jni_destroy".to_string()) {
+                    if attributes.contains(&"jdestroy".to_string()) {
                         return Err(syn::Error::new_spanned(v, "Destroy method cannot have return type"))
                     }
 
                     if impl_name.is_some() {
                         // restrict return type of Self::new()
-                        if ident_str != "Result" && ident_str != "Self" && ident_str != impl_name.unwrap().to_string() && attributes.contains(&"jni_new".to_string()) {
+                        if ident_str != "Result" && ident_str != "Self" && ident_str != impl_name.unwrap().to_string() && attributes.contains(&"jnew".to_string()) {
                             return Err(syn::Error::new_spanned(v, "Return type must be a `Self` type or Result<Self> type"))
                         }
                     }
 
                     if ident_str != "Result" && !allowed_ret.contains(&&*ident_str) {
                         // special case - allow new() functions to return Self for the jniclass implementation
-                        if !attributes.contains(&"jni_new".to_string()) {
+                        if !attributes.contains(&"jnew".to_string()) {
                             return Err(syn::Error::new_spanned(ident, "Return type must be a Result<> type, primitive j type (jni::sys::*), or empty"))
                         } else if impl_name.is_some() {
                             if ident_str != "Self" && ident_str != impl_name.unwrap().to_string() {
@@ -166,7 +166,7 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
                                             }
 
                                             let ident = &*seg.first().unwrap().ident.to_string();
-                                            if attributes.contains(&"jni_new".to_string()) {
+                                            if attributes.contains(&"jnew".to_string()) {
                                                 if ident != "Self" && ident != impl_name.unwrap().to_string() {
                                                     return Err(syn::Error::new_spanned(v, "Return type must be a Self type"))
                                                 }
@@ -178,7 +178,7 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
                                         }
 
                                         syn::Type::Tuple(t) => {
-                                            if attributes.contains(&"jni_new".to_string()) {
+                                            if attributes.contains(&"jnew".to_string()) {
                                                 return Err(syn::Error::new_spanned(_ok_res, "Return type must be a Self type"));
                                             }
 
@@ -191,7 +191,7 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
                                         }
 
                                         _ => {
-                                            if attributes.contains(&"jni_new".to_string()) {
+                                            if attributes.contains(&"jnew".to_string()) {
                                                 return Err(syn::Error::new_spanned(_ok_res, "Return type must be a Self type"));
                                             }
 
@@ -201,7 +201,7 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
                                 }
 
                                 _ => {
-                                    if attributes.contains(&"jni_new".to_string()) {
+                                    if attributes.contains(&"jnew".to_string()) {
                                             return Err(syn::Error::new_spanned(args, "Return type must be a Self type"));
                                     }
 
@@ -229,7 +229,7 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
                 }
 
                 syn::Type::Tuple(t) => {
-                    if attributes.contains(&"jni_new".to_string()) {
+                    if attributes.contains(&"jnew".to_string()) {
                         return Err(syn::Error::new_spanned(_ty, "Return type must be a Self type"));
                     }
 
@@ -242,7 +242,7 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
                 }
 
                 _ => {
-                    if attributes.contains(&"jni_destroy".to_string()) {
+                    if attributes.contains(&"jdestroy".to_string()) {
                         return Err(syn::Error::new_spanned(_ty, "Destroy method cannot have return type"));
                     }
 
@@ -252,7 +252,7 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
         }
 
         _ => {
-            if impl_name.is_some() && attributes.contains(&"jni_new".to_string()) {
+            if impl_name.is_some() && attributes.contains(&"jnew".to_string()) {
                 Err(syn::Error::new_spanned(name, "Impl new() must return `Self` type"))
             } else {
                 Ok((ReturnType::Default, false))
@@ -299,7 +299,7 @@ pub fn validate_fn_args(fn_args: &Punctuated<FnArg, Comma>, is_impl: bool, attrs
                         }
 
                         if is_impl && ty.ident.to_string().to_lowercase() == "jclass" {
-                            if !attrs.contains(&"jni_static".to_string()) {
+                            if !attrs.contains(&"jstatic".to_string()) {
                                 return Err(syn::Error::new_spanned(v, "JClass is not allowed in second position on impl methods"));
                             }
                         }
@@ -355,7 +355,7 @@ pub fn filter_out_ignored(item_impl: &mut ItemImpl) {
                 let s = &attr.path.segments;
                 for seg in s {
                     let ident = seg.ident.to_string();
-                    if ident == "jni_ignore" {
+                    if ident == "jignore" {
                         return false;
                     }
                 }
@@ -600,7 +600,7 @@ pub fn rename_attr(ident: &Ident, attributes: &Vec<Attribute>) -> Ident {
     let mut is_rename = false;
     for attr in attributes {
         for seg in &attr.path.segments {
-            if seg.ident.to_string() == "jni_name" {
+            if seg.ident.to_string() == "jname" {
                 is_rename = true;
             }
         }
@@ -768,7 +768,7 @@ pub fn generate_impl_functions(
 
                 // special case for new fn
                 let stream: TokenStream;
-                if attrs.contains(&"jni_new".to_string()) {
+                if attrs.contains(&"jnew".to_string()) {
 
                     let mat_res = if is_result {
                         quote! {
@@ -835,7 +835,7 @@ pub fn generate_impl_functions(
                             }
                         }
                     };
-                } else if attrs.contains(&"jni_static".to_string()) {
+                } else if attrs.contains(&"jstatic".to_string()) {
 
                     stream = quote! {
                         #target
@@ -867,7 +867,7 @@ pub fn generate_impl_functions(
                         }
                     };
                 
-                } else if attrs.contains(&"jni_destroy".to_string()) {
+                } else if attrs.contains(&"jdestroy".to_string()) {
 
                     let mut_kwrd = if fn_is_mut {
                         quote! { mut }

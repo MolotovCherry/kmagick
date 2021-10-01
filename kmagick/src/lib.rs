@@ -13,7 +13,7 @@ mod utils;
 use jni_tools::{Cacher, Utils};
 use utils::Result;
 use jni::sys::{jint, jobjectArray, jsize};
-use jni_macros::{jni_class, jni_ignore, jni_name, jni_static};
+use jni_macros::{jclass, jignore, jname, jstatic};
 use magick_rust;
 
 use log::{LevelFilter, info};
@@ -96,9 +96,9 @@ fn init_logger() -> Result<()> {
 
 struct Magick { }
 
-#[jni_class(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad.kmagick/MagickException")]
+#[jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad.kmagick/MagickException")]
 impl Magick {
-    #[jni_static]
+    #[jstatic]
     fn nativeInit() -> Result<()> {
         init()?;
 
@@ -109,7 +109,7 @@ impl Magick {
         Ok(())
     }
 
-    #[jni_static]
+    #[jstatic]
     fn magickQueryFonts(env: JNIEnv, _: JObject, pattern: JString) -> Result<jobjectArray> {
         let pat: String = env.get_jstring(pattern)?;
 
@@ -124,7 +124,7 @@ impl Magick {
         Ok(arr)
     }
 
-    #[jni_static]
+    #[jstatic]
     fn nativeTerminate(env: JNIEnv) {
         magick_rust::magick_wand_terminus();
         env.clear_cache();
@@ -132,8 +132,8 @@ impl Magick {
         info!("Magick::nativeTerminate() Terminated environment");
     }
 
-    #[jni_static]
-    #[jni_name(name="nativeSetLogLevel")]
+    #[jstatic]
+    #[jname(name="nativeSetLogLevel")]
     fn setLogLevel(_: JNIEnv, _: JObject, level: jint) {
         let level = match level {
             x if x == LevelFilter::Off as i32 => LevelFilter::Off,
@@ -148,7 +148,7 @@ impl Magick {
         log::set_max_level(level);
     }
 
-    #[jni_ignore]
+    #[jignore]
     fn isMagickWandInstantiated() -> bool {
         unsafe {
             match magick_rust::bindings::IsMagickWandInstantiated() {

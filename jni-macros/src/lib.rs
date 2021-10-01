@@ -6,7 +6,7 @@ use quote::{ToTokens, quote};
 mod utils;
 
 #[proc_macro_attribute]
-pub fn jni_method(attr: TokenStream, item: TokenStream) -> TokenStream {
+pub fn jmethod(attr: TokenStream, item: TokenStream) -> TokenStream {
     let item_fn = syn::parse_macro_input!(item as syn::ItemFn);
     let attrs = syn::parse_macro_input!(attr as syn::AttributeArgs);
 
@@ -162,7 +162,7 @@ pub fn jni_method(attr: TokenStream, item: TokenStream) -> TokenStream {
 
 // set the function name used for jni - this way you can use whatever actual function name you want
 #[proc_macro_attribute]
-pub fn jni_name(attr: TokenStream, item: TokenStream) -> TokenStream {
+pub fn jname(attr: TokenStream, item: TokenStream) -> TokenStream {
     let mut item_fn = syn::parse_macro_input!(item as syn::ItemFn);
     let attrs = syn::parse_macro_input!(attr as syn::AttributeArgs);
 
@@ -185,42 +185,42 @@ pub fn jni_name(attr: TokenStream, item: TokenStream) -> TokenStream {
 
 /// Don't generate an implementation for a method in an impl
 #[proc_macro_attribute]
-pub fn jni_ignore(_: TokenStream, item: TokenStream) -> TokenStream {
+pub fn jignore(_: TokenStream, item: TokenStream) -> TokenStream {
     // even though this is a no-op, this validates that it is an ItemFn and not something else
     let item_fn = syn::parse_macro_input!(item as syn::ItemFn);
     item_fn.to_token_stream().into()
 }
 
 #[proc_macro_attribute]
-pub fn jni_static(_: TokenStream, item: TokenStream) -> TokenStream {
+pub fn jstatic(_: TokenStream, item: TokenStream) -> TokenStream {
     // even though this is a no-op, this validates that it is an ItemFn and not something else
     let item_fn = syn::parse_macro_input!(item as syn::ItemFn);
     item_fn.to_token_stream().into()
 }
 
 #[proc_macro_attribute]
-pub fn jni_destroy(_: TokenStream, item: TokenStream) -> TokenStream {
+pub fn jdestroy(_: TokenStream, item: TokenStream) -> TokenStream {
     // even though this is a no-op, this validates that it is an ItemFn and not something else
     let item_fn = syn::parse_macro_input!(item as syn::ItemFn);
     item_fn.to_token_stream().into()
 }
 
 #[proc_macro_attribute]
-pub fn jni_new(_: TokenStream, item: TokenStream) -> TokenStream {
+pub fn jnew(_: TokenStream, item: TokenStream) -> TokenStream {
     // even though this is a no-op, this validates that it is an ItemFn and not something else
     let item_fn = syn::parse_macro_input!(item as syn::ItemFn);
     item_fn.to_token_stream().into()
 }
 
 #[proc_macro_attribute]
-pub fn jni_target(_: TokenStream, item: TokenStream) -> TokenStream {
+pub fn jtarget(_: TokenStream, item: TokenStream) -> TokenStream {
     // even though this is a no-op, this validates that it is an ItemFn and not something else
     let item_fn = syn::parse_macro_input!(item as syn::ItemFn);
     item_fn.to_token_stream().into()
 }
 
 #[proc_macro_attribute]
-pub fn jni_class(attr: TokenStream, item: TokenStream) -> TokenStream {
+pub fn jclass(attr: TokenStream, item: TokenStream) -> TokenStream {
     let item_impl = syn::parse_macro_input!(item as syn::ItemImpl);
     let mut item_impl_mod = item_impl.clone();
     let attrs = syn::parse_macro_input!(attr as syn::AttributeArgs);
