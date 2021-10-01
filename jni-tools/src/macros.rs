@@ -3,7 +3,7 @@ macro_rules! setup_panic {
     () => {
         {
             // set up empty panic handler to suppress output
-            ::std::panic::set_hook(Box::new(|_| { }));
+            std::panic::set_hook(Box::new(|_| { }));
         }
     };
 }

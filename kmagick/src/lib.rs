@@ -13,7 +13,6 @@ mod utils;
 use jni_tools::{Cacher, Utils};
 use utils::Result;
 use jni::sys::{jint, jobjectArray, jsize};
-use jni_macros::{jclass, jignore, jname, jstatic};
 use magick_rust;
 
 use log::{LevelFilter, info};
@@ -30,7 +29,7 @@ use jni::{
     JNIEnv
 };
 use jni::objects::{JObject, JString};
-use jni_tools::setup_panic;
+use jni_tools::{setup_panic, jclass, jignore, jname, jstatic};
 
 
 static INIT: Once = Once::new();

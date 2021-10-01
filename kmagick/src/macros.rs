@@ -3,7 +3,7 @@
 macro_rules! wand_wrapper {
     ($name:ident) => {
         use std::ops::{Deref, DerefMut};
-        use jni_macros::{jclass, jnew, jdestroy};
+        use jni_tools::{jclass, jnew, jdestroy};
 
         struct $name {
             wand: magick_rust::$name
