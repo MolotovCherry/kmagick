@@ -798,9 +798,9 @@ pub fn generate_impl_functions(
                         #target
                         #[no_mangle]
                         pub extern "system" fn #java_name(env: JNIEnv#inputs) {
-                            use ::jni_tools::Handle;
-                            use ::jni_tools::Cacher;
-                            use ::log::error;
+                            use jni_tools::Handle;
+                            use jni_tools::Cacher;
+                            use log::error;
 
                             let p_res = ::std::panic::catch_unwind(|| {
                                 #mat_res
@@ -842,8 +842,8 @@ pub fn generate_impl_functions(
                         #target
                         #[no_mangle]
                         pub extern "system" fn #java_name(env: JNIEnv#inputs) #ret_type {
-                            use ::jni_tools::Cacher;
-                            use ::log::error;
+                            use jni_tools::Cacher;
+                            use log::error;
 
                             let p_res = ::std::panic::catch_unwind(|| {
                                 #res_binding #impl_name::#fn_name(#fn_call_args)#res_semicolon
@@ -881,9 +881,9 @@ pub fn generate_impl_functions(
                         #target
                         #[no_mangle]
                         pub extern "system" fn #java_name(env: JNIEnv#inputs) {
-                            use ::jni_tools::Handle;
-                            use ::jni_tools::Cacher;
-                            use ::log::error;
+                            use jni_tools::Handle;
+                            use jni_tools::Cacher;
+                            use log::error;
 
                             let p_res = ::std::panic::catch_unwind(|| {
                                 let res = env.take_handle::<#impl_name>(#handle_cls, obj);
@@ -934,9 +934,9 @@ pub fn generate_impl_functions(
                         #target
                         #[no_mangle]
                         pub extern "system" fn #java_name(env: JNIEnv#inputs) #ret_type {
-                            use ::jni_tools::Handle;
-                            use ::jni_tools::Cacher;
-                            use ::log::error;
+                            use jni_tools::Handle;
+                            use jni_tools::Cacher;
+                            use log::error;
 
                             let p_res = ::std::panic::catch_unwind(|| {
                                 let res = env.get_handle::<#impl_name>(#handle_cls, obj);

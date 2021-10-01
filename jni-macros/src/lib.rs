@@ -131,8 +131,8 @@ pub fn jni_method(attr: TokenStream, item: TokenStream) -> TokenStream {
         #target
         #[no_mangle]
         pub extern "system" fn #java_fn(env: JNIEnv#fn_inputs) #java_return {
-            use ::jni_tools::Cacher;
-            use ::log::error;
+            use jni_tools::Cacher;
+            use log::error;
             
             let p_res = ::std::panic::catch_unwind(|| {
                 #res_binding #name(#fn_call)#res_semicolon
