@@ -3,8 +3,9 @@
 macro_rules! wand_wrapper {
     ($name:ident) => {
         use std::ops::{Deref, DerefMut};
+        use jni_macros::{jni_class, jni_new};
 
-        pub struct $name {
+        struct $name {
             wand: magick_rust::$name
         }
 
@@ -24,10 +25,14 @@ macro_rules! wand_wrapper {
             }
         }
 
-        impl $name {
-            pub fn new() -> Self {
-                Self {
-                    wand: magick_rust::$name::new()
+        paste::paste! {
+            #[jni_class(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad.kmagick/" $name "Exception")]
+            impl $name {
+                #[jni_new]
+                fn new() -> Self {
+                    Self {
+                        wand: magick_rust::$name::new()
+                    }
                 }
             }
         }
