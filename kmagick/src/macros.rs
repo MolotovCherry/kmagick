@@ -3,7 +3,7 @@
 macro_rules! wand_wrapper {
     ($name:ident) => {
         use std::ops::{Deref, DerefMut};
-        use jni_macros::{jni_class, jni_new};
+        use jni_macros::{jni_class, jni_new, jni_destroy};
 
         struct $name {
             wand: magick_rust::$name
@@ -33,6 +33,11 @@ macro_rules! wand_wrapper {
                     Self {
                         wand: magick_rust::$name::new()
                     }
+                }
+
+                #[jni_destroy]
+                fn destroy() {
+                    // object dropped when this scope ends
                 }
             }
         }
