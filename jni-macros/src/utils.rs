@@ -16,7 +16,7 @@ pub fn get_args(args: Vec<NestedMeta>) -> syn::Result<HashMap<String, String>> {
     let ignored_args = vec!["target_os"];
 
     if args.is_empty() {
-        return Err(syn::Error::new(proc_macro2::Span::call_site(), format!("Attributes are required")))
+        return Err(syn::Error::new(proc_macro2::Span::mixed_site(), format!("Attributes are required")))
     }
 
     for arg in &args {
@@ -85,7 +85,7 @@ pub fn class_to_ident(class: &str, fn_name: &str) -> Ident {
         format!("Java_{}_{}", cls, fn_name)
     };
     
-    Ident::new(&name, proc_macro2::Span::call_site())
+    Ident::new(&name, proc_macro2::Span::mixed_site())
 }
 
 pub fn fix_class_path(class: &String, slashes: bool) -> String {
@@ -285,7 +285,7 @@ pub fn validate_fn_args(fn_args: &Punctuated<FnArg, Comma>, is_impl: bool, attrs
                 if let syn::Type::Path(ref v) = *v.ty {
                     let seg = &v.path.segments;
                     if seg.len() == 0 {
-                        return Err(syn::Error::new(Span::call_site(), "Empty segments"));
+                        return Err(syn::Error::new(Span::mixed_site(), "Empty segments"));
                     }
 
                     let ty = seg.last().unwrap();

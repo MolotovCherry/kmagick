@@ -49,7 +49,7 @@ pub fn jni_method(attr: TokenStream, item: TokenStream) -> TokenStream {
             java_fn = utils::class_to_ident(v, &name.to_string());
         }
 
-        None => return syn::Error::new(Span::call_site(), "cls is a required attribute").to_compile_error().into()
+        None => return syn::Error::new(Span::mixed_site(), "cls is a required attribute").to_compile_error().into()
     }
 
     let exc = args.get("exc");
@@ -60,7 +60,7 @@ pub fn jni_method(attr: TokenStream, item: TokenStream) -> TokenStream {
     let exc = syn::parse_str::<Expr>(&exc);
     let exc = match exc {
         Ok(v) => v,
-        Err(e) => return syn::Error::new(Span::call_site(), e.to_string()).to_compile_error().into()
+        Err(e) => return syn::Error::new(Span::mixed_site(), e.to_string()).to_compile_error().into()
     };
 
 
@@ -175,7 +175,7 @@ pub fn jni_name(attr: TokenStream, item: TokenStream) -> TokenStream {
     let name = args.get("name");
     let name = match name {
         Some(v) => v,
-        None => return syn::Error::new(Span::call_site(), "Need a name attribute").to_compile_error().into()
+        None => return syn::Error::new(Span::mixed_site(), "Need a name attribute").to_compile_error().into()
     };
 
     let ident = Ident::new(name, item_fn.sig.ident.span());
@@ -235,12 +235,12 @@ pub fn jni_class(attr: TokenStream, item: TokenStream) -> TokenStream {
     let mut cls = args.get("cls");
     if let Some(_) = pkg {
         if let Some(_) = cls {
-            return syn::Error::new(Span::call_site(), "Can't use both pkg and cls attributes at same time").to_compile_error().into();
+            return syn::Error::new(Span::mixed_site(), "Can't use both pkg and cls attributes at same time").to_compile_error().into();
         }
     }
     if let None = pkg {
         if let None = cls {
-            return syn::Error::new(Span::call_site(), "Must specify either pkg or cls attributes").to_compile_error().into();
+            return syn::Error::new(Span::mixed_site(), "Must specify either pkg or cls attributes").to_compile_error().into();
         }
     }
 
