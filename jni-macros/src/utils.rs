@@ -1,10 +1,11 @@
 use std::collections::HashMap;
+use std::iter::FromIterator;
 
 use proc_macro2::{Ident, Span, TokenStream, TokenTree};
 use syn::punctuated::Punctuated;
 use syn::token::Comma;
 use syn::{Attribute, FnArg, ImplItem, ItemImpl, Meta, NestedMeta, Pat, PathArguments, ReturnType, Type};
-use quote::quote;
+use quote::{quote, ToTokens};
 use rand::Rng;
 
 const CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -321,7 +322,7 @@ pub fn validate_fn_args(fn_args: &Punctuated<FnArg, Comma>, is_impl: bool, attrs
     Ok(())
 }
 
-pub fn extract_second_type<'a>(fn_args: &Punctuated<FnArg, Comma>) -> Option<Ident> {
+pub fn extract_second_type<'a>(fn_args: &Punctuated<FnArg, Comma>) -> Option<TokenStream> {
     let mut i = 0usize;
     for arg in fn_args {
         match arg {
@@ -329,8 +330,8 @@ pub fn extract_second_type<'a>(fn_args: &Punctuated<FnArg, Comma>) -> Option<Ide
 
                 if i == 1 {
                     if let Type::Path(r) = &*v.ty {
-                        if let Some(s) = r.path.segments.last() {
-                            return Some(s.ident.clone());
+                        if r.path.segments.len() > 0 {
+                            return Some(r.path.segments.to_token_stream())
                         }
                     }
                 } else if i > 1 {
@@ -409,7 +410,7 @@ pub fn validate_impl_returns(items: &Vec<ImplItem>, name: &Ident) -> syn::Result
     Ok(impl_returns)
 }
 
-pub fn impl_extract_second_types(items: &Vec<ImplItem>) -> syn::Result<Vec<Option<Ident>>> {
+pub fn impl_extract_second_types(items: &Vec<ImplItem>) -> syn::Result<Vec<Option<TokenStream>>> {
     let mut impl_idents = vec![];
 
     for item in items {
@@ -422,8 +423,8 @@ pub fn impl_extract_second_types(items: &Vec<ImplItem>) -> syn::Result<Vec<Optio
     Ok(impl_idents)
 }
 
-pub fn impl_fn_args(input: &Punctuated<FnArg, Comma>) -> syn::Result<Vec<(String, String)>> {
-    let mut new_punc: Vec<(String, String)> = vec![];
+pub fn impl_fn_args(input: &Punctuated<FnArg, Comma>) -> syn::Result<Vec<(TokenStream, TokenStream)>> {
+    let mut new_punc: Vec<(TokenStream, TokenStream)> = vec![];
 
     let mut i = 0usize;
     for arg in input {
@@ -433,33 +434,33 @@ pub fn impl_fn_args(input: &Punctuated<FnArg, Comma>) -> syn::Result<Vec<(String
 
                 // only process after the first 2
                 if i >= 3 {
-                    let mut ty: String = "".to_string();
+                    let mut ty = TokenStream::new();
                     if let Type::Path(d) = &*v.ty {
                         let seg = &d.path.segments;
                         if seg.len() == 0{
                             return Err(syn::Error::new_spanned(v, "Segments empty"))
                         }
-                        ty = seg.last().unwrap().ident.to_string()
+                        ty.extend(seg.to_token_stream());
                     }
 
                     if let Pat::Ident(b) = &*v.pat {
-                        let ident = b.ident.to_string();
+                        let ident = b.ident.to_token_stream();
 
-                        new_punc.push((ident, ty.clone()))
-                    }
-
-                    if let Pat::Wild(_) = &*v.pat {
-                        let id: String;
-
-                        id = (0..10)
+                        new_punc.push(
+                            (ident, ty)
+                        )
+                    } else if let Pat::Wild(_) = &*v.pat {
+                        let id = (0..10)
                             .map(|_| {
                                 let idx = rand::thread_rng().gen_range(0..CHARSET.len());
                                 CHARSET[idx] as char
                             })
-                            .collect();
+                            .collect::<String>();
                         
+                        let id = id.parse::<TokenStream>()?;
+
                         new_punc.push(
-                            (id, ty.clone())
+                            (id, ty)
                         );
                     }
                 }
@@ -491,44 +492,47 @@ pub fn impl_is_fn_mut(input: &Punctuated<FnArg, Comma>) -> bool {
 pub fn fn_full_args(args: &Punctuated<FnArg, Comma>) -> syn::Result<(TokenStream, TokenStream)> {
     let mut fn_sig_vec = vec![];
     let mut fn_call_vec = vec![];
-    
+
     let mut num = 0usize;
     for arg in args {
         match arg {
             // covers both typed and wildcards
             FnArg::Typed(b) => {
-                let mut ty = String::new();
-                let mut ident = String::new();
+                let mut ty = TokenStream::new();
+                let mut ident = TokenStream::new();
                 if let Type::Path(d) = &*b.ty {
                     let seg = &d.path.segments;
                     if seg.len() == 0 {
                         return Err(syn::Error::new_spanned(b, "Segments empty"))
                     }
-                    ty = seg.last().unwrap().ident.to_string();
+
+                    ty.extend(seg.to_token_stream());
                 }
 
                 if let Pat::Ident(b) = &*b.pat {
-                    ident = b.ident.to_string();
+                    ident = b.to_token_stream();
                 }
 
                 if let Pat::Wild(_) = &*b.pat {
-                    ident = (0..10)
+                    let id = (0..10)
                         .map(|_| {
                             let idx = rand::thread_rng().gen_range(0..CHARSET.len());
                             CHARSET[idx] as char
                         })
-                        .collect();
+                        .collect::<String>();
+
+                    ident = id.parse::<TokenStream>()?;
                 }
 
                 if num == 0 {
                     //fn_sig.extend(syn::parse_str::<TokenStream>("env: jni::JNIEnv"));
-                    fn_call_vec.push("env".to_string());
+                    fn_call_vec.push(quote! { env });
                 } else if num == 1 {
-                    fn_sig_vec.push(format!(", obj: {}", ty));
-                    fn_call_vec.push("obj".to_string());
+                    fn_sig_vec.push(quote! { , obj: #ty });
+                    fn_call_vec.push(quote! { , obj });
                 } else {
-                    fn_sig_vec.push(format!("{}: {}", ident, ty));
-                    fn_call_vec.push(ident);
+                    fn_sig_vec.push(quote! { , #ident: #ty });
+                    fn_call_vec.push(quote! { , #ident });
                 }
 
                 num += 1;
@@ -540,19 +544,18 @@ pub fn fn_full_args(args: &Punctuated<FnArg, Comma>) -> syn::Result<(TokenStream
     }
 
     if fn_sig_vec.len() == 0 {
-        fn_sig_vec.push(", obj: jni::objects::JObject".to_string());
+        fn_sig_vec.push(quote! { , obj: jni::objects::JObject });
     }
 
-    let fn_sig_str = fn_sig_vec.join(", ");
-    let fn_call_str = fn_call_vec.join(", ");
+    let mut fn_sig_tokens = TokenStream::new();
+    fn_sig_tokens.extend(fn_sig_vec);
+    let mut fn_call_tokens = TokenStream::new();
+    fn_call_tokens.extend(fn_call_vec);
 
-    let fn_sig: TokenStream = syn::parse_str(&fn_sig_str)?;
-    let fn_call: TokenStream = syn::parse_str(&fn_call_str)?;
-
-    Ok((fn_call, fn_sig))
+    Ok((fn_call_tokens, fn_sig_tokens))
 }
 
-pub fn impl_fn_fill_args(args: &Punctuated<FnArg, Comma>, rest: &Vec<(String, String)>) -> syn::Result<TokenStream> {
+pub fn impl_fn_fill_args(args: &Punctuated<FnArg, Comma>, rest: &Vec<(TokenStream, TokenStream)>) -> syn::Result<TokenStream> {
     let mut tk = TokenStream::new();
     
     let mut num = 0usize;
@@ -574,10 +577,11 @@ pub fn impl_fn_fill_args(args: &Punctuated<FnArg, Comma>, rest: &Vec<(String, St
     if num >= 2 {
         tk.extend(syn::parse_str::<TokenStream>(", obj"));
     }
-
-    tk.extend(
-        syn::parse_str::<TokenStream>(&rest.iter().map(|v| { format!(", {}", v.0) }).collect::<String>())?
-    );
+    if num >= 3 {
+        tk.extend(
+            rest.iter().map(|(v, _)| { quote! { , #v } }).collect::<TokenStream>()
+        );
+    }
 
     Ok(tk)
 }
@@ -657,7 +661,8 @@ pub fn generate_impl_functions(
                             , obj: #v
                         };
 
-                        let res: TokenStream = syn::parse_str(&fn_inputs.iter().map(|v| { format!(", {}: {}", v.0, v.1) }).collect::<String>())?;
+                        let res = fn_inputs.iter().map(|(v1, v2)| { quote! { , #v1: #v2 } }).collect::<Vec<TokenStream>>();
+                        
                         tk.extend(res);
 
                         tk

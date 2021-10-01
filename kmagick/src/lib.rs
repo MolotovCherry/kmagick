@@ -10,9 +10,16 @@ mod magick_wand;
 mod pixel_wand;
 mod utils;
 
-use jni_tools::{Cacher, Utils};
+use jni_tools::{
+    Cacher, Utils, setup_panic, jclass,
+    jignore, jname, jstatic
+};
 use utils::Result;
+use jni::{
+    JNIEnv
+};
 use jni::sys::{jint, jobjectArray, jsize};
+use jni::objects::{JObject, JString};
 use magick_rust;
 
 use log::{LevelFilter, info};
@@ -25,11 +32,6 @@ use log::Level;
 use simplelog::*;
 
 use std::sync::Once;
-use jni::{
-    JNIEnv
-};
-use jni::objects::{JObject, JString};
-use jni_tools::{setup_panic, jclass, jignore, jname, jstatic};
 
 
 static INIT: Once = Once::new();
