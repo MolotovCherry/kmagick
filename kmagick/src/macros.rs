@@ -1,14 +1,3 @@
-/// If in debug mode, sends first param to function. If in release mode, sends 2nd param to function
-macro_rules! debug_cond {
-    ($a:expr, $b:expr) => {
-        if cfg!(debug_assertions) {
-            $a
-        } else {
-            $b
-        }
-    };
-}
-
 /// Construct a wand wrapper over Wand types which implements Send
 /// and (naturally) deref and deref_mut
 macro_rules! wand_wrapper {

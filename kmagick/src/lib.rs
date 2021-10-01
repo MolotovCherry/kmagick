@@ -13,7 +13,7 @@ mod utils;
 use jni_tools::{Cacher, Utils};
 use utils::Result;
 use jni::sys::{jint, jobjectArray, jsize};
-use jni_macros::{jni_class, jni_name, jni_static};
+use jni_macros::{jni_class, jni_ignore, jni_name, jni_static};
 use magick_rust;
 
 use log::{LevelFilter, info};
@@ -146,5 +146,16 @@ impl Magick {
         };
 
         log::set_max_level(level);
+    }
+
+    #[jni_ignore]
+    fn isMagickWandInstantiated() -> bool {
+        unsafe {
+            match magick_rust::bindings::IsMagickWandInstantiated() {
+                magick_rust::bindings::MagickBooleanType_MagickTrue => return true,
+                magick_rust::bindings::MagickBooleanType_MagickFalse => return false,
+                _ => return false
+            }
+        }
     }
 }
