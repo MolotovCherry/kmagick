@@ -84,7 +84,7 @@ pub fn jni_method(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let null_mut = if is_returning {
         quote! {
-            ::std::ptr::null_mut()
+            std::ptr::null_mut()
         }
     } else {
         proc_macro2::TokenStream::new()
@@ -110,7 +110,7 @@ pub fn jni_method(attr: TokenStream, item: TokenStream) -> TokenStream {
                 Err(e) => {
                     let cls = env.cache_find_class(#exc).ok();
                     let msg = format!("`{}` threw an exception : {}", #name_str, e);
-                    error!("{}", msg);
+                    log::error!("{}", msg);
                     if cls.is_some() {
                         env.throw_new(cls.unwrap(), msg).ok();
                     } else {
@@ -130,11 +130,10 @@ pub fn jni_method(attr: TokenStream, item: TokenStream) -> TokenStream {
 
         #target
         #[no_mangle]
-        pub extern "system" fn #java_fn(env: JNIEnv#fn_inputs) #java_return {
+        pub extern "system" fn #java_fn(env: jni::JNIEnv#fn_inputs) #java_return {
             use jni_tools::Cacher;
-            use log::error;
             
-            let p_res = ::std::panic::catch_unwind(|| {
+            let p_res = std::panic::catch_unwind(|| {
                 #res_binding #name(#fn_call)#res_semicolon
 
                 #match_res
@@ -145,7 +144,7 @@ pub fn jni_method(attr: TokenStream, item: TokenStream) -> TokenStream {
                 Err(e) => {
                     let cls = env.cache_find_class("java/lang/RuntimeException").ok();
                     let msg = &format!("`{}()` panicked", #name_str);
-                    error!("{}", msg);
+                    log::error!("{}", msg);
                     if cls.is_some() {
                         env.throw_new(cls.unwrap(), msg).ok();
                     } else {
