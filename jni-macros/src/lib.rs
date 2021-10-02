@@ -219,6 +219,28 @@ pub fn jtarget(_: TokenStream, item: TokenStream) -> TokenStream {
     item_fn.to_token_stream().into()
 }
 
+
+#[proc_macro_attribute]
+pub fn jget(_: TokenStream, item: TokenStream) -> TokenStream {
+    // even though this is a no-op, this validates that it is an ItemFn and not something else
+    let item_fn = syn::parse_macro_input!(item as syn::ItemFn);
+    item_fn.to_token_stream().into()
+}
+
+#[proc_macro_attribute]
+pub fn jset(_: TokenStream, item: TokenStream) -> TokenStream {
+    // even though this is a no-op, this validates that it is an ItemFn and not something else
+    let item_fn = syn::parse_macro_input!(item as syn::ItemFn);
+    item_fn.to_token_stream().into()
+}
+
+#[proc_macro_attribute]
+pub fn jtake(_: TokenStream, item: TokenStream) -> TokenStream {
+    // even though this is a no-op, this validates that it is an ItemFn and not something else
+    let item_fn = syn::parse_macro_input!(item as syn::ItemFn);
+    item_fn.to_token_stream().into()
+}
+
 #[proc_macro_attribute]
 pub fn jclass(attr: TokenStream, item: TokenStream) -> TokenStream {
     let item_impl = syn::parse_macro_input!(item as syn::ItemImpl);

@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::iter::FromIterator;
 
 use proc_macro2::{Ident, Span, TokenStream, TokenTree};
 use syn::punctuated::Punctuated;
@@ -628,6 +627,67 @@ pub fn rename_attr(ident: &Ident, attributes: &Vec<Attribute>) -> Ident {
 }
 
 
+pub fn get_set_take_attrs(attributes: &Vec<Attribute>) -> (Option<String>, Option<String>, Option<String>) {
+    let mut jget_option = None;
+    let mut jget = false;
+    let mut jset_option = None;
+    let mut jset = false;
+    let mut jtake_option = None;
+    let mut jtake = false;
+    for attr in attributes {
+        if attr.path.segments.len() == 0 {
+            continue;
+        }
+
+        let last = attr.path.segments.last().unwrap();
+        if last.ident.to_string() == "jget" {
+            jget = true;
+        } else if last.ident.to_string() == "jset" {
+            jset = true;
+        } else if last.ident.to_string() == "jtake" {
+            jtake = true;
+        }
+
+        let mut passed = false;
+        for token in attr.tokens.clone() {
+            if let TokenTree::Group(g) = token {
+                for t in g.stream() {
+                    if let TokenTree::Ident(i) = &t {
+                        if i.to_string() == "from" && (jget || jtake) {
+                            passed = true;
+                        } else if i.to_string() == "to" && jset {
+                            passed = true;
+                        }
+                    }
+
+                    if passed {
+                        if let TokenTree::Literal(l) = &t {
+                            let value = Some(l.to_string().replace("\"", ""));
+                            
+                            if jget {
+                                jget_option = value;
+                                break;
+                            } else if jset {
+                                jset_option = value;
+                                break;
+                            } else if jtake {
+                                jtake_option = value;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        jget = false;
+        jset = false;
+        jtake = false;
+    }
+
+    (jget_option, jset_option, jtake_option)
+}
+
 pub fn generate_impl_functions(
     items: &Vec<ImplItem>,
     returns: &Vec<(ReturnType, bool)>,
@@ -691,6 +751,25 @@ pub fn generate_impl_functions(
                     format!("{}_{}", ns, impl_name)
                 } else {
                     ns.to_owned()
+                };
+
+                let get_set_take = get_set_take_attrs(&m.attrs);
+                let set_varname = if get_set_take.1.is_some() {
+                    get_set_take.1.unwrap().parse::<TokenStream>()?
+                } else {
+                    quote! { obj }
+                };
+
+                let get_varname = if get_set_take.0.is_some() {
+                    get_set_take.0.unwrap().parse::<TokenStream>()?
+                } else {
+                    quote! { obj }
+                };
+
+                let take_varname = if get_set_take.2.is_some() {
+                    get_set_take.2.unwrap().parse::<TokenStream>()?
+                } else {
+                    quote! { obj }
                 };
 
                 let handle_cls = fix_class_path(&class, true);
@@ -808,7 +887,7 @@ pub fn generate_impl_functions(
 
                             let p_res = std::panic::catch_unwind(|| {
                                 #mat_res
-                                let res = env.set_handle(#handle_cls, obj, r_obj);
+                                let res = env.set_handle(#handle_cls, #set_varname, r_obj);
 
                                 match res {
                                     Ok(_) => (),
@@ -888,7 +967,7 @@ pub fn generate_impl_functions(
                             use jni_tools::Cacher;
 
                             let p_res = std::panic::catch_unwind(|| {
-                                let res = env.take_handle::<#impl_name>(#handle_cls, obj);
+                                let res = env.take_handle::<#impl_name>(#handle_cls, #take_varname);
 
                                 let #mut_kwrd r_obj = match res {
                                     Ok(v) => v,
@@ -940,7 +1019,7 @@ pub fn generate_impl_functions(
                             use jni_tools::Cacher;
 
                             let p_res = std::panic::catch_unwind(|| {
-                                let res = env.get_handle::<#impl_name>(#handle_cls, obj);
+                                let res = env.get_handle::<#impl_name>(#handle_cls, #get_varname);
 
                                 let #mut_kwrd r_obj = match res {
                                     Ok(v) => v,
