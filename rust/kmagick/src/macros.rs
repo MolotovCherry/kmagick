@@ -32,13 +32,12 @@ macro_rules! wand_wrapper {
                     }
                 }
 
-                #[jni_tools::jset(to="_wand")]
                 #[jni_tools::jname(name="nativeClone")]
                 #[jni_tools::jnew]
-                fn clone(env: jni::JNIEnv, obj: jni::objects::JObject, _wand: jni::objects::JObject) -> std::result::Result<Self, Box<dyn std::error::Error>> {
+                fn clone(env: jni::JNIEnv, _: jni::objects::JObject, wand: jni::objects::JObject) -> std::result::Result<Self, Box<dyn std::error::Error>> {
                     use jni_tools::Handle;
 
-                    let r_obj = env.get_handle::<$name>(concat!("com/cherryleafroad.kmagick/", stringify!($name)), obj)?;
+                    let r_obj = env.get_handle::<$name>(concat!("com/cherryleafroad.kmagick/", stringify!($name)), wand)?;
                     let new_wand = r_obj.clone();
 
                     return Ok(Self {

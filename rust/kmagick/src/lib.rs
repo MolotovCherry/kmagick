@@ -18,7 +18,7 @@ use utils::Result;
 use jni::{
     JNIEnv
 };
-use jni::sys::{jint, jobjectArray, jsize};
+use jni::sys::{jint, jobjectArray, jsize, jboolean};
 use jni::objects::{JObject, JString};
 use magick_rust;
 
@@ -147,6 +147,15 @@ impl Magick {
         };
 
         log::set_max_level(level);
+    }
+
+    #[jstatic]
+    fn isInitialized() -> jboolean {
+        let res = Magick::isMagickWandInstantiated();
+        match res {
+            true => 1 as jboolean,
+            false => 0 as jboolean
+        }
     }
 
     #[jignore]

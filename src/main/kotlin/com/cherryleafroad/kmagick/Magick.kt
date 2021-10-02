@@ -12,28 +12,27 @@ object Magick : Closeable {
         System.loadLibrary("kmagick")
     }
 
-    private var initialized: Boolean = false
-
-    @Throws(MagickException::class)
+    @Throws(MagickException::class, RuntimeException::class)
     private external fun nativeInit()
-    @Throws(MagickException::class)
+    @Throws(RuntimeException::class)
     private external fun nativeTerminate()
 
     /**
      * Returns any font that matches the specified pattern (e.g. "*" for all).
      * Returns `null` and an exception if there was an error.
      */
-    @Throws(MagickException::class)
+    @Throws(MagickException::class, RuntimeException::class)
     external fun magickQueryFonts(pattern: String): Array<String>?
 
     /**
      * Set the internal log level used. By default, a debug build = DEBUG log level,
      * and a release build = INFO log level. But you can change it or even turn it off.
      */
+    @Throws(RuntimeException::class)
     fun setLogLevel(level: LogLevel) {
         nativeSetLogLevel(level.id)
     }
-    @Throws(MagickException::class)
+    @Throws(RuntimeException::class)
     private external fun nativeSetLogLevel(level: Int)
 
     /**
@@ -45,9 +44,9 @@ object Magick : Closeable {
      * If you prefer something more idiomatic, you can try a `use` with resources block.
      * E.g. `Magick.initialize().use { }`
      */
+    @Throws(MagickException::class, RuntimeException::class)
     fun initialize(): Magick {
         nativeInit()
-        initialized = true
         return this
     }
 
@@ -58,9 +57,9 @@ object Magick : Closeable {
      * If you would like to automatically call this, try a `use` with resources block.
      * E.g. `Magick.initialize().use { }`
      */
+    @Throws(RuntimeException::class)
     fun terminate() {
         nativeTerminate()
-        initialized = false
     }
 
     /**
@@ -68,7 +67,14 @@ object Magick : Closeable {
      * same thing as [terminate], but it's here to be used with a `use{}` block for
      * convenience. For example `Magick.initialize().use { }`
      */
+    @Throws(RuntimeException::class)
     override fun close() {
         terminate()
     }
+
+    /**
+     * Checks whether the magick system was initialized
+     */
+    @Throws(RuntimeException::class)
+    external fun isInitialized(): Boolean
 }

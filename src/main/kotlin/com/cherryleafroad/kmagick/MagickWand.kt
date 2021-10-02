@@ -2,10 +2,17 @@ package com.cherryleafroad.kmagick
 
 class MagickWandException(message: String) : MagickException(message)
 
-@Suppress("unused", "PrivatePropertyName", "MemberVisibilityCanBePrivate")
+@Suppress("unused")
 class MagickWand {
-    init {
+    constructor() {
         new()
+    }
+
+    /**
+     * Internal use ONLY. Copies another wand
+     */
+    internal constructor(wand: MagickWand) {
+        nativeClone(wand)
     }
 
     /**
@@ -17,7 +24,7 @@ class MagickWand {
      * Call the internal function to create the new wand.
      */
     @Throws(MagickWandException::class)
-    internal external fun new()
+    private external fun new()
 
     /**
      * Check to see if this is still the correct wand.
@@ -31,8 +38,7 @@ class MagickWand {
     @Throws(MagickWandException::class)
     fun clone(): MagickWand {
         handle ?: throw MagickWandException("Wand is null")
-
-        return this.also { it.nativeClone(this) }
+        return MagickWand(this)
     }
     @Throws(MagickWandException::class)
     private external fun nativeClone(wand: MagickWand)

@@ -9,8 +9,15 @@ class PixelWandException(message: String) : MagickException(message)
  */
 @Suppress("unused", "PrivatePropertyName", "MemberVisibilityCanBePrivate")
 class PixelWand {
-    init {
+    constructor() {
         new()
+    }
+
+    /**
+     * Internal use ONLY. Copies another wand
+     */
+    internal constructor(wand: PixelWand) {
+        nativeClone(wand)
     }
 
     /**
@@ -34,7 +41,12 @@ class PixelWand {
      * Clone the wand into a new one.
      */
     @Throws(PixelWandException::class)
-    external fun clone(): PixelWand
+    fun clone(): PixelWand {
+        handle ?: throw PixelWandException("Wand is null")
+        return PixelWand(this)
+    }
+    @Throws(PixelWandException::class)
+    private external fun nativeClone(wand: PixelWand)
 
     /**
      * While this automatically gets called by the `finalize()` destructor,

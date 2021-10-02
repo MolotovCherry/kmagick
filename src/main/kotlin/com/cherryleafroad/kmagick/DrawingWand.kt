@@ -7,8 +7,15 @@ class DrawingWandException(message: String) : MagickException(message)
  */
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class DrawingWand {
-    init {
+    constructor() {
         new()
+    }
+
+    /**
+     * Internal use ONLY. Copies another wand
+     */
+    internal constructor(wand: DrawingWand) {
+        nativeClone(wand)
     }
 
     /**
@@ -24,19 +31,20 @@ class DrawingWand {
 
     /**
      * Verifies whether this is a DrawingWand.
-     *
-     * @return Whether this is a verified DrawingWand.
      */
     @Throws(DrawingWandException::class)
     external fun isWand(): Boolean
 
     /**
      * Clone the wand into a new one.
-     *
-     * @return The cloned DrawingWand.
      */
     @Throws(DrawingWandException::class)
-    external fun clone(): DrawingWand
+    fun clone(): DrawingWand {
+        handle ?: throw DrawingWandException("Wand is null")
+        return DrawingWand(this)
+    }
+    @Throws(DrawingWandException::class)
+    private external fun nativeClone(wand: DrawingWand)
 
     /**
      * Clear the wand contents.
