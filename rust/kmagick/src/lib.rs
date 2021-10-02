@@ -126,11 +126,11 @@ impl Magick {
     }
 
     #[jstatic]
-    fn nativeTerminate(env: JNIEnv) {
+    fn terminate(env: JNIEnv) {
         magick_rust::magick_wand_terminus();
         env.clear_cache();
 
-        info!("Magick::nativeTerminate() Terminated environment");
+        info!("Magick::terminate() Terminated environment");
     }
 
     #[jstatic]

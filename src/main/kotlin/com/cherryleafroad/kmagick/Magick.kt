@@ -14,8 +14,6 @@ object Magick : Closeable {
 
     @Throws(MagickException::class, RuntimeException::class)
     private external fun nativeInit()
-    @Throws(RuntimeException::class)
-    private external fun nativeTerminate()
 
     /**
      * Returns any font that matches the specified pattern (e.g. "*" for all).
@@ -58,9 +56,7 @@ object Magick : Closeable {
      * E.g. `Magick.initialize().use { }`
      */
     @Throws(RuntimeException::class)
-    fun terminate() {
-        nativeTerminate()
-    }
+    external fun terminate()
 
     /**
      * This isn't meant to be called manually. You can call [terminate] instead. This does the
