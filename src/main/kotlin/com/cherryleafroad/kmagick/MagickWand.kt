@@ -21,6 +21,15 @@ class MagickWand {
     private var handle: Long? = null
 
     /**
+     * Check to see if this is initialized with the underlying C obj.
+     * If it's not, then calling any functions will result in a null exception.
+     *
+     * This object is _ALWAYS_ initialized, except if you called [destroy] and tried to call a method again.
+     */
+    val isInitialized: Boolean
+        get() = handle != null
+
+    /**
      * Call the internal function to create the new wand.
      */
     @Throws(MagickWandException::class)
