@@ -97,8 +97,49 @@ pub fn fix_class_path(class: &String, slashes: bool) -> String {
     }
 }
 
+pub fn get_null_return_obj(ident: &str) -> TokenStream {
+    let mut tks = TokenStream::new();
+
+    let null_mut = quote! { std::ptr::null_mut() };
+    match ident {
+        // object types
+        "jobject" => tks.extend(null_mut),
+        "jclass" => tks.extend(null_mut),
+        "jthrowable" => tks.extend(null_mut),
+        "jstring" => tks.extend(null_mut),
+        "jarray" => tks.extend(null_mut),
+        "jbooleanArray" => tks.extend(null_mut),
+        "jbyteArray" => tks.extend(null_mut),
+        "jcharArray" => tks.extend(null_mut),
+        "jshortArray" => tks.extend(null_mut),
+        "jintArray" => tks.extend(null_mut),
+        "jlongArray" => tks.extend(null_mut),
+        "jfloatArray" => tks.extend(null_mut),
+        "jdoubleArray" => tks.extend(null_mut),
+        "jobjectArray" => tks.extend(null_mut),
+        "jweak" => tks.extend(null_mut),
+        "jfieldID" => tks.extend(null_mut),
+        "jmethodID" => tks.extend(null_mut),
+
+        // numeric types
+        "jint" => tks.extend(quote! { 0 as jni::sys::jint }),
+        "jlong" => tks.extend(quote! { 0 as jni::sys::jlong }),
+        "jbyte" => tks.extend(quote! { 0 as jni::sys::jbyte }),
+        "jboolean" => tks.extend(quote! { 0 as jni::sys::jboolean }),
+        "jchar" => tks.extend(quote! { 0 as jni::sys::jchar }),
+        "jshort" => tks.extend(quote! { 0 as jni::sys::jshort }),
+        "jfloat" => tks.extend(quote! { 0.0 as jni::sys::jfloat }),
+        "jdouble" => tks.extend(quote! { 0.0 as jni::sys::jdouble }),
+        "jsize" => tks.extend(quote! { 0 as jni::sys::jsize }),
+
+        _ => ()
+    }
+
+    tks
+}
+
 // Ok result is (ReturnType, is_result_type)
-pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>, attributes: &Vec<String>) -> syn::Result<(ReturnType, bool)> {
+pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>, attributes: &Vec<String>) -> syn::Result<(ReturnType, String, bool)> {
     let allowed_ret = vec![
         "jarray", "jboolean", "jbooleanArray", "jbyte", "jbyteArray",
         "jchar", "jcharArray", "jclass", "jdouble", "jdoubleArray",
@@ -155,6 +196,7 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
 
                             let _ok_res = &a_args[0];
                             let ok_res: syn::Type;
+                            let ident: String;
                             match _ok_res {
                                 syn::GenericArgument::Type(ref v) => {
                                     // validate it's an allowed type
@@ -165,12 +207,12 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
                                                 return Err(syn::Error::new_spanned(args, "Empty segments"));
                                             }
 
-                                            let ident = &*seg.first().unwrap().ident.to_string();
+                                            ident = seg.last().unwrap().ident.to_string();
                                             if attributes.contains(&"jnew".to_string()) {
                                                 if ident != "Self" && ident != impl_name.unwrap().to_string() {
                                                     return Err(syn::Error::new_spanned(v, "Return type must be a Self type"))
                                                 }
-                                            } else if !allowed_ret.contains(&ident) {
+                                            } else if !allowed_ret.contains(&&*ident) {
                                                 return Err(syn::Error::new_spanned(v, "Return type must be a primitive j type (jni::sys::*) or ()"))
                                             }
 
@@ -185,7 +227,7 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
                                             // this is an empty () ok type
                                             // so just return no return type then
                                             if t.elems.len() == 0 {
-                                                return Ok((ReturnType::Default, true));
+                                                return Ok((ReturnType::Default, "".to_string(), true));
                                             }
                                             return Err(syn::Error::new_spanned(_ok_res, "Must be an empty ok () type"))
                                         }
@@ -211,13 +253,13 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
 
                             // reconstruct return type
                             let typebox = Box::new(ok_res);
-                            Ok((ReturnType::Type(*arrow_token, typebox), true))
+                            Ok((ReturnType::Type(*arrow_token, typebox), ident, true))
                         }
                         
                         PathArguments::None => {
                             let new = v.clone();
                             Ok(
-                                (ReturnType::Type(*arrow_token, Box::new(Type::Path(new))), false)
+                                (ReturnType::Type(*arrow_token, Box::new(Type::Path(new))), ident_str, false)
                             )
                         }
 
@@ -236,7 +278,7 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
                     // this is an empty () ok type
                     // so just return no return type then
                     if t.elems.len() == 0 {
-                        return Ok((ReturnType::Default, false));
+                        return Ok((ReturnType::Default, "".to_string(), false));
                     }
                     return Err(syn::Error::new_spanned(_ty, "Must be an empty ok () type"))
                 }
@@ -255,7 +297,7 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
             if impl_name.is_some() && attributes.contains(&"jnew".to_string()) {
                 Err(syn::Error::new_spanned(name, "Impl new() must return `Self` type"))
             } else {
-                Ok((ReturnType::Default, false))
+                Ok((ReturnType::Default, "".to_string(), false))
             }
         }
     }
@@ -398,7 +440,7 @@ pub fn extract_impl_name(self_type: &Type) -> syn::Result<Ident> {
     Ok(type_ident.to_owned())
 }
 
-pub fn validate_impl_returns(items: &Vec<ImplItem>, name: &Ident) -> syn::Result<Vec<(ReturnType, bool)>> {
+pub fn validate_impl_returns(items: &Vec<ImplItem>, name: &Ident) -> syn::Result<Vec<(ReturnType, String, bool)>> {
     let mut impl_returns = vec![];
     for item in items {
         if let ImplItem::Method(m) = item {
@@ -690,7 +732,7 @@ pub fn get_set_take_attrs(attributes: &Vec<Attribute>) -> (Option<String>, Optio
 
 pub fn generate_impl_functions(
     items: &Vec<ImplItem>,
-    returns: &Vec<(ReturnType, bool)>,
+    returns: &Vec<(ReturnType, String, bool)>,
     namespace: (&String, bool, &Ident),
     exc: &str
 ) -> syn::Result<Vec<TokenStream>> {
@@ -706,7 +748,7 @@ pub fn generate_impl_functions(
                 let target = get_cfg_target(&m.attrs);
 
                 let ret_type = &returns[i].0;
-                let is_result = returns[i].1;
+                let is_result = returns[i].2;
 
                 let attrs = top_attrs(&m.attrs);
 
@@ -744,7 +786,7 @@ pub fn generate_impl_functions(
 
                 let is_returning = match ret_type {
                     ReturnType::Default => false,
-                    ReturnType::Type(_, _) => true
+                    ReturnType::Type(..) => true
                 };
 
                 let class = if is_pkg {
@@ -779,10 +821,8 @@ pub fn generate_impl_functions(
                 //
                 // special changing syntax
                 //
-                let null_mut = if is_returning {
-                    quote! {
-                        std::ptr::null_mut()
-                    }
+                let null_ret = if is_returning {
+                    get_null_return_obj(&returns[i].1)
                 } else {
                     TokenStream::new()
                 };
@@ -828,7 +868,7 @@ pub fn generate_impl_functions(
                                     env.throw_new(#exc, msg).ok();
                                 }
 
-                                #null_mut
+                                #null_ret
                             }
                         }
                     }
@@ -945,7 +985,7 @@ pub fn generate_impl_functions(
                                         env.throw_new("java/lang/RuntimeException", msg).ok();
                                     }
 
-                                    #null_mut
+                                    #null_ret
                                 }
                             }
                         }
@@ -1033,7 +1073,7 @@ pub fn generate_impl_functions(
                                             env.throw_new(#exc, msg).ok();
                                         }
                                         
-                                        return #null_mut;
+                                        return #null_ret;
                                     }
                                 };
 
@@ -1054,7 +1094,7 @@ pub fn generate_impl_functions(
                                         env.throw_new("java/lang/RuntimeException", msg).ok();
                                     }
                                     
-                                    #null_mut
+                                    #null_ret
                                 }
                             }
                         }

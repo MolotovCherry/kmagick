@@ -30,14 +30,14 @@ pub fn jmethod(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let name = utils::rename_attr(&item_fn.sig.ident, &item_fn.attrs);
     let name_str = name.to_string();
-    let (java_return, is_result) = match utils::extract_return(&item_fn.sig.output, &name, None, &utils::top_attrs(&item_fn.attrs)) {
+    let (java_return, return_ident, is_result) = match utils::extract_return(&item_fn.sig.output, &name, None, &utils::top_attrs(&item_fn.attrs)) {
         Ok(v) => v,
         Err(e) => return e.to_compile_error().into()
     };
 
     let is_returning = match java_return {
         ReturnType::Default => false,
-        ReturnType::Type(_, _) => true
+        ReturnType::Type(..) => true
     };
 
     // cls is required
@@ -83,9 +83,7 @@ pub fn jmethod(attr: TokenStream, item: TokenStream) -> TokenStream {
     };
 
     let null_mut = if is_returning {
-        quote! {
-            std::ptr::null_mut()
-        }
+        utils::get_null_return_obj(&*return_ident)
     } else {
         proc_macro2::TokenStream::new()
     };
