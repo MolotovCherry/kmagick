@@ -1,4 +1,4 @@
-Set-Location -Path "$PSScriptRoot\kotlin\src"
+Set-Location -Path "$PSScriptRoot\src\main\kotlin"
 
 $classes = @(
     "DrawingWand", "Magick", "MagickWand", "PixelWand"
