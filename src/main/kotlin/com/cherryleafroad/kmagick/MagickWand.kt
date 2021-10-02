@@ -17,7 +17,7 @@ class MagickWand {
      * Call the internal function to create the new wand.
      */
     @Throws(MagickWandException::class)
-    private external fun new()
+    internal external fun new()
 
     /**
      * Check to see if this is still the correct wand.
@@ -29,7 +29,13 @@ class MagickWand {
      * Clone the wand into a new one.
      */
     @Throws(MagickWandException::class)
-    external fun clone(): MagickWand
+    fun clone(): MagickWand {
+        handle ?: throw MagickWandException("Wand is null")
+
+        return this.also { it.nativeClone(this) }
+    }
+    @Throws(MagickWandException::class)
+    private external fun nativeClone(wand: MagickWand)
 
     /**
      * While this automatically gets called by the `finalize()` destructor,

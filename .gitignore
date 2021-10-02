@@ -3,4 +3,7 @@ target
 .vscode
 Cargo.lock
 .vs
-kotlin/src/*.h
+*.h
+gradle
+.gradle
+build

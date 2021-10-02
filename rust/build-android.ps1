@@ -8,7 +8,7 @@ $sep = if ($isWindows) {
     ":"
 }
 
-$root = Resolve-Path -Path "$PSScriptRoot/.."
+$root = Resolve-Path -Path "$PSScriptRoot/../.."
 
 $content = Get-Content  -Path "$root/Application.mk"
 $static = (Select-String -InputObject $content -Pattern "STATIC_BUILD\s+:=\s+([^\s]+)").Matches.Groups[1]
@@ -77,13 +77,8 @@ if ($release) {
     $flags = "--release"
 }
 
-
 if (!$expand) {
-    #if ($release) {
-    #  xargo build --color=always --target=$target $flags
-    #} else {
-      cargo build --color=always --target=$target -p kmagick-rs $flags
-    #}
+    cargo build --color=always --target=$target -p kmagick-rs $flags
 } else {
     cargo expand --color=always --target=$target -p kmagick-rs $flags
 }
