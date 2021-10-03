@@ -13,4 +13,3 @@ syn = { version="1.0.77", features=["full"] }
 proc-macro2 = "1.0.29"
 quote = "1.0.9"
 rand = "0.8.4"
- 

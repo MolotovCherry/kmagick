@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use proc_macro2::{Ident, Span, TokenStream, TokenTree};
 use syn::punctuated::Punctuated;
 use syn::token::Comma;
-use syn::{Attribute, FnArg, ImplItem, ItemImpl, Meta, NestedMeta, Pat, PathArguments, ReturnType, Type};
+use syn::{Attribute, Block, FnArg, ImplItem, ItemImpl, Meta, NestedMeta, Pat, PathArguments, ReturnType, Type};
 use quote::{quote, ToTokens};
 use rand::Rng;
 
@@ -84,7 +84,7 @@ pub fn class_to_ident(class: &str, fn_name: &str) -> Ident {
         let cls = class.replace("/", "_").replace(".", "_");
         format!("Java_{}_{}", cls, fn_name)
     };
-    
+
     Ident::new(&name, proc_macro2::Span::mixed_site())
 }
 
@@ -255,7 +255,7 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
                             let typebox = Box::new(ok_res);
                             Ok((ReturnType::Type(*arrow_token, typebox), ident, true))
                         }
-                        
+
                         PathArguments::None => {
                             let new = v.clone();
                             Ok(
@@ -312,7 +312,7 @@ pub fn validate_fn_args(fn_args: &Punctuated<FnArg, Comma>, is_impl: bool, attrs
         "jobject", "jclass", "jthrowable", "jstring", "jarray", "jbooleanArray",
         "jbyteArray", "jcharArray", "jshortArray", "jintArray", "jlongArray",
         "jfloatArray", "jdoubleArray", "jobjectArray", "jweak", "jint", "jlong ",
-        "jbyte ", "jboolean", "jchar", "jshort", "jfloat", "jdouble", "jsize", 
+        "jbyte ", "jboolean", "jchar", "jshort", "jfloat", "jdouble", "jsize",
         "jfieldID", "jmethodID",
         "JByteBuffer", "JClass", "JFieldID", "JList", "JMap", "JMethodID",
         "JObject", "JStaticFieldID", "JStaticMethodID", "JString", "JThrowable",
@@ -323,7 +323,7 @@ pub fn validate_fn_args(fn_args: &Punctuated<FnArg, Comma>, is_impl: bool, attrs
 
     for arg in fn_args {
         match arg {
-            FnArg::Typed(v) => {                
+            FnArg::Typed(v) => {
                 if let syn::Type::Path(ref v) = *v.ty {
                     let seg = &v.path.segments;
                     if seg.len() == 0 {
@@ -391,7 +391,7 @@ pub fn extract_second_type<'a>(fn_args: &Punctuated<FnArg, Comma>) -> Option<Tok
 }
 
 pub fn filter_out_ignored(item_impl: &mut ItemImpl) {
-    item_impl.items.retain(|i| { 
+    item_impl.items.retain(|i| {
         if let ImplItem::Method(m) = i {
             for attr in &m.attrs {
                 let s = &attr.path.segments;
@@ -405,7 +405,7 @@ pub fn filter_out_ignored(item_impl: &mut ItemImpl) {
 
             return true;
         }
-        
+
         return true;
     });
 }
@@ -497,7 +497,7 @@ pub fn impl_fn_args(input: &Punctuated<FnArg, Comma>) -> syn::Result<Vec<(TokenS
                                 CHARSET[idx] as char
                             })
                             .collect::<String>();
-                        
+
                         let id = id.parse::<TokenStream>()?;
 
                         new_punc.push(
@@ -598,7 +598,7 @@ pub fn fn_full_args(args: &Punctuated<FnArg, Comma>) -> syn::Result<(TokenStream
 
 pub fn impl_fn_fill_args(args: &Punctuated<FnArg, Comma>, rest: &Vec<(TokenStream, TokenStream)>) -> syn::Result<TokenStream> {
     let mut tk = TokenStream::new();
-    
+
     let mut num = 0usize;
     for arg in args {
         match arg {
@@ -705,7 +705,7 @@ pub fn get_set_take_attrs(attributes: &Vec<Attribute>) -> (Option<String>, Optio
                     if passed {
                         if let TokenTree::Literal(l) = &t {
                             let value = Some(l.to_string().replace("\"", ""));
-                            
+
                             if jget {
                                 jget_option = value;
                                 break;
@@ -730,6 +730,10 @@ pub fn get_set_take_attrs(attributes: &Vec<Attribute>) -> (Option<String>, Optio
     (jget_option, jset_option, jtake_option)
 }
 
+pub fn is_empty_block(block: &Block) -> bool {
+    block.stmts.len() == 0
+}
+
 pub fn generate_impl_functions(
     items: &Vec<ImplItem>,
     returns: &Vec<(ReturnType, String, bool)>,
@@ -744,6 +748,7 @@ pub fn generate_impl_functions(
         match _fn {
             ImplItem::Method(m) => {
                 let fn_name = rename_attr(&m.sig.ident, &m.attrs);
+                let empty_fn = is_empty_block(&m.block);
 
                 let target = get_cfg_target(&m.attrs);
 
@@ -764,7 +769,7 @@ pub fn generate_impl_functions(
                         };
 
                         let res = fn_inputs.iter().map(|(v1, v2)| { quote! { , #v1: #v2 } }).collect::<Vec<TokenStream>>();
-                        
+
                         tk.extend(res);
 
                         tk
@@ -815,7 +820,7 @@ pub fn generate_impl_functions(
                 };
 
                 let java_name = class_to_ident(&class, &fn_name.to_string());
-                
+
                 //
                 // special changing syntax
                 //
@@ -985,13 +990,47 @@ pub fn generate_impl_functions(
                             }
                         }
                     };
-                
+
                 } else if attrs.contains(&"jdestroy".to_string()) {
 
                     let mut_kwrd = if fn_is_mut {
                         quote! { mut }
                     } else {
                         TokenStream::new()
+                    };
+
+                    let fn_call = if empty_fn {
+                        TokenStream::new()
+                    } else {
+                        quote! {
+                            r_obj.#fn_name(#fn_call_args);
+                        }
+                    };
+
+                    let fn_call_res_binding = if empty_fn {
+                        TokenStream::new()
+                    } else {
+                        quote! {
+                            let #mut_kwrd r_obj =
+                        }
+                    };
+
+                    let fn_call_sem = if empty_fn {
+                        TokenStream::new()
+                    } else {
+                        quote! { ; }
+                    };
+
+                    let empty_underscore = if empty_fn {
+                        quote! { _ }
+                    } else {
+                        quote! { v }
+                    };
+
+                    let ok_v = if empty_fn {
+                        quote! { () }
+                    } else {
+                        quote! { v }
                     };
 
                     stream = quote! {
@@ -1003,8 +1042,8 @@ pub fn generate_impl_functions(
                             let p_res = std::panic::catch_unwind(|| {
                                 let res = env.take_handle::<#impl_name>(#take_varname);
 
-                                let #mut_kwrd r_obj = match res {
-                                    Ok(v) => v,
+                                #fn_call_res_binding match res {
+                                    Ok(#empty_underscore) => #ok_v,
                                     Err(e) => {
                                         let cls = env.find_class(#exc).ok();
                                         let msg = format!("Failed to take handle for `{}` : {}", #diag, e.to_string());
@@ -1016,9 +1055,9 @@ pub fn generate_impl_functions(
                                         }
                                         return;
                                     }
-                                };
+                                }#fn_call_sem
 
-                                r_obj.#fn_name(#fn_call_args);
+                                #fn_call
                             });
 
                             match p_res {
@@ -1065,7 +1104,7 @@ pub fn generate_impl_functions(
                                         } else {
                                             env.throw_new(#exc, msg).ok();
                                         }
-                                        
+
                                         return #null_ret;
                                     }
                                 };
@@ -1086,7 +1125,7 @@ pub fn generate_impl_functions(
                                     } else {
                                         env.throw_new("java/lang/RuntimeException", msg).ok();
                                     }
-                                    
+
                                     #null_ret
                                 }
                             }
