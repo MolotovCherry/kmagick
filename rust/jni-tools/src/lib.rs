@@ -15,12 +15,10 @@ pub use jni_macros::*;
 pub type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
 
-
 #[allow(non_snake_case)]
 pub mod Settings {
     pub const LONG: &'static str = "java/lang/Long";
     pub const LONG_SIG: &'static str = "Ljava/lang/Long;";
-
     pub const HANDLE: &'static str = "handle";
 }
 
