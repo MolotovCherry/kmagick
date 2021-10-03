@@ -58,6 +58,28 @@ class PixelWand {
     private external fun nativeClone(wand: PixelWand)
 
     /**
+     * Clear any internal exceptions
+     */
+    @Throws(RuntimeException::class)
+    external fun clearException()
+
+    /**
+     * Get the type of an internal exception
+     */
+    fun getExceptionType(): ExceptionType {
+        val exceptionType = nativeGetExceptionType()
+        return (ExceptionType::id::find)(exceptionType)!!
+    }
+    @Throws(PixelWandException::class, RuntimeException::class)
+    private external fun nativeGetExceptionType(): Int
+
+    /**
+     * Get the internal exception type and message
+     */
+    @Throws(PixelWandException::class, RuntimeException::class)
+    external fun getException(): NativeMagickException
+
+    /**
      * While this automatically gets called by the `finalize()` destructor,
      * `finalize()` is not guaranteed to be called at all, nor called on time.
      * It's recommended to manually destroy all wands when finished.

@@ -68,7 +68,8 @@ pub trait Cacher<'a, O> {
     fn cache_find_class(&self, cls: &str) -> Result<JClass<'a>>;
     fn cache_get_object_class(&self, cls: &str, obj: O) -> Result<JClass<'a>>;
     fn cache_get_static_method_id(&self, cls: &str, method: &str, sig: &str) -> Result<JStaticMethodID<'a>>;
-    fn cache_get_method_id(&self, cls: &str, obj: O, method: &str, sig: &str) -> Result<JMethodID<'a>>;
+    fn cache_get_method_id(&self, cls: &str, method: &str, sig: &str) -> Result<JMethodID<'a>>;
+    fn cache_get_method_id_obj(&self, cls: &str, obj: O, method: &str, sig: &str) -> Result<JMethodID<'a>>;
     fn cache_get_field_id(&self, cls: &str, obj: O, field: &str, sig: &str) -> Result<JFieldID<'a>>;
     fn cache_get_field(&self, cls: &str, obj: O, field: &str, ty: &str) -> Result<JValue<'a>>;
     fn cache_get_static_field_id(&self, cls: &str, field: &str, sig: &str) -> Result<JStaticFieldID<'a>>;
@@ -144,7 +145,26 @@ impl<'a> Cacher<'a, JObject<'a>> for JNIEnv<'a> {
         }
     }
 
-    fn cache_get_method_id(&self, cls: &str, obj: JObject, method: &str, sig: &str) -> Result<JMethodID<'a>>
+    fn cache_get_method_id(&self, cls: &str, method: &str, sig: &str) -> Result<JMethodID<'a>>
+    {
+        let cache = &mut *METHOD_ID_CACHE.lock()?;
+        let identifier = &*format!("{}.{}{}", cls, method, sig);
+
+        match cache.get(identifier) {
+            Some(mid) => Ok(mid.0),
+
+            None => {
+                let class = self.cache_find_class(cls)?;
+                // bypass lifetime restriction by transmutation
+                let mid = self.get_method_id(class, method, sig)?;
+                let nmid = JMethodID::from(mid.into_inner());
+                cache.insert(String::from(identifier), SendPtr(nmid));
+                Ok(mid)
+            }
+        }
+    }
+
+    fn cache_get_method_id_obj(&self, cls: &str, obj: JObject, method: &str, sig: &str) -> Result<JMethodID<'a>>
     {
         let cache = &mut *METHOD_ID_CACHE.lock()?;
         let identifier = &*format!("{}.{}{}", cls, method, sig);
