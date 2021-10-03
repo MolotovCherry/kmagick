@@ -37,7 +37,7 @@ macro_rules! wand_wrapper {
                 fn clone(env: jni::JNIEnv, _: jni::objects::JObject, wand: jni::objects::JObject) -> std::result::Result<Self, Box<dyn std::error::Error>> {
                     use jni_tools::Handle;
 
-                    let r_obj = env.get_handle::<$name>(concat!("com/cherryleafroad/kmagick/", stringify!($name)), wand)?;
+                    let r_obj = env.get_handle::<$name>(wand)?;
                     let new_wand = r_obj.clone();
 
                     return Ok(Self {
@@ -60,8 +60,6 @@ macro_rules! wand_wrapper {
                     env: jni::JNIEnv
                 ) -> std::result::Result<jni::sys::jobject, Box<dyn std::error::Error>>
                 {
-                    use jni_tools::Cacher;
-
                     let exc_res = self.wand.get_exception()?;
 
                     let msg = jni::objects::JValue::Object(
@@ -72,12 +70,12 @@ macro_rules! wand_wrapper {
                     let id = jni::objects::JValue::Int(exc_res.1 as jni::sys::jint);
 
                     let cls_str = "com/cherryleafroad/kmagick/NativeMagickException$Companion";
-                    let cls = env.cache_find_class(cls_str)?;
-                    let cls_init_mid = env.cache_get_method_id(cls_str, "<init>", "()V")?;
+                    let cls = env.find_class(cls_str)?;
+                    let cls_init_mid = env.get_method_id(cls, "<init>", "()V")?;
                     let obj = env.new_object_unchecked(cls, cls_init_mid, &[])?;
 
-                    let mid = env.cache_get_method_id(
-                        cls_str,
+                    let mid = env.get_method_id(
+                        cls,
                         "fromNative",
                         "(ILjava/lang/String;)Lcom/cherryleafroad/kmagick/NativeMagickException;"
                     )?;

@@ -814,8 +814,6 @@ pub fn generate_impl_functions(
                     quote! { obj }
                 };
 
-                let handle_cls = fix_class_path(&class, true);
-
                 let java_name = class_to_ident(&class, &fn_name.to_string());
                 
                 //
@@ -859,7 +857,7 @@ pub fn generate_impl_functions(
                         match c_res {
                             Ok(#v_or_underscore) => #v_or_unit,
                             Err(e) => {
-                                let cls = env.cache_find_class(#exc).ok();
+                                let cls = env.find_class(#exc).ok();
                                 let msg = format!("`{}` threw an exception : {}", #diag, e.to_string());
                                 log::error!("{}", msg);
                                 if cls.is_some() {
@@ -900,7 +898,7 @@ pub fn generate_impl_functions(
                             let r_obj = match r_mat {
                                 Ok(v) => v,
                                 Err(e) => {
-                                    let cls = env.cache_find_class(#exc).ok();
+                                    let cls = env.find_class(#exc).ok();
                                     let msg = format!("Failed to create new obj for `{}` : {}", #diag, e.to_string());
                                     log::error!("{}", msg);
                                     if cls.is_some() {
@@ -923,16 +921,15 @@ pub fn generate_impl_functions(
                         #[no_mangle]
                         pub extern "system" fn #java_name(env: jni::JNIEnv#inputs) {
                             use jni_tools::Handle;
-                            use jni_tools::Cacher;
 
                             let p_res = std::panic::catch_unwind(|| {
                                 #mat_res
-                                let res = env.set_handle(#handle_cls, #set_varname, r_obj);
+                                let res = env.set_handle(#set_varname, r_obj);
 
                                 match res {
                                     Ok(_) => (),
                                     Err(e) => {
-                                        let cls = env.cache_find_class(#exc).ok();
+                                        let cls = env.find_class(#exc).ok();
                                         let msg = format!("Failed to set handle for `{}` : {}", #diag, e.to_string());
                                         log::error!("{}", msg);
                                         if cls.is_some() {
@@ -947,7 +944,7 @@ pub fn generate_impl_functions(
                             match p_res {
                                 Ok(_) => (),
                                 Err(e) => {
-                                    let cls = env.cache_find_class("java/lang/RuntimeException").ok();
+                                    let cls = env.find_class("java/lang/RuntimeException").ok();
                                     let msg = &format!("`{}` panicked", #diag);
                                     log::error!("{}", msg);
                                     if cls.is_some() {
@@ -965,8 +962,6 @@ pub fn generate_impl_functions(
                         #target
                         #[no_mangle]
                         pub extern "system" fn #java_name(env: jni::JNIEnv#inputs) #ret_type {
-                            use jni_tools::Cacher;
-
                             let p_res = std::panic::catch_unwind(|| {
                                 #res_binding #impl_name::#fn_name(#fn_call_args)#res_semicolon
 
@@ -976,7 +971,7 @@ pub fn generate_impl_functions(
                             match p_res {
                                 Ok(#v_or_underscore) => #v_or_unit,
                                 Err(e) => {
-                                    let cls = env.cache_find_class("java/lang/RuntimeException").ok();
+                                    let cls = env.find_class("java/lang/RuntimeException").ok();
                                     let msg = &format!("`{}` panicked", #diag);
                                     log::error!("{}", msg);
                                     if cls.is_some() {
@@ -1004,15 +999,14 @@ pub fn generate_impl_functions(
                         #[no_mangle]
                         pub extern "system" fn #java_name(env: jni::JNIEnv#inputs) {
                             use jni_tools::Handle;
-                            use jni_tools::Cacher;
 
                             let p_res = std::panic::catch_unwind(|| {
-                                let res = env.take_handle::<#impl_name>(#handle_cls, #take_varname);
+                                let res = env.take_handle::<#impl_name>(#take_varname);
 
                                 let #mut_kwrd r_obj = match res {
                                     Ok(v) => v,
                                     Err(e) => {
-                                        let cls = env.cache_find_class(#exc).ok();
+                                        let cls = env.find_class(#exc).ok();
                                         let msg = format!("Failed to take handle for `{}` : {}", #diag, e.to_string());
                                         log::error!("{}", msg);
                                         if cls.is_some() {
@@ -1030,7 +1024,7 @@ pub fn generate_impl_functions(
                             match p_res {
                                 Ok(_) => (),
                                 Err(e) => {
-                                    let cls = env.cache_find_class("java/lang/RuntimeException").ok();
+                                    let cls = env.find_class("java/lang/RuntimeException").ok();
                                     let msg = &format!("`{}` panicked", #diag);
                                     log::error!("{}", msg);
                                     if cls.is_some() {
@@ -1056,15 +1050,14 @@ pub fn generate_impl_functions(
                         #[no_mangle]
                         pub extern "system" fn #java_name(env: jni::JNIEnv#inputs) #ret_type {
                             use jni_tools::Handle;
-                            use jni_tools::Cacher;
 
                             let p_res = std::panic::catch_unwind(|| {
-                                let res = env.get_handle::<#impl_name>(#handle_cls, #get_varname);
+                                let res = env.get_handle::<#impl_name>(#get_varname);
 
                                 let #mut_kwrd r_obj = match res {
                                     Ok(v) => v,
                                     Err(e) => {
-                                        let cls = env.cache_find_class(#exc).ok();
+                                        let cls = env.find_class(#exc).ok();
                                         let msg = format!("Failed to get handle for `{}` : {}", #diag, e.to_string());
                                         log::error!("{}", msg);
                                         if cls.is_some() {
@@ -1085,7 +1078,7 @@ pub fn generate_impl_functions(
                             match p_res {
                                 Ok(#v_or_underscore) => #v_or_unit,
                                 Err(e) => {
-                                    let cls = env.cache_find_class("java/lang/RuntimeException").ok();
+                                    let cls = env.find_class("java/lang/RuntimeException").ok();
                                     let msg = &format!("`{}` panicked", #diag);
                                     log::error!("{}", msg);
                                     if cls.is_some() {

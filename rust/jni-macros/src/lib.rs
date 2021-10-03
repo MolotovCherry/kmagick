@@ -106,7 +106,7 @@ pub fn jmethod(attr: TokenStream, item: TokenStream) -> TokenStream {
             match c_res {
                 Ok(#v_or_underscore) => #v_or_unit,
                 Err(e) => {
-                    let cls = env.cache_find_class(#exc).ok();
+                    let cls = env.find_class(#exc).ok();
                     let msg = format!("`{}` threw an exception : {}", #name_str, e);
                     log::error!("{}", msg);
                     if cls.is_some() {
@@ -129,8 +129,6 @@ pub fn jmethod(attr: TokenStream, item: TokenStream) -> TokenStream {
         #target
         #[no_mangle]
         pub extern "system" fn #java_fn(env: jni::JNIEnv#fn_inputs) #java_return {
-            use jni_tools::Cacher;
-            
             let p_res = std::panic::catch_unwind(|| {
                 #res_binding #name(#fn_call)#res_semicolon
 
@@ -140,7 +138,7 @@ pub fn jmethod(attr: TokenStream, item: TokenStream) -> TokenStream {
             match p_res {
                 Ok(#v_or_underscore) => #v_or_unit,
                 Err(e) => {
-                    let cls = env.cache_find_class("java/lang/RuntimeException").ok();
+                    let cls = env.find_class("java/lang/RuntimeException").ok();
                     let msg = &format!("`{}()` panicked", #name_str);
                     log::error!("{}", msg);
                     if cls.is_some() {

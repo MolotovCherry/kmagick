@@ -11,7 +11,7 @@ mod pixel_wand;
 mod utils;
 
 use jni_tools::{
-    Cacher, Utils, setup_panic, jclass,
+    Utils, setup_panic, jclass,
     jignore, jname, jstatic
 };
 use utils::Result;
@@ -74,7 +74,7 @@ fn init_logger() -> Result<()> {
     } else {
         log::set_max_level(LevelFilter::Info);
     }
-    
+
     Ok(())
 }
 
@@ -115,7 +115,7 @@ impl Magick {
         let pat: String = env.get_jstring(pattern)?;
 
         let fonts = magick_rust::magick_query_fonts(&*pat)?;
-        
+
         let arr = env.new_object_array(fonts.len() as jsize, "java/lang/String", JObject::null())?;
         for (i, font) in fonts.iter().enumerate() {
             let value = env.new_string(font)?;
@@ -126,10 +126,8 @@ impl Magick {
     }
 
     #[jstatic]
-    fn terminate(env: JNIEnv) {
+    fn terminate() {
         magick_rust::magick_wand_terminus();
-        env.clear_cache();
-
         info!("Magick::terminate() Terminated environment");
     }
 
