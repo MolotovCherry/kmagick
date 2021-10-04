@@ -24,12 +24,14 @@ use magick_rust;
 
 use log::{LevelFilter, info};
 
-#[cfg(target_os="android")]
-use android_logger::Config;
-#[cfg(target_os="android")]
-use log::Level;
-#[cfg(not(target_os="android"))]
-use simplelog::*;
+cfg_if::cfg_if! {
+    if #[cfg(target_os="android")] {
+        use android_logger::Config;
+        use log::Level;
+    } else {
+        use simplelog::*;
+    }
+}
 
 use std::sync::Once;
 
@@ -56,8 +58,8 @@ fn init() -> Result<()> {
     }
 }
 
-#[cfg(not(target_os="android"))]
 fn init_logger() -> Result<()> {
+    #[cfg(not(target_os="android"))]
     CombinedLogger::init(
         vec![
             TermLogger::new(
@@ -69,17 +71,7 @@ fn init_logger() -> Result<()> {
         ]
     )?;
 
-    if cfg!(debug_assertions) {
-        log::set_max_level(LevelFilter::Debug);
-    } else {
-        log::set_max_level(LevelFilter::Info);
-    }
-
-    Ok(())
-}
-
-#[cfg(target_os="android")]
-fn init_logger() -> Result<()> {
+    #[cfg(target_os="android")]
     android_logger::init_once(
         Config::default()
             .with_min_level(Level::Trace)
@@ -94,6 +86,7 @@ fn init_logger() -> Result<()> {
 
     Ok(())
 }
+
 
 struct Magick { }
 

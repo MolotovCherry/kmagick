@@ -8,6 +8,7 @@ use jni::{
     JNIEnv,
 };
 use log::error;
+use thiserror::Error;
 
 pub mod macros;
 pub use jni_macros::*;
@@ -22,27 +23,13 @@ pub mod Settings {
     pub const HANDLE: &'static str = "handle";
 }
 
-#[derive(Debug)]
-struct HandleError {
-    details: String
-}
 
-impl HandleError {
-    fn new(msg: &str) -> HandleError {
-        HandleError{details: msg.to_string()}
-    }
-}
-
-impl std::fmt::Display for HandleError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f,"{}",self.details)
-    }
-}
-
-impl Error for HandleError {
-    fn description(&self) -> &str {
-        &self.details
-    }
+#[derive(Error, Debug)]
+enum HandleError {
+    #[error("Field `{0}` is null")]
+    NullField(String),
+    #[error("Field `{0}` is already set")]
+    FieldAlreadySet(String)
 }
 
 pub trait Kotlin {
@@ -68,9 +55,9 @@ impl<'a> Kotlin for JNIEnv<'a> {
         let ptr = self.get_field(j_obj, "value", "J")?.j()? as *mut Mutex<R>;
 
         if j_obj.is_null() {
-            error!("env::get_rust_field:: field {} is null", field.to_owned());
+            error!("get_rust_field_kt:: field {} is null", field.to_owned());
             return Err(
-                Box::new(HandleError::new(&*format!("field {} was null", field)))
+                Box::new(HandleError::NullField(field.to_owned()))
             );
         }
 
@@ -91,8 +78,8 @@ impl<'a> Kotlin for JNIEnv<'a> {
         // means that we're going to leak memory if it gets overwritten.
         let handle_field = self.get_field(obj, field, Settings::LONG_SIG)?.l()?;
         if !handle_field.is_null() {
-            error!("env::set_rust_field:: field {} already set", field.to_owned());
-            return Err(Box::new(jni::errors::Error::FieldAlreadySet(field.to_owned())));
+            error!("set_rust_field:: field {} already set", field.to_owned());
+            return Err(Box::new(HandleError::FieldAlreadySet(field.to_owned())));
         }
 
         let mbox = Box::new(::std::sync::Mutex::new(rust_object));
@@ -116,9 +103,9 @@ impl<'a> Kotlin for JNIEnv<'a> {
             let ptr = self.get_field(j_obj, "value", "J")?.j()? as *mut Mutex<R>;
 
             if ptr.is_null() {
-                error!("env::take_rust_field:: field {} is null", field.to_owned());
+                error!("take_rust_field_kt:: field {} is null", field.to_owned());
                 return Err(
-                    Box::new(HandleError::new(&*format!("field {} was null", field)))
+                    Box::new(HandleError::NullField(field.to_owned()))
                 );
             }
 

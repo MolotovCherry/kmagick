@@ -50,11 +50,7 @@ if ($release) {
 }
 
 if (!$expand) {
-    #if ($release) {
-    #  xargo build --target=$target $flags
-    #} else {
-      cargo build --target=$target -p kmagick-rs $flags
-    #}
+    cargo build --target=$target -p kmagick-rs $flags
 } else {
     cargo expand --target=$target -p kmagick-rs $flags
 }
