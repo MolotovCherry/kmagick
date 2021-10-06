@@ -5,7 +5,7 @@ class DrawingWandException(message: String) : MagickException(message)
 /**
  * DrawingWand API. For drawing things on the image (such as text).
  */
-@Suppress("unused", "MemberVisibilityCanBePrivate")
+@Suppress("unused")
 class DrawingWand {
     constructor() {
         new()
@@ -27,7 +27,7 @@ class DrawingWand {
      * Check to see if this is initialized with the underlying C obj.
      * If it's not, then calling any functions will result in a null exception.
      *
-     * This object is _ALWAYS_ initialized, except if you called [destroy] and tried to call a method again.
+     * This object is _ALWAYS_ initialized, unless you call [destroy] and try to call a method again.
      */
     val isInitialized: Boolean
         get() = handle != null
@@ -58,23 +58,23 @@ class DrawingWand {
     /**
      * Clear any internal exceptions
      */
-    @Throws(RuntimeException::class)
+
     external fun clearException()
 
     /**
-     * Get the type of an internal exception
+     * Get the type of internal exception
      */
     fun getExceptionType(): ExceptionType {
         val exceptionType = nativeGetExceptionType()
         return (ExceptionType::id::find)(exceptionType)!!
     }
-    @Throws(DrawingWandException::class, RuntimeException::class)
+    @Throws(DrawingWandException::class)
     private external fun nativeGetExceptionType(): Int
 
     /**
      * Get the internal exception type and message
      */
-    @Throws(DrawingWandException::class, RuntimeException::class)
+    @Throws(DrawingWandException::class)
     external fun getException(): NativeMagickException
 
     /**

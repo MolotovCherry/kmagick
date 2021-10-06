@@ -1,34 +1,36 @@
 /// Construct a wand wrapper over Wand types which implements Send
-/// and (naturally) deref and deref_mut
+/// and (naturally) deref and deref_mut.
+/// This wrapper acts as if it's the exact same type as magick_rust::wand.
+/// You can call methods on it normally, and even access .wand
 macro_rules! wand_wrapper {
-    ($name:ident) => {
-        struct $name {
-            wand: magick_rust::$name
+    ($wand:ident) => {
+        struct $wand{
+            instance: magick_rust::$wand
         }
 
-        unsafe impl Send for $name {}
+        unsafe impl Send for $wand {}
 
-        impl std::ops::Deref for $name {
-            type Target = magick_rust::$name;
+        impl std::ops::Deref for $wand {
+            type Target = magick_rust::$wand;
 
             fn deref(&self) -> &Self::Target {
-                &self.wand
+                &self.instance
             }
         }
 
-        impl std::ops::DerefMut for $name {
+        impl std::ops::DerefMut for $wand {
             fn deref_mut(&mut self) -> &mut Self::Target {
-                &mut self.wand
+                &mut self.instance
             }
         }
 
         paste::paste! {
-            #[jni_tools::jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/" $name "Exception")]
-            impl $name {
+            #[jni_tools::jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/" $wand "Exception")]
+            impl$wand{
                 #[jni_tools::jnew]
                 fn new() -> Self {
                     Self {
-                        wand: magick_rust::$name::new()
+                        instance: magick_rust::$wand::new()
                     }
                 }
 
@@ -37,22 +39,18 @@ macro_rules! wand_wrapper {
                 fn clone(env: jni::JNIEnv, _: jni::objects::JObject, wand: jni::objects::JObject) -> super::utils::Result<Self> {
                     use jni_tools::Handle;
 
-                    let r_obj = env.get_handle::<$name>(wand)?;
-                    let new_wand = r_obj.clone();
-
-                    return Ok(Self {
-                        wand: new_wand
-                    })
+                    let r_obj = env.get_handle::<$wand>(wand)?;
+                    Ok(r_obj.clone())
                 }
 
                 fn clearException(&mut self) -> std::result::Result<(), &'static str> {
-                    Ok(self.wand.clear_exception()?)
+                    Ok(self.clear_exception()?)
                 }
 
                 #[jni_tools::jname(name="nativeGetExceptionType")]
                 fn getExceptionType(&self) -> jni::sys::jint {
                     // bindings::ExceptionType == i32 == jint
-                    self.wand.get_exception_type() as jni::sys::jint
+                    self.get_exception_type() as jni::sys::jint
                 }
 
                 fn getException(
@@ -60,7 +58,7 @@ macro_rules! wand_wrapper {
                     env: jni::JNIEnv
                 ) -> super::utils::Result<jni::sys::jobject>
                 {
-                    let exc_res = self.wand.get_exception()?;
+                    let exc_res = self.get_exception()?;
 
                     let msg = jni::objects::JValue::Object(
                         jni::objects::JObject::from(
@@ -93,6 +91,14 @@ macro_rules! wand_wrapper {
                 #[jni_tools::jdestroy]
                 fn destroy(&self) {
                     // object dropped when this scope ends
+                }
+            }
+        }
+
+        impl Clone for $wand {
+            fn clone(&self) -> Self {
+                Self {
+                    instance: self.instance.clone()
                 }
             }
         }

@@ -7,7 +7,7 @@ class PixelWandException(message: String) : MagickException(message)
 /**
  * PixelWand API. Used for specifying certain colors.
  */
-@Suppress("unused", "PrivatePropertyName", "MemberVisibilityCanBePrivate")
+@Suppress("unused")
 class PixelWand {
     constructor() {
         new()
@@ -29,7 +29,7 @@ class PixelWand {
      * Check to see if this is initialized with the underlying C obj.
      * If it's not, then calling any functions will result in a null exception.
      *
-     * This object is _ALWAYS_ initialized, except if you called [destroy] and tried to call a method again.
+     * This object is _ALWAYS_ initialized, unless you call [destroy] and try to call a method again.
      */
     val isInitialized: Boolean
         get() = handle != null
@@ -60,23 +60,22 @@ class PixelWand {
     /**
      * Clear any internal exceptions
      */
-    @Throws(RuntimeException::class)
     external fun clearException()
 
     /**
-     * Get the type of an internal exception
+     * Get the type of internal exception
      */
     fun getExceptionType(): ExceptionType {
         val exceptionType = nativeGetExceptionType()
         return (ExceptionType::id::find)(exceptionType)!!
     }
-    @Throws(PixelWandException::class, RuntimeException::class)
+    @Throws(PixelWandException::class)
     private external fun nativeGetExceptionType(): Int
 
     /**
      * Get the internal exception type and message
      */
-    @Throws(PixelWandException::class, RuntimeException::class)
+    @Throws(PixelWandException::class)
     external fun getException(): NativeMagickException
 
     /**

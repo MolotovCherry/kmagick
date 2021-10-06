@@ -1,5 +1,5 @@
 use proc_macro::TokenStream;
-use proc_macro2::{Ident, Span};
+use proc_macro2::Span;
 use syn::{self, Expr, ReturnType};
 use quote::{ToTokens, quote};
 
