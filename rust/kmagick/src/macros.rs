@@ -34,7 +34,7 @@ macro_rules! wand_wrapper {
 
                 #[jni_tools::jname(name="nativeClone")]
                 #[jni_tools::jnew]
-                fn clone(env: jni::JNIEnv, _: jni::objects::JObject, wand: jni::objects::JObject) -> std::result::Result<Self, Box<dyn std::error::Error>> {
+                fn clone(env: jni::JNIEnv, _: jni::objects::JObject, wand: jni::objects::JObject) -> super::utils::Result<Self> {
                     use jni_tools::Handle;
 
                     let r_obj = env.get_handle::<$name>(wand)?;
@@ -58,7 +58,7 @@ macro_rules! wand_wrapper {
                 fn getException(
                     &self,
                     env: jni::JNIEnv
-                ) -> std::result::Result<jni::sys::jobject, Box<dyn std::error::Error>>
+                ) -> super::utils::Result<jni::sys::jobject>
                 {
                     let exc_res = self.wand.get_exception()?;
 

@@ -4,7 +4,7 @@ use proc_macro2::{Ident, Span, TokenStream, TokenTree};
 use syn::punctuated::Punctuated;
 use syn::token::Comma;
 use syn::{Attribute, Block, FnArg, ImplItem, ItemImpl, Meta, NestedMeta, Pat, PathArguments, ReturnType, Type};
-use quote::{quote, ToTokens};
+use quote::{ToTokens, format_ident, quote};
 use rand::Rng;
 
 const CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -79,13 +79,11 @@ pub fn get_cfg_target(attributes: &Vec<Attribute>) -> TokenStream {
     tk
 }
 
-pub fn class_to_ident(class: &str, fn_name: &str) -> Ident {
-    let name = {
-        let cls = class.replace("/", "_").replace(".", "_");
-        format!("Java_{}_{}", cls, fn_name)
-    };
+pub fn class_to_ident(class: &str, fn_name: &TokenStream) -> TokenStream {
+    let class = class.replace("/", "_").replace(".", "_").replace("\"", "");
+    let fn_name = fn_name.to_string().replace("\"", "");
 
-    Ident::new(&name, proc_macro2::Span::mixed_site())
+    format_ident!("Java_{}_{}", class, fn_name.to_string()).to_token_stream()
 }
 
 pub fn fix_class_path(class: &String, slashes: bool) -> String {
@@ -639,7 +637,7 @@ pub fn top_attrs(attributes: &Vec<Attribute>) -> Vec<String> {
     attrs
 }
 
-pub fn rename_attr(ident: &Ident, attributes: &Vec<Attribute>) -> Ident {
+pub fn get_rename_attr(ident: &Ident, attributes: &Vec<Attribute>) -> syn::Result<TokenStream> {
     let mut name = ident.to_string();
 
     let mut is_rename = false;
@@ -665,7 +663,8 @@ pub fn rename_attr(ident: &Ident, attributes: &Vec<Attribute>) -> Ident {
         is_rename = false;
     }
 
-    Ident::new(&name, ident.span())
+    let stream = name.parse::<TokenStream>()?;
+    Ok(quote! { #stream })
 }
 
 
@@ -747,8 +746,10 @@ pub fn generate_impl_functions(
     for (i, _fn) in items.iter().enumerate() {
         match _fn {
             ImplItem::Method(m) => {
-                let fn_name = rename_attr(&m.sig.ident, &m.attrs);
+                let fn_name = &m.sig.ident;
                 let empty_fn = is_empty_block(&m.block);
+
+                let binding_name = get_rename_attr(&m.sig.ident, &m.attrs)?;
 
                 let target = get_cfg_target(&m.attrs);
 
@@ -819,7 +820,7 @@ pub fn generate_impl_functions(
                     quote! { obj }
                 };
 
-                let java_name = class_to_ident(&class, &fn_name.to_string());
+                let java_name = class_to_ident(&class, &binding_name);
 
                 //
                 // special changing syntax

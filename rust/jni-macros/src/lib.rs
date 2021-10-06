@@ -5,6 +5,8 @@ use quote::{ToTokens, quote};
 
 mod utils;
 
+
+// wrap a function for jni
 #[proc_macro_attribute]
 pub fn jmethod(attr: TokenStream, item: TokenStream) -> TokenStream {
     let item_fn = syn::parse_macro_input!(item as syn::ItemFn);
@@ -28,9 +30,14 @@ pub fn jmethod(attr: TokenStream, item: TokenStream) -> TokenStream {
         Ok(v) => v
     }
 
-    let name = utils::rename_attr(&item_fn.sig.ident, &item_fn.attrs);
-    let name_str = name.to_string();
-    let (java_return, return_ident, is_result) = match utils::extract_return(&item_fn.sig.output, &name, None, &utils::top_attrs(&item_fn.attrs)) {
+    let fn_name = args.get("name");
+    let fn_name = match fn_name {
+        Some(v) => v.to_token_stream(),
+        None => item_fn.sig.ident.to_token_stream()
+    };
+    let real_fn_name = &item_fn.sig.ident;
+    let name_str = item_fn.sig.ident.to_string();
+    let (java_return, return_ident, is_result) = match utils::extract_return(&item_fn.sig.output, &item_fn.sig.ident, None, &utils::top_attrs(&item_fn.attrs)) {
         Ok(v) => v,
         Err(e) => return e.to_compile_error().into()
     };
@@ -42,15 +49,11 @@ pub fn jmethod(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     // cls is required
     let cls = args.get("cls");
-    let java_fn;
-
-    match cls {
-        Some(v) => {
-            java_fn = utils::class_to_ident(v, &name.to_string());
-        }
+    let java_fn = match cls {
+        Some(v) => utils::class_to_ident(v, &fn_name),
 
         None => return syn::Error::new(Span::mixed_site(), "cls is a required attribute").to_compile_error().into()
-    }
+    };
 
     let exc = args.get("exc");
     let exc = match exc {
@@ -130,7 +133,7 @@ pub fn jmethod(attr: TokenStream, item: TokenStream) -> TokenStream {
         #[no_mangle]
         pub extern "system" fn #java_fn(env: jni::JNIEnv#fn_inputs) #java_return {
             let p_res = std::panic::catch_unwind(|| {
-                #res_binding #name(#fn_call)#res_semicolon
+                #res_binding #real_fn_name(#fn_call)#res_semicolon
 
                 #match_res
             });
@@ -157,25 +160,11 @@ pub fn jmethod(attr: TokenStream, item: TokenStream) -> TokenStream {
 }
 
 // set the function name used for jni - this way you can use whatever actual function name you want
+// used for impl statements. for jmethod, use name attribute instead
 #[proc_macro_attribute]
-pub fn jname(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let mut item_fn = syn::parse_macro_input!(item as syn::ItemFn);
-    let attrs = syn::parse_macro_input!(attr as syn::AttributeArgs);
-
-    let args = match utils::get_args(attrs) {
-        Ok(v) => v,
-        Err(e) => return e.to_compile_error().into()
-    };
-
-    let name = args.get("name");
-    let name = match name {
-        Some(v) => v,
-        None => return syn::Error::new(Span::mixed_site(), "Need a name attribute").to_compile_error().into()
-    };
-
-    let ident = Ident::new(name, item_fn.sig.ident.span());
-    item_fn.sig.ident = ident;
-
+pub fn jname(_: TokenStream, item: TokenStream) -> TokenStream {
+    // even though this is a no-op, this validates that it is an ItemFn and not something else
+    let item_fn = syn::parse_macro_input!(item as syn::ItemFn);
     item_fn.to_token_stream().into()
 }
 
@@ -187,6 +176,7 @@ pub fn jignore(_: TokenStream, item: TokenStream) -> TokenStream {
     item_fn.to_token_stream().into()
 }
 
+// call as static function instead of instance function
 #[proc_macro_attribute]
 pub fn jstatic(_: TokenStream, item: TokenStream) -> TokenStream {
     // even though this is a no-op, this validates that it is an ItemFn and not something else
@@ -194,6 +184,7 @@ pub fn jstatic(_: TokenStream, item: TokenStream) -> TokenStream {
     item_fn.to_token_stream().into()
 }
 
+// take the object from the handle allowing it to be dropped
 #[proc_macro_attribute]
 pub fn jdestroy(_: TokenStream, item: TokenStream) -> TokenStream {
     // even though this is a no-op, this validates that it is an ItemFn and not something else
@@ -201,6 +192,7 @@ pub fn jdestroy(_: TokenStream, item: TokenStream) -> TokenStream {
     item_fn.to_token_stream().into()
 }
 
+// set a handle to Self
 #[proc_macro_attribute]
 pub fn jnew(_: TokenStream, item: TokenStream) -> TokenStream {
     // even though this is a no-op, this validates that it is an ItemFn and not something else
@@ -208,6 +200,9 @@ pub fn jnew(_: TokenStream, item: TokenStream) -> TokenStream {
     item_fn.to_token_stream().into()
 }
 
+// allow a function to be conditionally compiled in the resulting generated output
+// uses same format as #[cfg(target_os)]
+// note: you still are required to use #[cfg(target_os)] on the original impl function
 #[proc_macro_attribute]
 pub fn jtarget(_: TokenStream, item: TokenStream) -> TokenStream {
     // even though this is a no-op, this validates that it is an ItemFn and not something else
@@ -215,7 +210,7 @@ pub fn jtarget(_: TokenStream, item: TokenStream) -> TokenStream {
     item_fn.to_token_stream().into()
 }
 
-
+// Change the object that's gotten when using a regular instance function
 #[proc_macro_attribute]
 pub fn jget(_: TokenStream, item: TokenStream) -> TokenStream {
     // even though this is a no-op, this validates that it is an ItemFn and not something else
@@ -223,6 +218,7 @@ pub fn jget(_: TokenStream, item: TokenStream) -> TokenStream {
     item_fn.to_token_stream().into()
 }
 
+// Change the object variable that's set from default to another one when using jnew
 #[proc_macro_attribute]
 pub fn jset(_: TokenStream, item: TokenStream) -> TokenStream {
     // even though this is a no-op, this validates that it is an ItemFn and not something else
@@ -230,6 +226,7 @@ pub fn jset(_: TokenStream, item: TokenStream) -> TokenStream {
     item_fn.to_token_stream().into()
 }
 
+// Change the variable which is taken when used with jdestroy
 #[proc_macro_attribute]
 pub fn jtake(_: TokenStream, item: TokenStream) -> TokenStream {
     // even though this is a no-op, this validates that it is an ItemFn and not something else
@@ -237,6 +234,7 @@ pub fn jtake(_: TokenStream, item: TokenStream) -> TokenStream {
     item_fn.to_token_stream().into()
 }
 
+// wrap an entire impl for jni, including all functions inside
 #[proc_macro_attribute]
 pub fn jclass(attr: TokenStream, item: TokenStream) -> TokenStream {
     let item_impl = syn::parse_macro_input!(item as syn::ItemImpl);
@@ -300,7 +298,7 @@ pub fn jclass(attr: TokenStream, item: TokenStream) -> TokenStream {
         Ok(v) => v,
         Err(e) => return e.to_compile_error().into()
     };
-    
+
     let exc = match args.get("exc") {
         Some(v) => utils::fix_class_path(&*v, true),
         None => "java/lang/RuntimeException".to_owned()

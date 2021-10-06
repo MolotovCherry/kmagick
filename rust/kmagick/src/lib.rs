@@ -1,7 +1,5 @@
 #![allow(non_snake_case)]
-#![feature(hash_drain_filter)]
 #![allow(dead_code)]
-#![feature(panic_info_message)]
 
 #[macro_use]
 mod macros;
@@ -88,7 +86,7 @@ fn init_logger() -> Result<()> {
 }
 
 
-struct Magick { }
+struct Magick;
 
 #[jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad.kmagick/MagickException")]
 impl Magick {
