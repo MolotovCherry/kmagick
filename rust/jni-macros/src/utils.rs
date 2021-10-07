@@ -743,7 +743,8 @@ pub fn generate_impl_functions(
 
     let second_types = impl_extract_second_types(items)?;
 
-    for (i, _fn) in items.iter().enumerate() {
+    let mut i = 0;
+    for _fn in items.iter() {
         match _fn {
             ImplItem::Method(m) => {
                 let fn_name = &m.sig.ident;
@@ -1135,9 +1136,10 @@ pub fn generate_impl_functions(
                 }
 
                 funcs.push(stream);
+                i += 1;
             }
 
-            _ => return Err(syn::Error::new_spanned(_fn, "Illegal type"))
+            _ => ()//return Err(syn::Error::new_spanned(_fn, "Illegal type"))
         }
     }
 
