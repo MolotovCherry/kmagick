@@ -864,14 +864,9 @@ pub fn generate_impl_functions(
                         match c_res {
                             Ok(#v_or_underscore) => #v_or_unit,
                             Err(e) => {
-                                let cls = env.find_class(#exc).ok();
                                 let msg = format!("`{}` threw an exception : {}", #diag, e.to_string());
                                 log::error!("{}", msg);
-                                if cls.is_some() {
-                                    env.throw_new(cls.unwrap(), msg).ok();
-                                } else {
-                                    env.throw_new(#exc, msg).ok();
-                                }
+                                env.throw_new(#exc, msg).ok();
 
                                 #null_ret
                             }
@@ -905,14 +900,9 @@ pub fn generate_impl_functions(
                             let r_obj = match r_mat {
                                 Ok(v) => v,
                                 Err(e) => {
-                                    let cls = env.find_class(#exc).ok();
                                     let msg = format!("Failed to create new obj for `{}` : {}", #diag, e.to_string());
                                     log::error!("{}", msg);
-                                    if cls.is_some() {
-                                        env.throw_new(cls.unwrap(), msg).ok();
-                                    } else {
-                                        env.throw_new(#exc, msg).ok();
-                                    }
+                                    env.throw_new(#exc, msg).ok();
                                     return;
                                 }
                             };
@@ -936,14 +926,9 @@ pub fn generate_impl_functions(
                                 match res {
                                     Ok(_) => (),
                                     Err(e) => {
-                                        let cls = env.find_class(#exc).ok();
                                         let msg = format!("Failed to set handle for `{}` : {}", #diag, e.to_string());
                                         log::error!("{}", msg);
-                                        if cls.is_some() {
-                                            env.throw_new(cls.unwrap(), msg).ok();
-                                        } else {
-                                            env.throw_new(#exc, msg).ok();
-                                        }
+                                        env.throw_new(#exc, msg).ok();
                                     }
                                 }
                             });
@@ -951,14 +936,9 @@ pub fn generate_impl_functions(
                             match p_res {
                                 Ok(_) => (),
                                 Err(e) => {
-                                    let cls = env.find_class("java/lang/RuntimeException").ok();
                                     let msg = &format!("`{}` panicked", #diag);
                                     log::error!("{}", msg);
-                                    if cls.is_some() {
-                                        env.throw_new(cls.unwrap(), msg).ok();
-                                    } else {
-                                        env.throw_new("java/lang/RuntimeException", msg).ok();
-                                    }
+                                    env.throw_new("java/lang/RuntimeException", msg).ok();
                                 }
                             }
                         }
@@ -978,14 +958,9 @@ pub fn generate_impl_functions(
                             match p_res {
                                 Ok(#v_or_underscore) => #v_or_unit,
                                 Err(e) => {
-                                    let cls = env.find_class("java/lang/RuntimeException").ok();
                                     let msg = &format!("`{}` panicked", #diag);
                                     log::error!("{}", msg);
-                                    if cls.is_some() {
-                                        env.throw_new(cls.unwrap(), msg).ok();
-                                    } else {
-                                        env.throw_new("java/lang/RuntimeException", msg).ok();
-                                    }
+                                    env.throw_new("java/lang/RuntimeException", msg).ok();
 
                                     #null_ret
                                 }
@@ -1047,14 +1022,9 @@ pub fn generate_impl_functions(
                                 #fn_call_res_binding match res {
                                     Ok(#empty_underscore) => #ok_v,
                                     Err(e) => {
-                                        let cls = env.find_class(#exc).ok();
                                         let msg = format!("Failed to take handle for `{}` : {}", #diag, e.to_string());
                                         log::error!("{}", msg);
-                                        if cls.is_some() {
-                                            env.throw_new(cls.unwrap(), msg).ok();
-                                        } else {
-                                            env.throw_new(#exc, msg).ok();
-                                        }
+                                        env.throw_new(#exc, msg).ok();
                                         return;
                                     }
                                 }#fn_call_sem
@@ -1065,14 +1035,9 @@ pub fn generate_impl_functions(
                             match p_res {
                                 Ok(_) => (),
                                 Err(e) => {
-                                    let cls = env.find_class("java/lang/RuntimeException").ok();
                                     let msg = &format!("`{}` panicked", #diag);
                                     log::error!("{}", msg);
-                                    if cls.is_some() {
-                                        env.throw_new(cls.unwrap(), msg).ok();
-                                    } else {
-                                        env.throw_new("java/lang/RuntimeException", msg).ok();
-                                    }
+                                    env.throw_new("java/lang/RuntimeException", msg).ok();
                                 }
                             }
                         }
@@ -1098,14 +1063,9 @@ pub fn generate_impl_functions(
                                 let #mut_kwrd r_obj = match res {
                                     Ok(v) => v,
                                     Err(e) => {
-                                        let cls = env.find_class(#exc).ok();
                                         let msg = format!("Failed to get handle for `{}` : {}", #diag, e.to_string());
                                         log::error!("{}", msg);
-                                        if cls.is_some() {
-                                            env.throw_new(cls.unwrap(), msg).ok();
-                                        } else {
-                                            env.throw_new(#exc, msg).ok();
-                                        }
+                                        env.throw_new(#exc, msg).ok();
 
                                         return #null_ret;
                                     }
@@ -1119,14 +1079,9 @@ pub fn generate_impl_functions(
                             match p_res {
                                 Ok(#v_or_underscore) => #v_or_unit,
                                 Err(e) => {
-                                    let cls = env.find_class("java/lang/RuntimeException").ok();
                                     let msg = &format!("`{}` panicked", #diag);
                                     log::error!("{}", msg);
-                                    if cls.is_some() {
-                                        env.throw_new(cls.unwrap(), msg).ok();
-                                    } else {
-                                        env.throw_new("java/lang/RuntimeException", msg).ok();
-                                    }
+                                    env.throw_new("java/lang/RuntimeException", msg).ok();
 
                                     #null_ret
                                 }

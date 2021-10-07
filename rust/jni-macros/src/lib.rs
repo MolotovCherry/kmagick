@@ -109,14 +109,9 @@ pub fn jmethod(attr: TokenStream, item: TokenStream) -> TokenStream {
             match c_res {
                 Ok(#v_or_underscore) => #v_or_unit,
                 Err(e) => {
-                    let cls = env.find_class(#exc).ok();
                     let msg = format!("`{}` threw an exception : {}", #name_str, e);
                     log::error!("{}", msg);
-                    if cls.is_some() {
-                        env.throw_new(cls.unwrap(), msg).ok();
-                    } else {
-                        env.throw_new(#exc, msg).ok();
-                    }
+                    env.throw_new(#exc, msg).ok();
 
                     #null_mut
                 }
@@ -141,14 +136,9 @@ pub fn jmethod(attr: TokenStream, item: TokenStream) -> TokenStream {
             match p_res {
                 Ok(#v_or_underscore) => #v_or_unit,
                 Err(e) => {
-                    let cls = env.find_class("java/lang/RuntimeException").ok();
                     let msg = &format!("`{}()` panicked", #name_str);
                     log::error!("{}", msg);
-                    if cls.is_some() {
-                        env.throw_new(cls.unwrap(), msg).ok();
-                    } else {
-                        env.throw_new("java/lang/RuntimeException", msg).ok();
-                    }
+                    env.throw_new("java/lang/RuntimeException", msg).ok();
 
                     #null_mut
                 }
