@@ -1,5 +1,5 @@
 [package]
-name = "jni-macros"
+name = "magick-bindings"
 version = "0.1.0"
 edition = "2018"
 
@@ -9,7 +9,6 @@ edition = "2018"
 proc-macro = true
 
 [dependencies]
-syn = { version="1.0.8", features=["full"] }
+syn = { version="1.0.8", features=["full", "extra-traits"] }
 proc-macro2 = "1.0.29"
 quote = "1.0.9"
-rand = "0.8.4"

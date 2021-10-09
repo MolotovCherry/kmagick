@@ -24,6 +24,8 @@ magick_rust = { version = "0.15.0", features = ["disable-hdri"] }
 jni-tools = { path = "../jni-tools" }
 paste = "1.0.5"
 cfg-if = "1.0.0"
+thiserror = "1.0.29"
+magick-bindings = { path = "../magick-bindings" }
 
 [profile.dev]
 # Disabling debug info speeds up builds a bunch,

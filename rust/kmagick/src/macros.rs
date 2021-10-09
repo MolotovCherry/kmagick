@@ -4,7 +4,7 @@
 /// You can call methods on it normally, and even access .wand
 macro_rules! wand_wrapper {
     ($wand:ident) => {
-        struct $wand{
+        struct $wand {
             instance: magick_rust::$wand
         }
 
@@ -102,5 +102,18 @@ macro_rules! wand_wrapper {
                 }
             }
         }
+    }
+}
+
+
+macro_rules! string_get_set {
+    (
+        $wand:ident,
+        $($get:ident, $set:ident, $m_get:ident, $m_set:ident)*
+    ) => {
+        magick_bindings::magick_bindings!(
+            $wand,
+            $($get <<= $m_get() -> Result<String>, mut $set <<= $m_set(arg: &str) -> Result<()>,)*
+        );
     }
 }

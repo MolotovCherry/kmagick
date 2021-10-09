@@ -8,6 +8,7 @@ mod magick_wand;
 mod pixel_wand;
 mod utils;
 
+
 use jni_tools::{
     Utils, setup_panic, jclass,
     jignore, jname, jstatic
