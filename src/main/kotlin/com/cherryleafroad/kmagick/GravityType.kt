@@ -12,5 +12,13 @@ enum class GravityType(val id: Int) {
     EastGravity(6),
     SouthWestGravity(7),
     SouthGravity(8),
-    SouthEastGravity(9)
+    SouthEastGravity(9);
+
+    @Suppress("unused")
+    companion object {
+        @JvmName("fromNative")
+        internal fun fromNative(id: Int): GravityType {
+            return (GravityType::id::find)(id)!!
+        }
+    }
 }

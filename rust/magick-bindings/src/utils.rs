@@ -117,6 +117,10 @@ fn extract_args(
                         ty = r.to_token_stream().to_string().replace(" ", "");
                     }
 
+                    Type::Group(g) => {
+                        ty = g.to_token_stream().to_string().replace(" ", "");
+                    }
+
                     _ => return Err(syn::Error::new_spanned(&v.ty, "Unsupported type"))
                 }
 
@@ -186,6 +190,17 @@ fn get_result_type(ret: ReturnType) -> syn::Result<(String, bool, bool)> {
                     }
                 }
 
+                Type::Group(g) => {
+                    match *g.elem {
+                        Type::Path(p) => {
+                            let ty_str = p.path.segments.to_token_stream().to_string().replace(" ", "");
+                            return Ok((ty_str, false, true))
+                        }
+
+                        _ => return Err(syn::Error::new_spanned(g, "Unsupported group type"))
+                    }
+                }
+
                 _ => return Err(syn::Error::new_spanned(*t, "Illegal return type"))
             }
         }
@@ -217,7 +232,7 @@ pub fn create_function(item: Binding) -> syn::Result<TokenStream> {
     // get list of extracted args
     let extracted = extract_args(item.binding_fn.fn_args)?;
     // get result type + information ; (type, is_result, is_return)
-    let (mut result_type, mut is_result, is_return) = get_result_type(item.binding_fn.ret)?;
+    let (mut result_type, mut is_result, mut is_return) = get_result_type(item.binding_fn.ret)?;
     let fn_name = item.binding_fn.name;
     let orig_fn_name = item.fn_name;
 
@@ -433,6 +448,8 @@ pub fn create_function(item: Binding) -> syn::Result<TokenStream> {
 
             // values should fit into it.. if not, then there's a bigger problem
             "size_t" | "ssize_t" => {
+                is_result = true;
+
                 ret_type = quote! {
                     jni::sys::jsize
                 };
@@ -471,12 +488,25 @@ pub fn create_function(item: Binding) -> syn::Result<TokenStream> {
             // Any other custom type not represented will be treated as an object
             // and these custom types == c_int == jint == i32
             _ => {
+                // force a result type since we're using ? below
+                is_result = true;
+
                 ret_type = quote! {
-                    jni::sys::jint
+                    jni::sys::jobject
                 };
 
+                let class = format!("com/cherryleafroad/kmagick/{}$Companion", result_type);
+                let mid_sig = format!("(I)Lcom/cherryleafroad/kmagick/{};", result_type);
+                let res_type = format!("Lcom/cherryleafroad/kmagick/{};", result_type);
+                post_setup.append_all(quote! {
+                    let val = jni::objects::JValue::Int(res);
+                    let cls = env.find_class(#class)?;
+                    let obj = env.new_object(cls, "()V", &[])?;
+                    let mid = env.get_method_id(cls, "fromNative", #mid_sig)?;
+                });
+
                 last_stmt = quote! {
-                    res
+                    env.call_method_unchecked(obj, mid, jni::signature::JavaType::Object(#res_type.into()), &[val])?.l()?.into_inner()
                 };
             }
         };

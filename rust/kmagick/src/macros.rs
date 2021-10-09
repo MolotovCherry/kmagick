@@ -117,3 +117,27 @@ macro_rules! string_get_set {
         );
     }
 }
+
+macro_rules! get_set_enum {
+    (
+        $wand:ident,
+        $($get:ident, $set:ident, $m_get:ident, $m_set:ident, $ty:ty)*
+    ) => {
+        magick_bindings::magick_bindings!(
+            $wand,
+            $($get <<= $m_get() -> $ty, mut $set <<= $m_set(arg: int32),)*
+        );
+    }
+}
+
+macro_rules! get_set_type {
+    (
+        $wand:ident,
+        $($get:ident, $set:ident, $m_get:ident, $m_set:ident, $ty:ty)*
+    ) => {
+        magick_bindings::magick_bindings!(
+            $wand,
+            $($get <<= $m_get() -> $ty, mut $set <<= $m_set(arg: $ty),)*
+        );
+    }
+}

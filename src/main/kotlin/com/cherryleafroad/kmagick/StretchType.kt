@@ -12,5 +12,13 @@ enum class StretchType(val id: Int) {
     ExpandedStretch(7),
     ExtraExpandedStretch(8),
     UltraExpandedStretch(9),
-    AnyStretch(10)
+    AnyStretch(10);
+
+    @Suppress("unused")
+    companion object {
+        @JvmName("fromNative")
+        internal fun fromNative(id: Int): StretchType {
+            return (StretchType::id::find)(id)!!
+        }
+    }
 }

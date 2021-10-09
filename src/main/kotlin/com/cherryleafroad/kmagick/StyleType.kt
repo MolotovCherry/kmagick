@@ -7,5 +7,13 @@ enum class StyleType(val id: Int) {
     ItalicStyle(2),
     ObliqueStyle(3),
     AnyStyle(4),
-    BoldStyle(5)
+    BoldStyle(5);
+
+    @Suppress("unused")
+    companion object {
+        @JvmName("fromNative")
+        internal fun fromNative(id: Int): StyleType {
+            return (StyleType::id::find)(id)!!
+        }
+    }
 }

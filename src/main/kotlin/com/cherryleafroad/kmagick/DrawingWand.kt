@@ -229,18 +229,11 @@ class DrawingWand {
      */
     var gravity: GravityType
         get() = drawGetGravity()
-        set(value) = drawSetGravity(value)
-    private fun drawGetGravity(): GravityType {
-        val id = nativeDrawGetGravity()
-        return (GravityType::id::find)(id)!!
-    }
-    private fun drawSetGravity(gravity: GravityType) {
-        nativeDrawSetGravity(gravity.id)
-    }
+        set(value) = drawSetGravity(value.id)
     @Throws(DrawingWandException::class)
-    private external fun nativeDrawGetGravity(): Int
+    private external fun drawGetGravity(): GravityType
     @Throws(DrawingWandException::class)
-    private external fun nativeDrawSetGravity(gravity: Int)
+    private external fun drawSetGravity(gravity: Int)
 
     /**
      * The alpha used when drawing with the fill or stroke color or texture. Fully opaque is 1.0.
@@ -258,33 +251,33 @@ class DrawingWand {
      */
     var clipRule: FillRule
         get() = drawGetClipRule()
-        set(value) = drawSetClipRule(value)
+        set(value) = drawSetClipRule(value.id)
     @Throws(DrawingWandException::class)
     private external fun drawGetClipRule(): FillRule
     @Throws(DrawingWandException::class)
-    private external fun drawSetClipRule(fillRule: FillRule)
+    private external fun drawSetClipRule(fillRule: Int)
 
     /**
      * The interpretation of clip path units.
      */
     var clipUnits: ClipPathUnits
         get() = drawGetClipUnits()
-        set(value) = drawSetClipUnits(value)
+        set(value) = drawSetClipUnits(value.id)
     @Throws(DrawingWandException::class)
     private external fun drawGetClipUnits(): ClipPathUnits
     @Throws(DrawingWandException::class)
-    private external fun drawSetClipUnits(clipUnits: ClipPathUnits)
+    private external fun drawSetClipUnits(clipUnits: Int)
 
     /**
      * The fill rule used while drawing polygons.
      */
     var fillRule: FillRule
         get() = drawGetFillRule()
-        set(value) = drawSetFillRule(value)
+        set(value) = drawSetFillRule(value.id)
     @Throws(DrawingWandException::class)
     private external fun drawGetFillRule(): FillRule
     @Throws(DrawingWandException::class)
-    private external fun drawSetFillRule(fillRule: FillRule)
+    private external fun drawSetFillRule(fillRule: Int)
 
     /**
      * The alpha used when drawing using the fill color or fill texture. Fully opaque is 1.0.
@@ -314,33 +307,33 @@ class DrawingWand {
      */
     var fontStyle: StyleType
         get() = drawGetFontStyle()
-        set(value) = drawSetFontStyle(value)
+        set(value) = drawSetFontStyle(value.id)
     @Throws(DrawingWandException::class)
     private external fun drawGetFontStyle(): StyleType
     @Throws(DrawingWandException::class)
-    private external fun drawSetFontStyle(style: StyleType)
+    private external fun drawSetFontStyle(style: Int)
 
     /**
      * The font weight used when annotating with text. Font weight valid range: 100-900
      */
-    var fontWeight: Long
+    var fontWeight: Int
         get() = drawGetFontWeight()
         set(value) = drawSetFontWeight(value)
     @Throws(DrawingWandException::class)
-    private external fun drawGetFontWeight(): Long
+    private external fun drawGetFontWeight(): Int
     @Throws(DrawingWandException::class)
-    private external fun drawSetFontWeight(fontWeight: Long)
+    private external fun drawSetFontWeight(fontWeight: Int)
 
     /**
      * The font stretch used when annotating with text. The AnyStretch enumeration acts as a wild-card.
      */
     var fontStretch: StretchType
         get() = drawGetFontStretch()
-        set(value) = drawSetFontStretch(value)
+        set(value) = drawSetFontStretch(value.id)
     @Throws(DrawingWandException::class)
     private external fun drawGetFontStretch(): StretchType
     @Throws(DrawingWandException::class)
-    private external fun drawSetFontStretch(fontStretch: StretchType)
+    private external fun drawSetFontStretch(fontStretch: Int)
 
     /**
      * The offset into the dash pattern to start the dash.
@@ -358,35 +351,35 @@ class DrawingWand {
      */
     var strokeLineCap: LineCap
         get() = drawGetStrokeLineCap()
-        set(value) = drawSetStrokeLineCap(value)
+        set(value) = drawSetStrokeLineCap(value.id)
     @Throws(DrawingWandException::class)
     private external fun drawGetStrokeLineCap(): LineCap
     @Throws(DrawingWandException::class)
-    private external fun drawSetStrokeLineCap(lineCap: LineCap)
+    private external fun drawSetStrokeLineCap(lineCap: Int)
 
     /**
      * The shape to be used at the corners of paths (or other vector shapes) when they are stroked.
      */
     var strokeLineJoin: LineJoin
         get() = drawGetStrokeLineJoin()
-        set(value) = drawSetStrokeLineJoin(value)
+        set(value) = drawSetStrokeLineJoin(value.id)
     @Throws(DrawingWandException::class)
     private external fun drawGetStrokeLineJoin(): LineJoin
     @Throws(DrawingWandException::class)
-    private external fun drawSetStrokeLineJoin(lineJoin: LineJoin)
+    private external fun drawSetStrokeLineJoin(lineJoin: Int)
 
     /**
      * The miter limit. When two line segments meet at a sharp angle and miter joins have been specified for `lineJoin`,
      * it is possible for the miter to extend far beyond the thickness of the line stroking the path. The miterLimit
      * imposes a limit on the ratio of the miter length to the `lineWidth`.
      */
-    var strokeMiterLimit: Long
+    var strokeMiterLimit: Int
         get() = drawGetStrokeMiterLimit()
         set(value) = drawSetStrokeMiterLimit(value)
     @Throws(DrawingWandException::class)
-    private external fun drawGetStrokeMiterLimit(): Long
+    private external fun drawGetStrokeMiterLimit(): Int
     @Throws(DrawingWandException::class)
-    private external fun drawSetStrokeMiterLimit(miterLimit: Long)
+    private external fun drawSetStrokeMiterLimit(miterLimit: Int)
 
     /**
      * The alpha of stroked object outlines. The value 1.0 is opaque.
@@ -428,11 +421,11 @@ class DrawingWand {
      */
     var textAlignment: AlignType
         get() = drawGetTextAlignment()
-        set(value) = drawSetTextAlignment(value)
+        set(value) = drawSetTextAlignment(value.id)
     @Throws(DrawingWandException::class)
     private external fun drawGetTextAlignment(): AlignType
     @Throws(DrawingWandException::class)
-    private external fun drawSetTextAlignment(alignment: AlignType)
+    private external fun drawSetTextAlignment(alignment: Int)
 
     /**
      * The current text antialias setting, which determines whether text is antialiased. Text is antialiased by default.
@@ -451,22 +444,22 @@ class DrawingWand {
      */
     var textDecoration: DecorationType
         get() = drawGetTextDecoration()
-        set(value) = drawSetTextDecoration(value)
+        set(value) = drawSetTextDecoration(value.id)
     @Throws(DrawingWandException::class)
     private external fun drawGetTextDecoration(): DecorationType
     @Throws(DrawingWandException::class)
-    private external fun drawSetTextDecoration(decoration: DecorationType)
+    private external fun drawSetTextDecoration(decoration: Int)
 
     /**
      * The direction that will be used when annotating with text.
      */
     var textDirection: DirectionType
         get() = drawGetTextDirection()
-        set(value) = drawSetTextDirection(value)
+        set(value) = drawSetTextDirection(value.id)
     @Throws(DrawingWandException::class)
     private external fun drawGetTextDirection(): DirectionType
     @Throws(DrawingWandException::class)
-    private external fun drawSetTextDirection(direction: DirectionType)
+    private external fun drawSetTextDirection(direction: Int)
 
     /**
      * The spacing between characters in text.
