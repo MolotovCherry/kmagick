@@ -221,7 +221,7 @@ pub fn process_functions(items: ItemBinding) -> syn::Result<TokenStream> {
     let exc_name = format!("com/cherryleafroad/kmagick/{}Exception", impl_name.to_string());
 
     Ok(quote! {
-        #[jclass(pkg="com/cherryleafroad/kmagick", exc=#exc_name)]
+        #[jni_tools::jclass(pkg="com/cherryleafroad/kmagick", exc=#exc_name)]
         impl #impl_name {
             #tk
         }
@@ -364,47 +364,6 @@ pub fn create_function(item: Binding) -> syn::Result<TokenStream> {
         });
     }
 
-    // patch the error
-    let mut patch_error = false;
-    let mut patch = TokenStream::new();
-    match &*result_type {
-        "String" => {
-            let msg = format!("null ptr returned by {}", fn_name);
-
-            patch_error = true;
-            patch = quote! {
-                if !e.starts_with(#msg) {
-                    Err(
-                        Box::new(
-                            crate::utils::JNIError::RuntimeException(
-                                String::from(e)
-                            )
-                        )
-                    )
-                } else {
-                    Ok(std::ptr::null_mut())
-                }
-            };
-        }
-
-        _ => ()
-    }
-
-
-    let error = if !patch_error {
-        quote! {
-            Err(
-                Box::new(
-                    crate::utils::JNIError::RuntimeException(
-                        String::from(e)
-                    )
-                )
-            )
-        }
-    } else {
-        patch
-    };
-
     // process the function call
     if !is_return {
         fn_call.append_all(quote! {
@@ -414,24 +373,41 @@ pub fn create_function(item: Binding) -> syn::Result<TokenStream> {
         let tk: TokenStream;
 
         if is_result {
-            if result_type == "()" {
-                tk = quote! {
-                    match self.#fn_name(#binding_fn_args) {
-                        Ok(_) => Ok(()),
-                        Err(e) => {
-                            #error
-                        }
-                    }
-                };
-            } else {
-                tk = quote! {
-                    let res = match self.#fn_name(#binding_fn_args) {
-                        Ok(v) => v,
-                        Err(e) => {
-                            return #error;
-                        }
+            match &*result_type {
+                "()" => {
+                    tk = quote! {
+                        Ok(self.#fn_name(#binding_fn_args)?)
                     };
-                };
+                }
+
+                "String" => {
+                    // if a null pointer was returned, forward it to jni
+                    let msg = format!("null ptr returned by {}", fn_name);
+                    tk = quote! {
+                        let res = match self.#fn_name(#binding_fn_args) {
+                            Ok(v) => v,
+                            Err(e) => {
+                                return if e.starts_with(#msg) {
+                                    Ok(std::ptr::null_mut())
+                                } else {
+                                    Err(
+                                        Box::new(
+                                            crate::utils::JNIError::RuntimeException(
+                                                String::from(e)
+                                            )
+                                        )
+                                    )
+                                };
+                            }
+                        };
+                    };
+                }
+
+                _ => {
+                    tk = quote! {
+                        let res = self.#fn_name(#binding_fn_args)?;
+                    };
+                }
             }
         } else {
             tk = quote!{
