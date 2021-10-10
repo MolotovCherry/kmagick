@@ -8,9 +8,8 @@ enum class ClipPathUnits(val id: Int) {
     ObjectBoundingBox(3);
 
     @Suppress("unused")
-    companion object {
-        @JvmName("fromNative")
-        internal fun fromNative(id: Int): ClipPathUnits {
+    internal companion object {
+        fun fromNative(id: Int): ClipPathUnits {
             return (ClipPathUnits::id::find)(id)!!
         }
     }

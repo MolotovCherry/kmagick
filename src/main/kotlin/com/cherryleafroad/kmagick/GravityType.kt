@@ -15,9 +15,8 @@ enum class GravityType(val id: Int) {
     SouthEastGravity(9);
 
     @Suppress("unused")
-    companion object {
-        @JvmName("fromNative")
-        internal fun fromNative(id: Int): GravityType {
+    internal companion object {
+        fun fromNative(id: Int): GravityType {
             return (GravityType::id::find)(id)!!
         }
     }

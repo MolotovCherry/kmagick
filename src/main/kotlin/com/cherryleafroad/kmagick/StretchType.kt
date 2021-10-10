@@ -15,9 +15,8 @@ enum class StretchType(val id: Int) {
     AnyStretch(10);
 
     @Suppress("unused")
-    companion object {
-        @JvmName("fromNative")
-        internal fun fromNative(id: Int): StretchType {
+    internal companion object {
+        fun fromNative(id: Int): StretchType {
             return (StretchType::id::find)(id)!!
         }
     }

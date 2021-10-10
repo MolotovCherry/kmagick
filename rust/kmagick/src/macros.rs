@@ -4,8 +4,8 @@
 /// You can call methods on it normally, and even access .wand
 macro_rules! wand_wrapper {
     ($wand:ident) => {
-        struct $wand {
-            instance: magick_rust::$wand
+        pub struct $wand {
+            pub instance: magick_rust::$wand
         }
 
         unsafe impl Send for $wand {}
@@ -26,7 +26,7 @@ macro_rules! wand_wrapper {
 
         paste::paste! {
             #[jni_tools::jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/" $wand "Exception")]
-            impl$wand{
+            impl $wand {
                 #[jni_tools::jnew]
                 fn new() -> Self {
                     Self {

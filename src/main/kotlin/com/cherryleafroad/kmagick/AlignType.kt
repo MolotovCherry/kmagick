@@ -8,9 +8,8 @@ enum class AlignType(val id: Int) {
     RightAlign(3);
 
     @Suppress("unused")
-    companion object {
-        @JvmName("fromNative")
-        internal fun fromNative(id: Int): AlignType {
+    internal companion object {
+        fun fromNative(id: Int): AlignType {
             return (AlignType::id::find)(id)!!
         }
     }

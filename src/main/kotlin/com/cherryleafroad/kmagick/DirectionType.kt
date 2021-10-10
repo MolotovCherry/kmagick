@@ -7,9 +7,8 @@ enum class DirectionType(val id: Int) {
     LeftToRightDirection(2);
 
     @Suppress("unused")
-    companion object {
-        @JvmName("fromNative")
-        internal fun fromNative(id: Int): DirectionType {
+    internal companion object {
+        fun fromNative(id: Int): DirectionType {
             return (DirectionType::id::find)(id)!!
         }
     }

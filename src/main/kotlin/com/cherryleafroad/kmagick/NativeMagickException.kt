@@ -5,9 +5,8 @@ data class NativeMagickException(
     val message: String
 ) {
     @Suppress("unused")
-    companion object {
-        @JvmName("fromNative")
-        internal fun fromNative(id: Int, msg: String): NativeMagickException {
+    internal companion object {
+        fun fromNative(id: Int, msg: String): NativeMagickException {
             val exceptionType = (ExceptionType::id::find)(id)!!
             return NativeMagickException(exceptionType, msg)
         }

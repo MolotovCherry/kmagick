@@ -232,7 +232,7 @@ pub fn create_function(item: Binding) -> syn::Result<TokenStream> {
     // get list of extracted args
     let extracted = extract_args(item.binding_fn.fn_args)?;
     // get result type + information ; (type, is_result, is_return)
-    let (mut result_type, mut is_result, mut is_return) = get_result_type(item.binding_fn.ret)?;
+    let (mut result_type, mut is_result, is_return) = get_result_type(item.binding_fn.ret)?;
     let fn_name = item.binding_fn.name;
     let orig_fn_name = item.fn_name;
 
@@ -250,7 +250,7 @@ pub fn create_function(item: Binding) -> syn::Result<TokenStream> {
 
     // start off with default args
     let mut main_fn_args = quote! {
-        env: jni::JNIEnv, _: jni::objects::JObject
+        env: jni::JNIEnv, obj: jni::objects::JObject
     };
 
     let mut binding_fn_args = TokenStream::new();
@@ -266,6 +266,9 @@ pub fn create_function(item: Binding) -> syn::Result<TokenStream> {
     // process pre-setup, params, and procesing code
     let mut string_setup = quote! {
         use jni_tools::Utils;
+    };
+    let mut handle_setup = quote! {
+        use jni_tools::Handle;
     };
     for (name, ty) in extracted {
         let name = Ident::new(&*name, Span::call_site());
@@ -290,6 +293,20 @@ pub fn create_function(item: Binding) -> syn::Result<TokenStream> {
 
                 // erase the previous code so we bring headers in only once
                 string_setup = TokenStream::new();
+            }
+
+            "PixelWand" => {
+                force_result = true;
+                result_type = String::from("()");
+                is_result = true;
+
+                setup_code.append_all(quote! {
+                    #handle_setup
+                    let r_obj = env.get_handle::<crate::pixel_wand::PixelWand>(obj)?;
+                    let #name = &r_obj.instance;
+                });
+
+                handle_setup = TokenStream::new();
             }
 
             // size_t = usize
@@ -340,6 +357,7 @@ pub fn create_function(item: Binding) -> syn::Result<TokenStream> {
                 });
             }
         };
+
 
         binding_fn_args.append_all(quote! {
             #name,
@@ -463,6 +481,36 @@ pub fn create_function(item: Binding) -> syn::Result<TokenStream> {
                 };
             }
 
+            "PixelWand" => {
+                is_result = true;
+
+                ret_type = quote! {
+                    jni::sys::jobject
+                };
+
+                let pixel_wand_cls = "com/cherryleafroad/kmagick/PixelWand";
+                let pixel_wand_com = format!("{}$Companion", pixel_wand_cls);
+                let pixel_wand_obj = format!("L{};", pixel_wand_cls);
+                let pixel_wand_sig = format!("(){}", pixel_wand_obj);
+                post_setup.append_all(quote! {
+                    #handle_setup
+                    let cls = env.find_class(#pixel_wand_com)?;
+                    let c_obj = env.new_object(cls, "()V", &[])?;
+                    let mid = env.get_method_id(cls, "newInstance", #pixel_wand_sig)?;
+                    let n_obj = env.call_method_unchecked(c_obj, mid, jni::signature::JavaType::Object(#pixel_wand_obj.into()), &[])?.l()?;
+
+                    let r_obj = crate::pixel_wand::PixelWand {
+                        instance: res
+                    };
+
+                    env.set_handle(n_obj, r_obj)?;
+                });
+
+                last_stmt = quote! {
+                    n_obj.into_inner()
+                };
+            }
+
             "Quantum" => {
                 ret_type = quote! {
                     jni::sys::jfloat
@@ -501,12 +549,12 @@ pub fn create_function(item: Binding) -> syn::Result<TokenStream> {
                 post_setup.append_all(quote! {
                     let val = jni::objects::JValue::Int(res);
                     let cls = env.find_class(#class)?;
-                    let obj = env.new_object(cls, "()V", &[])?;
+                    let j_obj = env.new_object(cls, "()V", &[])?;
                     let mid = env.get_method_id(cls, "fromNative", #mid_sig)?;
                 });
 
                 last_stmt = quote! {
-                    env.call_method_unchecked(obj, mid, jni::signature::JavaType::Object(#res_type.into()), &[val])?.l()?.into_inner()
+                    env.call_method_unchecked(j_obj, mid, jni::signature::JavaType::Object(#res_type.into()), &[val])?.l()?.into_inner()
                 };
             }
         };

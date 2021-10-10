@@ -7,9 +7,8 @@ enum class FillRule(val id: Int) {
     NonZeroRule(2);
 
     @Suppress("unused")
-    companion object {
-        @JvmName("fromNative")
-        internal fun fromNative(id: Int): FillRule {
+    internal companion object {
+        fun fromNative(id: Int): FillRule {
             return (FillRule::id::find)(id)!!
         }
     }

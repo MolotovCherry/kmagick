@@ -14,3 +14,7 @@ repositories {
 tasks.withType<KotlinCompile>() {
     kotlinOptions.jvmTarget = "11"
 }
+
+dependencies {
+    implementation("org.objenesis:objenesis:3.2")
+}

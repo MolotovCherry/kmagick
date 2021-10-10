@@ -1,5 +1,7 @@
 package com.cherryleafroad.kmagick
 
+import org.objenesis.ObjenesisStd
+
 typealias Quantum = Double
 
 class PixelWandException(message: String) : MagickException(message)
@@ -18,6 +20,17 @@ class PixelWand {
      */
     internal constructor(wand: PixelWand) {
         nativeClone(wand)
+    }
+
+    internal companion object {
+        /**
+         * Internal use ONLY. Creates instance without calling constructor
+         */
+        fun newInstance(): PixelWand {
+            val objenesis = ObjenesisStd();
+            val instantiator = objenesis.getInstantiatorOf(PixelWand::class.java)
+            return instantiator.newInstance()
+        }
     }
 
     /**

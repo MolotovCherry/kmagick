@@ -9,9 +9,8 @@ enum class DecorationType(val id: Int) {
     LineThroughDecoration(4);
 
     @Suppress("unused")
-    companion object {
-        @JvmName("fromNative")
-        internal fun fromNative(id: Int): DecorationType {
+    internal companion object {
+        fun fromNative(id: Int): DecorationType {
             return (DecorationType::id::find)(id)!!
         }
     }

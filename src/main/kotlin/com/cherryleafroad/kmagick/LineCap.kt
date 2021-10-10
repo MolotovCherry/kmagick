@@ -8,9 +8,8 @@ enum class LineCap(val id: Int) {
     SquareCap(3);
 
     @Suppress("unused")
-    companion object {
-        @JvmName("fromNative")
-        internal fun fromNative(id: Int): LineCap {
+    internal companion object {
+        fun fromNative(id: Int): LineCap {
             return (LineCap::id::find)(id)!!
         }
     }

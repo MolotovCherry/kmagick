@@ -54,4 +54,9 @@ get_set_type!(
     drawGetTextKerning,          drawSetTextKerning,          get_text_kerning,           set_text_kerning,           f64
     drawGetTextInterlineSpacing, drawSetTextInterlineSpacing, get_text_interline_spacing, set_text_interline_spacing, f64
     drawGetTextInterwordSpacing, drawSetTextInterwordSpacing, get_text_interword_spacing, set_text_interword_spacing, f64
+
+    drawGetBorderColor,          drawSetBorderColor,          get_border_color,           set_border_color,           PixelWand
+    drawGetFillColor,            drawSetFillColor,            get_fill_color,             set_fill_color,             PixelWand
+    drawGetStrokeColor,          drawSetStrokeColor,          get_stroke_color,           set_stroke_color,           PixelWand
+    drawGetTextUnderColor,       drawSetTextUnderColor,       get_text_under_color,       set_text_under_color,       PixelWand
 );
