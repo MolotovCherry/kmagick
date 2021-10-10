@@ -158,7 +158,6 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
                     let segment = v.path.segments.last().unwrap();
 
                     let ident = &segment.ident;
-                    let ident_str = ident.to_string();
 
                     if attributes.contains(&"jdestroy".to_string()) {
                         return Err(syn::Error::new_spanned(v, "Destroy method cannot have return type"))
@@ -166,17 +165,17 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
 
                     if impl_name.is_some() {
                         // restrict return type of Self::new()
-                        if ident_str != "Result" && ident_str != "Self" && ident_str != impl_name.unwrap().to_string() && attributes.contains(&"jnew".to_string()) {
+                        if ident != "Result" && ident != "Self" && ident != &*impl_name.unwrap().to_string() && attributes.contains(&"jnew".to_string()) {
                             return Err(syn::Error::new_spanned(v, "Return type must be a `Self` type or Result<Self> type"))
                         }
                     }
 
-                    if ident_str != "Result" && !allowed_ret.contains(&&*ident_str) {
+                    if ident != "Result" && !allowed_ret.contains(&&*ident.to_string()) {
                         // special case - allow new() functions to return Self for the jniclass implementation
                         if !attributes.contains(&"jnew".to_string()) {
                             return Err(syn::Error::new_spanned(ident, "Return type must be a Result<> type, primitive j type (jni::sys::*), or empty"))
                         } else if impl_name.is_some() {
-                            if ident_str != "Self" && ident_str != impl_name.unwrap().to_string() {
+                            if ident != "Self" && ident != &*impl_name.unwrap().to_string() {
                                 return Err(syn::Error::new_spanned(ident, "Return type must be a Result<Self> type, `Self` type, or empty"))
                             }
                         } else {
@@ -257,7 +256,7 @@ pub fn extract_return(ret: &ReturnType, name: &Ident, impl_name: Option<&Ident>,
                         PathArguments::None => {
                             let new = v.clone();
                             Ok(
-                                (ReturnType::Type(*arrow_token, Box::new(Type::Path(new))), ident_str, false)
+                                (ReturnType::Type(*arrow_token, Box::new(Type::Path(new))), ident.to_string(), false)
                             )
                         }
 

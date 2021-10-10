@@ -213,7 +213,7 @@ pub fn process_functions(items: ItemBinding) -> syn::Result<TokenStream> {
 
     for item in items.items {
         tk.append_all(
-            create_function(item)?
+            create_function(&items.impl_token, item)?
         );
     }
 
@@ -228,7 +228,7 @@ pub fn process_functions(items: ItemBinding) -> syn::Result<TokenStream> {
     })
 }
 
-pub fn create_function(item: Binding) -> syn::Result<TokenStream> {
+pub fn create_function(impl_token: &Ident, item: Binding) -> syn::Result<TokenStream> {
     // get list of extracted args
     let extracted = extract_args(item.binding_fn.fn_args)?;
     // get result type + information ; (type, is_result, is_return)
@@ -295,16 +295,29 @@ pub fn create_function(item: Binding) -> syn::Result<TokenStream> {
                 string_setup = TokenStream::new();
             }
 
-            "PixelWand" => {
-                force_result = true;
-                result_type = String::from("()");
-                is_result = true;
+            "PixelWand" | "&PixelWand" => {
 
-                setup_code.append_all(quote! {
-                    #handle_setup
-                    let r_obj = env.get_handle::<crate::pixel_wand::PixelWand>(obj)?;
-                    let #name = &r_obj.instance;
-                });
+                if impl_token == "DrawingWand" {
+                    force_result = true;
+                    result_type = String::from("()");
+                    is_result = true;
+
+                    setup_code.append_all(quote! {
+                        #handle_setup
+                        let r_obj = env.get_handle::<crate::pixel_wand::PixelWand>(obj)?;
+                        let #name = &r_obj.instance;
+                    });
+                } else if impl_token == "PixelWand" {
+                    main_fn_args.append_all(quote! {
+                        , #name: jni::objects::JObject
+                    });
+
+                    setup_code.append_all(quote! {
+                        #handle_setup
+                        let r_obj = env.get_handle::<crate::pixel_wand::PixelWand>(jni::objects::JObject::from(#name))?;
+                        let #name = &r_obj.instance;
+                    });
+                }
 
                 handle_setup = TokenStream::new();
             }
