@@ -52,8 +52,8 @@ get_set_double!(
 
 get_set_sized!(
     DrawingWand,
-    drawGetFontWeight,       drawSetFontWeight,       get_font_weight,        set_font_weight
-    drawGetStrokeMiterLimit, drawSetStrokeMiterLimit, get_stroke_miter_limit, set_stroke_miter_limit
+    drawGetFontWeight,       drawSetFontWeight,       get_font_weight,        set_font_weight,        usize //size_t
+    drawGetStrokeMiterLimit, drawSetStrokeMiterLimit, get_stroke_miter_limit, set_stroke_miter_limit, usize //size_t
 );
 
 get_set_wand!(

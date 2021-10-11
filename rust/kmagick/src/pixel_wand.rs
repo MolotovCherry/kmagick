@@ -62,7 +62,7 @@ get_string!(
 
 get_set_sized!(
     PixelWand,
-    pixelGetColorCount, pixelSetColorCount, get_color_count, set_color_count
+    pixelGetColorCount, pixelSetColorCount, get_color_count, set_color_count, usize //size_t
 );
 
 get_set_double!(

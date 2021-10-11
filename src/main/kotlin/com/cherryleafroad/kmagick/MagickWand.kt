@@ -121,7 +121,11 @@ class MagickWand {
      * @param limit The maximum limit for the resource.
      */
     @Throws(MagickWandException::class)
-    external fun setResourceLimit(type: ResourceType, limit: Long)
+    fun setResourceLimit(type: ResourceType, limit: Long) {
+        magickSetResourceLimit(type.id, limit)
+    }
+    @Throws(MagickWandException::class)
+    private external fun magickSetResourceLimit(type: Int, limit: Long)
 
     /**
      * Associates one or options with the wand (e.g. setOption("jpeg:perserve","yes")).

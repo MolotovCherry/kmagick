@@ -137,6 +137,27 @@ macro_rules! get_string {
 }
 
 // &str -> String -> JString
+macro_rules! set_string {
+    (
+        $wand:ident,
+        $($set:ident, $m_set:ident)*
+    ) => {
+        paste::paste! {
+            #[jni_tools::jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/" $wand "Exception")]
+            impl $wand {
+                $(
+                    fn $set(&mut self, env: jni::JNIEnv, _: jni::objects::JObject, arg: jni::objects::JString) -> crate::utils::Result<()> {
+                        use jni_tools::Utils;
+                        let arg = env.get_jstring(arg)?;
+                        Ok(self.$m_set(&*arg)?)
+                    }
+                )*
+            }
+        }
+    }
+}
+
+// &str -> String -> JString
 macro_rules! get_set_string {
     (
         $wand:ident,
@@ -215,6 +236,50 @@ macro_rules! get_set_enum {
     }
 }
 
+// enums operate as i32 values
+// TODO: better way to combine these?
+macro_rules! get_set_enum_result {
+    (
+        $wand:ident,
+        $($get:ident, $set:ident, $m_get:ident, $m_set:ident, $ty:ty)*
+    ) => {
+        paste::paste! {
+            #[jni_tools::jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/" $wand "Exception")]
+            impl $wand {
+                $(
+                    fn $get(&self, env: jni::JNIEnv) -> crate::utils::Result<jni::sys::jobject> {
+                        let res = self.$m_get();
+
+                        let val = jni::objects::JValue::Int(res);
+                        let cls = env.find_class(
+                            concat!("com/cherryleafroad/kmagick/", concat!(stringify!($ty), "$Companion"))
+                        )?;
+                        let j_obj = env.new_object(cls, "()V", &[])?;
+                        let mid = env.get_method_id(
+                            cls,
+                            "fromNative",
+                            concat!("(I)Lcom/cherryleafroad/kmagick/", concat!(stringify!($ty), ";"))
+                        )?;
+
+                        Ok(env.call_method_unchecked(
+                            j_obj,
+                            mid,
+                            jni::signature::JavaType::Object(
+                                concat!("Lcom/cherryleafroad/kmagick/", concat!(stringify!($ty), ";")).into()
+                            ),
+                            &[val]
+                        )?.l()?.into_inner())
+                    }
+
+                    fn $set(&mut self, _: jni::JNIEnv, _: jni::objects::JObject, arg: jni::sys::jint) -> crate::utils::Result<()> {
+                        Ok(self.$m_set(arg)?)
+                    }
+                )*
+            }
+        }
+    }
+}
+
 // f64 / jdouble
 macro_rules! get_set_double {
     (
@@ -261,23 +326,91 @@ macro_rules! get_set_float {
     }
 }
 
-// usize and isize <-> jint <-> i32
-macro_rules! get_set_sized {
+macro_rules! get_sized {
     (
         $wand:ident,
-        $($get:ident, $set:ident, $m_get:ident, $m_set:ident)*
+        $($get:ident, $m_get:ident, $ty:ty)*
     ) => {
         paste::paste! {
             #[jni_tools::jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/" $wand "Exception")]
             impl $wand {
                 $(
-                    fn $get(&self) -> jni::sys::jlong {
-                        self.$m_get() as _
+                    fn $get(&self) -> crate::utils::Result<jni::sys::jlong> {
+                        use std::convert::TryFrom;
+
+                        // i64 == jlong
+                        // when we use usize, we need to make sure it fits (or error out)
+                        // i32, i64, and u32 will always succeed, but u64 may not fit
+                        Ok(i64::try_from(self.$m_get())?)
+                    }
+                )*
+            }
+        }
+    }
+}
+
+// usize and isize <-> jint <-> i32
+macro_rules! get_set_sized {
+    (
+        $wand:ident,
+        $($get:ident, $set:ident, $m_get:ident, $m_set:ident, $ty:ty)*
+    ) => {
+        paste::paste! {
+            #[jni_tools::jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/" $wand "Exception")]
+            impl $wand {
+                $(
+                    fn $get(&self) -> crate::utils::Result<jni::sys::jlong> {
+                        use std::convert::TryFrom;
+
+                        // i64 == jlong
+                        // when we use usize, we need to make sure it fits (or error out)
+                        // i32, i64, and u32 will always succeed, but u64 may not fit
+                        Ok(i64::try_from(self.$m_get())?)
                     }
 
-                    fn $set(&mut self, _: jni::JNIEnv, _: jni::objects::JObject, arg: jni::sys::jlong) {
-                        // implicit conversion to avoid needing multiple macros for usize + isize
-                        self.$m_set(arg as _);
+                    fn $set(&mut self, _: jni::JNIEnv, _: jni::objects::JObject, arg: jni::sys::jlong) -> crate::utils::Result<()> {
+                        use std::convert::TryFrom;
+
+                        // try from i64 -> isize/i32/i64 (will always work)
+                        // for usize/u32/u64, may not always fit
+                        let arg = $ty::try_from(arg)?;
+                        self.$m_set(arg);
+                        Ok(())
+                    }
+                )*
+            }
+        }
+    }
+}
+
+// usize and isize <-> jint <-> i32
+// annoying I have to make another macro for this
+// TODO: better way to combine these?
+macro_rules! get_set_sized_result {
+    (
+        $wand:ident,
+        $($get:ident, $set:ident, $m_get:ident, $m_set:ident, $ty:ty)*
+    ) => {
+        paste::paste! {
+            #[jni_tools::jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/" $wand "Exception")]
+            impl $wand {
+                $(
+                    fn $get(&self) -> crate::utils::Result<jni::sys::jlong> {
+                        use std::convert::TryFrom;
+
+                        // i64 == jlong
+                        // when we use usize, we need to make sure it fits (or error out)
+                        // i32, i64, and u32 will always succeed, but u64 may not fit
+                        Ok(i64::try_from(self.$m_get())?)
+                    }
+
+                    fn $set(&mut self, _: jni::JNIEnv, _: jni::objects::JObject, arg: jni::sys::jlong) -> crate::utils::Result<()> {
+                        use std::convert::TryFrom;
+
+                        // try from i64 -> isize/i32/i64 (will always work)
+                        // for usize/u32/u64, may not always fit
+                        let arg = $ty::try_from(arg)?;
+                        Ok(self.$m_set(arg)?)
                     }
                 )*
             }
@@ -333,11 +466,62 @@ macro_rules! get_set_wand {
                         use jni_tools::Handle;
                         let r_obj = env.get_handle::<crate::$ty>(obj)?;
                         let arg =  &r_obj.instance;
-                        self.set_stroke_color(&arg);
+                        self.$m_set(&arg);
                         Ok(())
                     }
                 )*
             }
         }
     }
+}
+
+macro_rules! magick_enum_int_conversion {
+    ($vis:vis enum $name:ident {
+        $($vname:ident,)*
+    }) => {
+        use crate::utils::EnumIntConversion;
+
+        impl EnumIntConversion for magick_rust::$name {
+            type Output = magick_rust::$name;
+
+            fn try_from_int(v: i32) -> crate::utils::Result<magick_rust::$name> {
+                match v {
+                    $(x if x == magick_rust::$name::$vname as i32 => Ok(magick_rust::$name::$vname),)*
+                    _ => crate::utils::runtime_exception(concat!(stringify!($name), " failed enum to int conversion")),
+                }
+            }
+        }
+    }
+}
+
+macro_rules! new_from_wand {
+    ($env:ident, $wand:ident, $ty:ident) => {{
+        let cls = $env.find_class(
+            concat!("com/cherryleafroad/kmagick/", concat!(stringify!($ty), "$Companion"))
+        )?;
+
+        let c_obj = $env.new_object(cls, "()V", &[])?;
+
+        let mid = $env.get_method_id(
+            cls,
+            "newInstance",
+            concat!("()Lcom/cherryleafroad/kmagick/", concat!(stringify!($ty), ";"))
+        )?;
+
+        let n_obj = $env.call_method_unchecked(
+            c_obj,
+            mid,
+            jni::signature::JavaType::Object(
+                concat!("Lcom/cherryleafroad/kmagick/", concat!(stringify!($ty), ";")).into()
+            ),
+            &[]
+        )?.l()?;
+
+        let r_obj = crate::$ty {
+            instance: $wand
+        };
+        $env.set_handle(n_obj, r_obj)?;
+
+        n_obj
+    }}
 }

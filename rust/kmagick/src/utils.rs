@@ -18,3 +18,9 @@ pub fn runtime_exception<T>(string: &str) -> Result<T> {
         )
     )
 }
+
+pub trait EnumIntConversion {
+    type Output;
+
+    fn try_from_int(val: i32) -> Result<Self::Output>;
+}
