@@ -8,6 +8,10 @@ mod magick_wand;
 mod pixel_wand;
 mod utils;
 
+// make available at crate level for macros
+pub use drawing_wand::DrawingWand;
+pub use magick_wand::MagickWand;
+pub use pixel_wand::PixelWand;
 
 use jni_tools::{
     Utils, setup_panic, jclass,
@@ -19,7 +23,6 @@ use jni::{
 };
 use jni::sys::{jint, jobjectArray, jsize, jboolean};
 use jni::objects::{JObject, JString};
-use magick_rust;
 
 use log::{LevelFilter, info};
 

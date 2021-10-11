@@ -1,11 +1,17 @@
+use jni::{JNIEnv, objects::{JObject, JString}, sys::jdouble};
+use jni_tools::{Utils, jclass};
+
 wand_wrapper!(DrawingWand);
 
-magick_bindings::magick_bindings!(
-    DrawingWand,
-    mut drawAnnotation <<= draw_annotation(x: f64, y: f64, text: &str) -> Result<()>
-);
+#[jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/DrawingWandException")]
+impl DrawingWand {
+    fn drawAnnotation(&mut self, env: JNIEnv, _: JObject, x: jdouble, y: jdouble, text: JString) -> super::utils::Result<()> {
+        let text =  &*env.get_jstring(text)?;
+        Ok(self.draw_annotation(x, y, text)?)
+    }
+}
 
-string_get_set!(
+get_set_string!(
     DrawingWand,
     drawGetFont,           drawSetFont,           get_font,            set_font
     drawGetFontFamily,     drawSetFontFamily,     get_font_family,     set_font_family
@@ -31,22 +37,29 @@ get_set_enum!(
     drawGetTextDirection,   drawSetTextDirection,   get_text_direction,   set_text_direction,   DirectionType
 );
 
-get_set_type!(
+get_set_double!(
     DrawingWand,
-    drawGetOpacity,              drawSetOpacity,              get_opacity,                set_opacity,                f64
-    drawGetFillOpacity,          drawSetFillOpacity,          get_fill_opacity,           set_fill_opacity,           f64
-    drawGetFontSize,             drawSetFontSize,             get_font_size,              set_font_size,              f64
-    drawGetFontWeight,           drawSetFontWeight,           get_font_weight,            set_font_weight,            size_t
-    drawGetStrokeDashOffset,     drawSetStrokeDashOffset,     get_stroke_dash_offset,     set_stroke_dash_offset,     f64
-    drawGetStrokeMiterLimit,     drawSetStrokeMiterLimit,     get_stroke_miter_limit,     set_stroke_miter_limit,     size_t
-    drawGetStrokeOpacity,        drawSetStrokeOpacity,        get_stroke_opacity,         set_stroke_opacity,         f64
-    drawGetStrokeWidth,          drawSetStrokeWidth,          get_stroke_width,           set_stroke_width,           f64
-    drawGetTextKerning,          drawSetTextKerning,          get_text_kerning,           set_text_kerning,           f64
-    drawGetTextInterlineSpacing, drawSetTextInterlineSpacing, get_text_interline_spacing, set_text_interline_spacing, f64
-    drawGetTextInterwordSpacing, drawSetTextInterwordSpacing, get_text_interword_spacing, set_text_interword_spacing, f64
+    drawGetOpacity,              drawSetOpacity,              get_opacity,                set_opacity
+    drawGetFillOpacity,          drawSetFillOpacity,          get_fill_opacity,           set_fill_opacity
+    drawGetFontSize,             drawSetFontSize,             get_font_size,              set_font_size
+    drawGetStrokeDashOffset,     drawSetStrokeDashOffset,     get_stroke_dash_offset,     set_stroke_dash_offset
+    drawGetStrokeOpacity,        drawSetStrokeOpacity,        get_stroke_opacity,         set_stroke_opacity
+    drawGetStrokeWidth,          drawSetStrokeWidth,          get_stroke_width,           set_stroke_width
+    drawGetTextKerning,          drawSetTextKerning,          get_text_kerning,           set_text_kerning
+    drawGetTextInterlineSpacing, drawSetTextInterlineSpacing, get_text_interline_spacing, set_text_interline_spacing
+    drawGetTextInterwordSpacing, drawSetTextInterwordSpacing, get_text_interword_spacing, set_text_interword_spacing
+);
 
-    drawGetBorderColor,          drawSetBorderColor,          get_border_color,           set_border_color,           PixelWand
-    drawGetFillColor,            drawSetFillColor,            get_fill_color,             set_fill_color,             PixelWand
-    drawGetStrokeColor,          drawSetStrokeColor,          get_stroke_color,           set_stroke_color,           PixelWand
-    drawGetTextUnderColor,       drawSetTextUnderColor,       get_text_under_color,       set_text_under_color,       PixelWand
+get_set_sized!(
+    DrawingWand,
+    drawGetFontWeight,       drawSetFontWeight,       get_font_weight,        set_font_weight
+    drawGetStrokeMiterLimit, drawSetStrokeMiterLimit, get_stroke_miter_limit, set_stroke_miter_limit
+);
+
+get_set_wand!(
+    DrawingWand,
+    drawGetBorderColor,    drawSetBorderColor,    get_border_color,     set_border_color,     PixelWand
+    drawGetFillColor,      drawSetFillColor,      get_fill_color,       set_fill_color,       PixelWand
+    drawGetStrokeColor,    drawSetStrokeColor,    get_stroke_color,     set_stroke_color,     PixelWand
+    drawGetTextUnderColor, drawSetTextUnderColor, get_text_under_color, set_text_under_color, PixelWand
 );

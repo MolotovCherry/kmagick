@@ -431,6 +431,22 @@ pub fn extract_impl_name(self_type: &Type) -> syn::Result<Ident> {
             type_ident = &last.ident;
         }
 
+        Type::Group(g) => {
+            match &*g.elem {
+                Type::Path(p) => {
+                    let segments = &p.path.segments;
+                    if segments.len() == 0 {
+                        return Err(syn::Error::new_spanned(self_type, "Segments empty"))
+                    }
+
+                    let last = p.path.segments.last().unwrap();
+                    type_ident = &last.ident;
+                }
+
+                _ => return Err(syn::Error::new_spanned(self_type, "Missed match")),
+            }
+        }
+
         _ => return Err(syn::Error::new_spanned(self_type, "Missed match")),
     }
 

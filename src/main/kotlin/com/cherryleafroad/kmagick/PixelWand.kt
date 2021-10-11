@@ -2,7 +2,7 @@ package com.cherryleafroad.kmagick
 
 import org.objenesis.ObjenesisStd
 
-typealias Quantum = Double
+typealias Quantum = Float
 
 class PixelWandException(message: String) : MagickException(message)
 
@@ -116,7 +116,7 @@ class PixelWand {
      * @param fuzz Any two colors that are less than or equal to this distance squared are considered similar.
      */
     @Throws(PixelWandException::class)
-    external fun isPixelWandSimilar(other: PixelWand, fuzz: Double): Boolean
+    external fun isSimilar(other: PixelWand, fuzz: Double): Boolean
 
     /**
      * The normalized HSL color of the pixel wand.
@@ -128,11 +128,6 @@ class PixelWand {
     private external fun pixelGetHSL(): HSL
     @Throws(PixelWandException::class)
     private external fun pixelSetHSL(hsl: HSL)
-    /**
-     * Set the normalized HSL color of the pixel wand.
-     */
-    @Throws(PixelWandException::class)
-    external fun setHSL(hue: Double, light: Double, saturation: Double)
 
     /**
      * The color of the pixel wand as a string.

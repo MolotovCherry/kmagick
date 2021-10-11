@@ -105,39 +105,242 @@ macro_rules! wand_wrapper {
     }
 }
 
+// unfortunately it's impossible to nest macro calls due to the attribute macro
+// &str -> String -> JString
+macro_rules! get_string {
+    (
+        $wand:ident,
+        $($get:ident, $m_get:ident)*
+    ) => {
+        paste::paste! {
+            #[jni_tools::jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/" $wand "Exception")]
+            impl $wand {
+                $(
+                    fn $get(&self, env: jni::JNIEnv) -> crate::utils::Result<jni::sys::jobject> {
+                        let res = match self.$m_get() {
+                            Ok(v) => v,
+                            Err(e) => {
+                                return if e.starts_with(concat!("null ptr returned by ", stringify!($m_get))) {
+                                    Ok(std::ptr::null_mut())
+                                } else {
+                                    Err(Box::new(crate::utils::JNIError::RuntimeException(String::from(e))))
+                                };
+                            }
+                        };
 
-macro_rules! string_get_set {
+                        Ok(env.new_string(&*res)?.into_inner())
+                    }
+                )*
+            }
+        }
+    }
+}
+
+// &str -> String -> JString
+macro_rules! get_set_string {
     (
         $wand:ident,
         $($get:ident, $set:ident, $m_get:ident, $m_set:ident)*
     ) => {
-        magick_bindings::magick_bindings!(
-            $wand,
-            $($get <<= $m_get() -> Result<String>, mut $set <<= $m_set(arg: &str) -> Result<()>,)*
-        );
+        paste::paste! {
+            #[jni_tools::jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/" $wand "Exception")]
+            impl $wand {
+                $(
+                    fn $get(&self, env: jni::JNIEnv) -> crate::utils::Result<jni::sys::jobject> {
+                        let res = match self.$m_get() {
+                            Ok(v) => v,
+                            Err(e) => {
+                                return if e.starts_with(concat!("null ptr returned by ", stringify!($m_get))) {
+                                    Ok(std::ptr::null_mut())
+                                } else {
+                                    Err(Box::new(crate::utils::JNIError::RuntimeException(String::from(e))))
+                                };
+                            }
+                        };
+
+                        Ok(env.new_string(&*res)?.into_inner())
+                    }
+
+                    fn $set(&mut self, env: jni::JNIEnv, _: jni::objects::JObject, arg: jni::objects::JString) -> crate::utils::Result<()> {
+                        use jni_tools::Utils;
+                        let arg = env.get_jstring(arg)?;
+                        Ok(self.$m_set(&*arg)?)
+                    }
+                )*
+            }
+        }
     }
 }
 
+// enums operate as i32 values
 macro_rules! get_set_enum {
     (
         $wand:ident,
         $($get:ident, $set:ident, $m_get:ident, $m_set:ident, $ty:ty)*
     ) => {
-        magick_bindings::magick_bindings!(
-            $wand,
-            $($get <<= $m_get() -> $ty, mut $set <<= $m_set(arg: int32),)*
-        );
+        paste::paste! {
+            #[jni_tools::jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/" $wand "Exception")]
+            impl $wand {
+                $(
+                    fn $get(&self, env: jni::JNIEnv) -> crate::utils::Result<jni::sys::jobject> {
+                        let res = self.$m_get();
+
+                        let val = jni::objects::JValue::Int(res);
+                        let cls = env.find_class(
+                            concat!("com/cherryleafroad/kmagick/", concat!(stringify!($ty), "$Companion"))
+                        )?;
+                        let j_obj = env.new_object(cls, "()V", &[])?;
+                        let mid = env.get_method_id(
+                            cls,
+                            "fromNative",
+                            concat!("(I)Lcom/cherryleafroad/kmagick/", concat!(stringify!($ty), ";"))
+                        )?;
+
+                        Ok(env.call_method_unchecked(
+                            j_obj,
+                            mid,
+                            jni::signature::JavaType::Object(
+                                concat!("Lcom/cherryleafroad/kmagick/", concat!(stringify!($ty), ";")).into()
+                            ),
+                            &[val]
+                        )?.l()?.into_inner())
+                    }
+
+                    fn $set(&mut self, _: jni::JNIEnv, _: jni::objects::JObject, arg: jni::sys::jint) {
+                        self.$m_set(arg);
+                    }
+                )*
+            }
+        }
     }
 }
 
-macro_rules! get_set_type {
+// f64 / jdouble
+macro_rules! get_set_double {
+    (
+        $wand:ident,
+        $($get:ident, $set:ident, $m_get:ident, $m_set:ident)*
+    ) => {
+        paste::paste! {
+            #[jni_tools::jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/" $wand "Exception")]
+            impl $wand {
+                $(
+                    fn $get(&self) -> jni::sys::jdouble {
+                        self.$m_get()
+                    }
+
+                    fn $set(&mut self, _: jni::JNIEnv, _: jni::objects::JObject, arg: jni::sys::jdouble) {
+                        self.$m_set(arg);
+                    }
+                )*
+            }
+        }
+    }
+}
+
+// f32 / jfloat (also includes Quantum)
+macro_rules! get_set_float {
+    (
+        $wand:ident,
+        $($get:ident, $set:ident, $m_get:ident, $m_set:ident)*
+    ) => {
+        paste::paste! {
+            #[jni_tools::jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/" $wand "Exception")]
+            impl $wand {
+                $(
+                    fn $get(&self) -> jni::sys::jfloat {
+                        self.$m_get()
+                    }
+
+                    fn $set(&mut self, _: jni::JNIEnv, _: jni::objects::JObject, arg: jni::sys::jfloat) {
+                        self.$m_set(arg);
+                    }
+                )*
+            }
+        }
+    }
+}
+
+// usize and isize <-> jint <-> i32
+macro_rules! get_set_sized {
+    (
+        $wand:ident,
+        $($get:ident, $set:ident, $m_get:ident, $m_set:ident)*
+    ) => {
+        paste::paste! {
+            #[jni_tools::jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/" $wand "Exception")]
+            impl $wand {
+                $(
+                    fn $get(&self) -> crate::utils::Result<jni::sys::jsize> {
+                        let res = self.$m_get();
+                        use std::convert::TryFrom;
+                        Ok(i32::try_from(res)?)
+                    }
+
+                    fn $set(&mut self, _: jni::JNIEnv, _: jni::objects::JObject, arg: jni::sys::jint) {
+                        // implicit conversion to avoid needing multiple macros for usize + isize
+                        let arg = arg as _;
+                        self.$m_set(arg);
+                    }
+                )*
+            }
+        }
+    }
+}
+
+// get / set any wand type
+#[allow(unused)]
+macro_rules! get_set_wand {
     (
         $wand:ident,
         $($get:ident, $set:ident, $m_get:ident, $m_set:ident, $ty:ty)*
     ) => {
-        magick_bindings::magick_bindings!(
-            $wand,
-            $($get <<= $m_get() -> $ty, mut $set <<= $m_set(arg: $ty),)*
-        );
+        paste::paste! {
+            #[jni_tools::jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/" $wand "Exception")]
+            impl $wand {
+                $(
+                    fn $get(&self, env: jni::JNIEnv, _: jni::objects::JObject) -> crate::utils::Result<jni::sys::jobject> {
+                        use jni_tools::Handle;
+
+                        let res = self.$m_get();
+
+                        let cls = env.find_class(
+                            concat!("com/cherryleafroad/kmagick/", concat!(stringify!($ty), "$Companion"))
+                        )?;
+
+                        let c_obj = env.new_object(cls, "()V", &[])?;
+
+                        let mid = env.get_method_id(
+                            cls,
+                            "newInstance",
+                            concat!("()Lcom/cherryleafroad/kmagick/", concat!(stringify!($ty), ";"))
+                        )?;
+
+                        let n_obj = env.call_method_unchecked(
+                            c_obj,
+                            mid,
+                            jni::signature::JavaType::Object(
+                                concat!("Lcom/cherryleafroad/kmagick/", concat!(stringify!($ty), ";")).into()
+                            ),
+                            &[]
+                        )?.l()?;
+
+                        let r_obj = crate::$ty {
+                            instance: res
+                        };
+                        env.set_handle(n_obj, r_obj)?;
+                        Ok(n_obj.into_inner())
+                    }
+
+                    fn $set(&mut self, env: jni::JNIEnv, obj: jni::objects::JObject) -> crate::utils::Result<()>{
+                        use jni_tools::Handle;
+                        let r_obj = env.get_handle::<crate::$ty>(obj)?;
+                        let arg =  &r_obj.instance;
+                        self.set_stroke_color(&arg);
+                        Ok(())
+                    }
+                )*
+            }
+        }
     }
 }
