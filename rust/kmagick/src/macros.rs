@@ -419,7 +419,6 @@ macro_rules! get_set_sized_result {
 }
 
 // get / set any wand type
-#[allow(unused)]
 macro_rules! get_set_wand {
     (
         $wand:ident,
@@ -495,7 +494,7 @@ macro_rules! magick_enum_int_conversion {
 }
 
 macro_rules! new_from_wand {
-    ($env:ident, $wand:ident, $ty:ident) => {{
+    ($env:ident, $wand:expr, $ty:ident) => {{
         let cls = $env.find_class(
             concat!("com/cherryleafroad/kmagick/", concat!(stringify!($ty), "$Companion"))
         )?;
@@ -524,4 +523,22 @@ macro_rules! new_from_wand {
 
         n_obj
     }}
+}
+
+macro_rules! simple_call {
+    (
+        $wand:ident,
+        $($get:ident, $m_get:ident)*
+    ) => {
+        paste::paste! {
+            #[jni_tools::jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/" $wand "Exception")]
+            impl $wand {
+                $(
+                    fn $get(&self) -> crate::utils::Result<()> {
+                        Ok(self.$m_get()?)
+                    }
+                )*
+            }
+        }
+    }
 }

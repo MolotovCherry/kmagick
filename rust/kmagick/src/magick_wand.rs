@@ -1,4 +1,4 @@
-use jni::{JNIEnv, objects::{JObject, JString, JValue}, sys::{jboolean, jbyteArray, jdouble, jint, jlong, jobject}};
+use jni::{JNIEnv, objects::{JObject, JString, JValue}, sys::{jboolean, jbyteArray, jdouble, jdoubleArray, jint, jlong, jobject, jobjectArray, jstring}};
 use jni_tools::{jclass, jname, Handle, Utils};
 use std::convert::TryFrom;
 use crate::{
@@ -129,10 +129,388 @@ impl MagickWand {
         Ok(())
     }
 
-    fn fxImage(&mut self, env: JNIEnv, _: JObject, expression: JString) -> crate::utils::Result<jobject> {
+    fn fx(&mut self, env: JNIEnv, _: JObject, expression: JString) -> crate::utils::Result<jobject> {
         let expression = env.get_jstring(expression)?;
-        let wand = self.fx(&*expression);
+        let wand = self.instance.fx(&*expression);
         Ok(new_from_wand!(env, wand, MagickWand).into_inner())
+    }
+
+    fn setSize(&self, _: JNIEnv, _: JObject, columns: jlong, rows: jlong) -> crate::utils::Result<()> {
+        let columns = usize::try_from(columns)?;
+        let rows = usize::try_from(rows)?;
+        Ok(self.set_size(columns, rows)?)
+    }
+
+    fn levelImage(&self, _: JNIEnv, _: JObject, black_point: jdouble, gamma: jdouble, white_point: jdouble) -> crate::utils::Result<()> {
+        Ok(self.level_image(black_point, gamma, white_point)?)
+    }
+
+    fn extendImage(&self, _: JNIEnv, _: JObject, width: jlong, height: jlong, x: jlong, y: jlong) -> crate::utils::Result<()> {
+        let width = usize::try_from(width)?;
+        let height = usize::try_from(height)?;
+        let x = isize::try_from(x)?;
+        let y = isize::try_from(y)?;
+
+        Ok(self.extend_image(width, height, x, y)?)
+    }
+
+    fn profileImage(&self, env: JNIEnv, _: JObject, name: JString, profile: jbyteArray) -> crate::utils::Result<()> {
+        let name = env.get_jstring(name)?;
+        let bytes: Vec<u8>;
+        let profile = if !profile.is_null() {
+            bytes = env.convert_byte_array(profile)?;
+            Some(&*bytes)
+        } else {
+            None
+        };
+
+        Ok(self.profile_image(&*name, profile)?)
+    }
+
+    fn blurImage(&self, _: JNIEnv, _: JObject, radius: jdouble, sigma: jdouble) -> crate::utils::Result<()> {
+        Ok(self.blur_image(radius, sigma)?)
+    }
+
+    fn gaussianBlurImage(&self, _: JNIEnv, _: JObject, radius: jdouble, sigma: jdouble) -> crate::utils::Result<()> {
+        Ok(self.gaussian_blur_image(radius, sigma)?)
+    }
+
+
+    fn adaptiveResizeImage(&self, _: JNIEnv, _: JObject, width: jlong, height: jlong) -> crate::utils::Result<()> {
+        let width = usize::try_from(width)?;
+        let height = usize::try_from(height)?;
+        Ok(self.adaptive_resize_image(width, height)?)
+    }
+
+    fn rotateImage(&self, env: JNIEnv, _: JObject, background: JObject, degrees: jdouble) -> crate::utils::Result<()> {
+        let background = env.get_handle::<PixelWand>(background)?;
+        Ok(self.rotate_image(&background.instance, degrees)?)
+    }
+
+    fn trimImage(&self, _: JNIEnv, _: JObject, fuzz: jdouble) -> crate::utils::Result<()> {
+        Ok(self.trim_image(fuzz)?)
+    }
+
+    fn resetImagePage(&self, env: JNIEnv, _: JObject, page_geometry: JString) -> crate::utils::Result<()> {
+        let page_geometry = env.get_jstring(page_geometry)?;
+        Ok(self.reset_image_page(&*page_geometry)?)
+    }
+
+    fn getImageProperty(&self, env: JNIEnv, _: JObject, name: JString) -> crate::utils::Result<jstring> {
+        let name = env.get_jstring(name)?;
+        let prop = self.get_image_property(&*name)?;
+        Ok(env.new_string(&*prop)?.into_inner())
+    }
+
+    fn setImageProperty(&self, env: JNIEnv, _: JObject, name: JString, value: JString) -> crate::utils::Result<()> {
+        let name = env.get_jstring(name)?;
+        let value = env.get_jstring(value)?;
+        Ok(self.set_image_property(&*name, &*value)?)
+    }
+
+    fn getImagePixelColor(&self, env: JNIEnv, _: JObject, x: jlong, y: jlong) -> crate::utils::Result<jobject> {
+        let x = isize::try_from(x)?;
+        let y = isize::try_from(y)?;
+        let wand = self.get_image_pixel_color(x, y);
+
+        if wand.is_some() {
+            Ok(new_from_wand!(env, wand.unwrap(), PixelWand).into_inner())
+        } else {
+            Ok(std::ptr::null_mut())
+        }
+    }
+
+    fn setSamplingFactors(&self, env: JNIEnv, _: JObject, sampling_factors: jdoubleArray) -> crate::utils::Result<()> {
+        let buf: &mut [f64] = &mut [];
+        env.get_double_array_region(sampling_factors, 0, buf)?;
+        Ok(self.set_sampling_factors(buf)?)
+    }
+
+    fn getImageHistogram(&self, env: JNIEnv) -> crate::utils::Result<jobjectArray> {
+        let wands = self.get_image_histogram();
+
+        if wands.is_some() {
+            let mut wands = wands.unwrap();
+            let obj = env.new_object_array(
+                i32::try_from(wands.len())?,
+                "com/cherryleafroad/kmagick/PixelWand",
+                JObject::null()
+            )?;
+
+            for num in 0..wands.len() {
+                let wand = wands.remove(0);
+                let wand = new_from_wand!(env, wand, PixelWand);
+                env.set_object_array_element(obj, num as i32, wand)?;
+            }
+
+            Ok(obj)
+        } else {
+            Ok(std::ptr::null_mut())
+        }
+    }
+
+    fn sharpenImage(&self, _: JNIEnv, _: JObject, radius: jdouble, sigma: jdouble) -> crate::utils::Result<()> {
+        Ok(self.sharpen_image(radius, sigma)?)
+    }
+
+    fn setBackgroundColor(&self, env: JNIEnv, _: JObject, pixel_wand: JObject) -> crate::utils::Result<()> {
+        let pixel_wand = env.get_handle::<PixelWand>(pixel_wand)?;
+        Ok(self.set_background_color(&pixel_wand.instance)?)
+    }
+
+    fn setImageBackgroundColor(&self, env: JNIEnv, _: JObject, pixel_wand: JObject) -> crate::utils::Result<()> {
+        let pixel_wand = env.get_handle::<PixelWand>(pixel_wand)?;
+        Ok(self.set_image_background_color(&pixel_wand.instance)?)
+    }
+
+    fn getImageResolution(&self, env: JNIEnv) -> crate::utils::Result<jobject> {
+        let (hor_res, vert_res) = self.get_image_resolution()?;
+        let x = JValue::Double(hor_res);
+        let y = JValue::Double(vert_res);
+
+        let cls = env.find_class("com/cherryleafroad/kmagick/Resolution")?;
+        let mid = env.get_method_id(cls, "<init>", "(DD)V")?;
+        Ok(env.new_object_unchecked(cls, mid, &[x, y])?.into_inner())
+    }
+
+    fn setImageResolution(
+        &self,
+        _: JNIEnv,
+        _: JObject,
+        x_resolution: jdouble,
+        y_resolution: jdouble,
+    ) -> crate::utils::Result<()> {
+        Ok(self.set_image_resolution(x_resolution, y_resolution)?)
+    }
+
+    fn setResolution(&self, _: JNIEnv, _: JObject, x_resolution: jdouble, y_resolution: jdouble) -> crate::utils::Result<()> {
+        Ok(self.set_resolution(x_resolution, y_resolution)?)
+    }
+
+    fn sepiaToneImage(&self, _: JNIEnv, _: JObject, threshold: jdouble) -> crate::utils::Result<()> {
+        Ok(self.sepia_tone_image(threshold)?)
+    }
+
+    fn exportImagePixels(
+        &self,
+        env: JNIEnv,
+        _: JObject,
+        x: jlong,
+        y: jlong,
+        width: jlong,
+        height: jlong,
+        map: JString,
+    ) -> crate::utils::Result<jbyteArray> {
+        let x = isize::try_from(x)?;
+        let y = isize::try_from(y)?;
+        let width = usize::try_from(width)?;
+        let height = usize::try_from(height)?;
+        let map = env.get_jstring(map)?;
+
+        let export = self.export_image_pixels(x, y, width, height, &*map);
+        if export.is_some() {
+            // reinterpret [u8] as [i8] for java -> why is there no function for this in jni?
+            let slice = &*export.unwrap();
+            let export = bytemuck::cast_slice::<u8, i8>(slice);
+            let size = i32::try_from(export.len())?;
+            let bytes = env.new_byte_array(size)?;
+            env.set_byte_array_region(bytes, 0, export)?;
+            Ok(bytes)
+        } else {
+            Ok(std::ptr::null_mut())
+        }
+    }
+
+    fn resizeImage(&self, _: JNIEnv, _: JObject, width: jlong, height: jlong, filter: jint) -> crate::utils::Result<()> {
+        let width = usize::try_from(width)?;
+        let height = usize::try_from(height)?;
+        self.resize_image(width, height, filter);
+        Ok(())
+    }
+
+    fn cropImage(
+        &self,
+        _: JNIEnv,
+        _: JObject,
+        width: jlong,
+        height: jlong,
+        x: jlong,
+        y: jlong,
+    ) -> crate::utils::Result<()> {
+        let width = usize::try_from(width)?;
+        let height = usize::try_from(height)?;
+        let x = isize::try_from(x)?;
+        let y = isize::try_from(y)?;
+
+        Ok(self.crop_image(width, height, x, y)?)
+    }
+
+    fn sampleImage(&self, _: JNIEnv, _: JObject, width: jlong, height: jlong) -> crate::utils::Result<()> {
+        let width = usize::try_from(width)?;
+        let height = usize::try_from(height)?;
+        Ok(self.sample_image(width, height)?)
+    }
+
+    fn resampleImage(
+        &self,
+        _: JNIEnv,
+        _: JObject,
+        x_resolution: jdouble,
+        y_resolution: jdouble,
+        filter: jint
+    ) {
+        self.resample_image(x_resolution, y_resolution, filter);
+    }
+
+    fn liquidRescaleImage(&self, _: JNIEnv, _: JObject, width: jlong, height: jlong, delta_x: jdouble, rigidity: jdouble) -> crate::utils::Result<()> {
+        let width = usize::try_from(width)?;
+        let height = usize::try_from(height)?;
+        Ok(self.liquid_rescale_image(width, height, delta_x, rigidity)?)
+    }
+
+    fn implode(&self, _: JNIEnv, _: JObject, amount: jdouble, method: jint) -> crate::utils::Result<()> {
+        Ok(self.instance.implode(amount, method)?)
+    }
+
+    fn fit(&self, _: JNIEnv, _: JObject, width: jlong, height: jlong) -> crate::utils::Result<()> {
+        let width = usize::try_from(width)?;
+        let height = usize::try_from(height)?;
+        self.instance.fit(width, height);
+        Ok(())
+    }
+
+    fn requiresOrientation(&self) -> jboolean {
+        self.requires_orientation() as jboolean
+    }
+
+    fn autoOrient(&self) -> jboolean {
+        self.auto_orient() as jboolean
+    }
+
+    fn writeImageBlob(&self, env: JNIEnv, _: JObject, format: JString) -> crate::utils::Result<jbyteArray> {
+        let format = env.get_jstring(format)?;
+        let bytes = self.write_image_blob(&*format)?;
+
+        let length = i32::try_from(bytes.len())?;
+        let j_byte_obj = env.new_byte_array(length)?;
+        // there really should be a method on this in the jni ...
+        let j_bytes = bytemuck::cast_slice::<u8, i8>(&*bytes);
+        env.set_byte_array_region(j_byte_obj, 0, j_bytes)?;
+        Ok(j_byte_obj)
+    }
+
+    fn writeImagesBlob(&self, env: JNIEnv, _: JObject, format: JString) -> crate::utils::Result<jbyteArray> {
+        let format = env.get_jstring(format)?;
+        let bytes = self.write_images_blob(&*format)?;
+
+        let length = i32::try_from(bytes.len())?;
+        let j_byte_obj = env.new_byte_array(length)?;
+        // there really should be a method on this in the jni ...
+        let j_bytes = bytemuck::cast_slice::<u8, i8>(&*bytes);
+        env.set_byte_array_region(j_byte_obj, 0, j_bytes)?;
+        Ok(j_byte_obj)
+    }
+
+    fn getImageWidth(&self) -> crate::utils::Result<jlong> {
+        Ok(i64::try_from(self.get_image_width())?)
+    }
+
+    /// Retrieve the height of the image.
+    fn getImageHeight(&self) -> crate::utils::Result<jlong> {
+        Ok(i64::try_from(self.get_image_height())?)
+    }
+
+    /// Retrieve the page geometry (width, height, x offset, y offset) of the image.
+    fn getImagePage(&self, env: JNIEnv) -> crate::utils::Result<jobject> {
+        let (width, height, x, y) = self.get_image_page();
+        let width = i64::try_from(width)?;
+        let height = i64::try_from(height)?;
+        let x = i64::try_from(x)?;
+        let y = i64::try_from(y)?;
+
+        let cls = env.find_class("com/cherryleafroad/kmagick/PageGeometry")?;
+        let width = JValue::Long(width);
+        let height = JValue::Long(height);
+        let x = JValue::Long(x);
+        let y = JValue::Long(y);
+
+        let mid = env.get_method_id(cls, "<init>", "(JJJJ)V")?;
+
+        Ok(env.new_object_unchecked(cls, mid, &[width, height, x, y])?.into_inner())
+    }
+
+    // mutations! section
+    fn transformImageColorspace(&self, _: JNIEnv, _: JObject, colorspace: jint) -> crate::utils::Result<()> {
+        Ok(self.transform_image_colorspace(colorspace)?)
+    }
+
+    fn setImageAlpha(&self, _: JNIEnv, _: JObject, alpha: jdouble) -> crate::utils::Result<()> {
+        Ok(self.set_image_alpha(alpha)?)
+    }
+
+    fn modulateImage(
+        &self,
+        _: JNIEnv,
+        _: JObject,
+        brightness: jdouble,
+        saturation: jdouble,
+        hue: jdouble
+    ) -> crate::utils::Result<()> {
+        Ok(self.modulate_image(brightness, saturation, hue)?)
+    }
+
+    fn setImageAlphaChannel(&self, _: JNIEnv, _: JObject, alpha_channel: jint) -> crate::utils::Result<()> {
+        Ok(self.set_image_alpha_channel(alpha_channel)?)
+    }
+
+    fn quantizeImage(
+        &self,
+        _: JNIEnv,
+        _: JObject,
+        number_of_colors: jlong,
+        colorspace: jint,
+        tree_depth: jlong,
+        dither_method: jint,
+        measure_error: jboolean
+    ) -> crate::utils::Result<()> {
+        let number_of_colors = usize::try_from(number_of_colors)?;
+        let tree_depth = usize::try_from(tree_depth)?;
+
+        Ok(self.quantize_image(number_of_colors, colorspace, tree_depth, dither_method, measure_error as i32)?)
+    }
+
+    fn quantizeImages(
+        &self,
+        _: JNIEnv,
+        _: JObject,
+        number_of_colors: jlong,
+        colorspace: jint,
+        tree_depth: jlong,
+        dither_method: jint,
+        measure_error: jboolean
+    ) -> crate::utils::Result<()> {
+        let number_of_colors = usize::try_from(number_of_colors)?;
+        let tree_depth = usize::try_from(tree_depth)?;
+
+        Ok(self.quantize_images(number_of_colors, colorspace, tree_depth, dither_method, measure_error as i32)?)
+    }
+
+    fn uniqueImageColors(&self) -> crate::utils::Result<()> {
+        Ok(self.unique_image_colors()?)
+    }
+
+    fn kmeans(
+        &self,
+        _: JNIEnv,
+        _: JObject,
+        number_colors: jlong,
+        max_iterations: jlong,
+        tolerance: jdouble
+    ) -> crate::utils::Result<()> {
+        let number_colors = usize::try_from(number_colors)?;
+        let max_iterations = usize::try_from(max_iterations)?;
+
+        Ok(self.instance.kmeans(number_colors, max_iterations, tolerance)?)
     }
 }
 
@@ -146,6 +524,7 @@ set_string!(
     labelImage, label_image
     readImage, read_image
     pingImage, ping_image
+    writeImage, write_image
 );
 
 get_set_string!(
@@ -189,4 +568,11 @@ get_set_sized_result!(
     magickGetImageIterations,         magickSetImageIterations,         get_image_iterations,          set_image_iterations,          usize //size_t
     magickGetImageScene,              magickSetImageScene,              get_image_scene,               set_image_scene,               usize //size_t
     magickGetIteratorIndex,           magickSetIteratorIndex,           get_iterator_index,            set_iterator_index,            isize //ssize_t
+);
+
+simple_call!(
+    MagickWand,
+    flipImage,   flip_image
+    negateImage, negate_image
+    flopImage,   flop_image
 );

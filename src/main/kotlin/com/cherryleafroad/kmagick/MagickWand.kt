@@ -273,7 +273,7 @@ class MagickWand {
      * @param expression The expression.
      */
     @Throws(MagickWandException::class)
-    external fun fxImage(expression: String)
+    external fun fx(expression: String)
 
     /**
      * Sets the size of the magick wand. Set it before you read a raw image format such as RGB, GRAY, or CMYK.
