@@ -329,13 +329,13 @@ class DrawingWand {
     /**
      * The font weight used when annotating with text. Font weight valid range: 100-900
      */
-    var fontWeight: Int
+    var fontWeight: Long
         get() = drawGetFontWeight()
         set(value) = drawSetFontWeight(value)
     @Throws(DrawingWandException::class)
-    private external fun drawGetFontWeight(): Int
+    private external fun drawGetFontWeight(): Long
     @Throws(DrawingWandException::class)
-    private external fun drawSetFontWeight(fontWeight: Int)
+    private external fun drawSetFontWeight(fontWeight: Long)
 
     /**
      * The font stretch used when annotating with text. The AnyStretch enumeration acts as a wild-card.
@@ -386,13 +386,13 @@ class DrawingWand {
      * it is possible for the miter to extend far beyond the thickness of the line stroking the path. The miterLimit
      * imposes a limit on the ratio of the miter length to the `lineWidth`.
      */
-    var strokeMiterLimit: Int
+    var strokeMiterLimit: Long
         get() = drawGetStrokeMiterLimit()
         set(value) = drawSetStrokeMiterLimit(value)
     @Throws(DrawingWandException::class)
-    private external fun drawGetStrokeMiterLimit(): Int
+    private external fun drawGetStrokeMiterLimit(): Long
     @Throws(DrawingWandException::class)
-    private external fun drawSetStrokeMiterLimit(miterLimit: Int)
+    private external fun drawSetStrokeMiterLimit(miterLimit: Long)
 
     /**
      * The alpha of stroked object outlines. The value 1.0 is opaque.

@@ -271,16 +271,13 @@ macro_rules! get_set_sized {
             #[jni_tools::jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/" $wand "Exception")]
             impl $wand {
                 $(
-                    fn $get(&self) -> crate::utils::Result<jni::sys::jsize> {
-                        let res = self.$m_get();
-                        use std::convert::TryFrom;
-                        Ok(i32::try_from(res)?)
+                    fn $get(&self) -> jni::sys::jlong {
+                        self.$m_get() as _
                     }
 
-                    fn $set(&mut self, _: jni::JNIEnv, _: jni::objects::JObject, arg: jni::sys::jint) {
+                    fn $set(&mut self, _: jni::JNIEnv, _: jni::objects::JObject, arg: jni::sys::jlong) {
                         // implicit conversion to avoid needing multiple macros for usize + isize
-                        let arg = arg as _;
-                        self.$m_set(arg);
+                        self.$m_set(arg as _);
                     }
                 )*
             }

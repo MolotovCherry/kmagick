@@ -308,8 +308,8 @@ pub fn validate_fn_args(fn_args: &Punctuated<FnArg, Comma>, is_impl: bool, attrs
     let allowed_types = vec![
         "jobject", "jclass", "jthrowable", "jstring", "jarray", "jbooleanArray",
         "jbyteArray", "jcharArray", "jshortArray", "jintArray", "jlongArray",
-        "jfloatArray", "jdoubleArray", "jobjectArray", "jweak", "jint", "jlong ",
-        "jbyte ", "jboolean", "jchar", "jshort", "jfloat", "jdouble", "jsize",
+        "jfloatArray", "jdoubleArray", "jobjectArray", "jweak", "jint", "jlong",
+        "jbyte", "jboolean", "jchar", "jshort", "jfloat", "jdouble", "jsize",
         "jfieldID", "jmethodID",
         "JByteBuffer", "JClass", "JFieldID", "JList", "JMap", "JMethodID",
         "JObject", "JStaticFieldID", "JStaticMethodID", "JString", "JThrowable",
