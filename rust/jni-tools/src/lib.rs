@@ -52,10 +52,18 @@ impl<'a> Kotlin for JNIEnv<'a> {
         let _ = self.lock_obj(*obj)?;
 
         let j_obj = self.get_field(obj, field, Settings::LONG_SIG)?.l()?;
-        let ptr = self.get_field(j_obj, "value", "J")?.j()? as *mut Mutex<R>;
 
         if j_obj.is_null() {
             error!("get_rust_field_kt:: field {} is null", field.to_owned());
+            return Err(
+                Box::new(HandleError::NullField(field.to_owned()))
+            );
+        }
+
+        let ptr = self.call_method(j_obj, "longValue", "()J", &[])?.j()? as *mut Mutex<R>;
+
+        if ptr.is_null() {
+            error!("take_rust_field_kt:: field {} is null", field.to_owned());
             return Err(
                 Box::new(HandleError::NullField(field.to_owned()))
             );
@@ -100,7 +108,15 @@ impl<'a> Kotlin for JNIEnv<'a> {
             let _ = self.lock_obj(*obj)?;
 
             let j_obj = self.get_field(obj, field, Settings::LONG_SIG)?.l()?;
-            let ptr = self.get_field(j_obj, "value", "J")?.j()? as *mut Mutex<R>;
+
+            if j_obj.is_null() {
+                error!("take_rust_field_kt:: field {} is null", field.to_owned());
+                return Err(
+                    Box::new(HandleError::NullField(field.to_owned()))
+                );
+            }
+
+            let ptr = self.call_method(j_obj, "longValue", "()J", &[])?.j()? as *mut Mutex<R>;
 
             if ptr.is_null() {
                 error!("take_rust_field_kt:: field {} is null", field.to_owned());

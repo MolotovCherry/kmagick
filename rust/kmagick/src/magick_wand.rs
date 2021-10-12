@@ -84,6 +84,7 @@ impl MagickWand {
         Ok(self.ping_image_blob(bytes)?)
     }
 
+    #[jname(name="magickCompareImages")]
     fn compareImages(&self, env: JNIEnv, _: JObject, reference: JObject, metric: jint) -> crate::utils::Result<jobject> {
         let reference = env.get_handle::<MagickWand>(reference)?;
 
@@ -114,7 +115,8 @@ impl MagickWand {
         Ok(comparison.into_inner())
     }
 
-    fn composeImages(&self, env: JNIEnv, _: JObject, reference: JObject, composition_operator: jint, clip_to_self: jboolean, x: jlong, y: jlong) -> crate::utils::Result<()> {
+    #[jname(name="magickCompositeImage")]
+    fn compositeImage(&self, env: JNIEnv, _: JObject, reference: JObject, composition_operator: jint, clip_to_self: jboolean, x: jlong, y: jlong) -> crate::utils::Result<()> {
         let reference = env.get_handle::<MagickWand>(reference)?;
 
         #[cfg(target_os="android")]
@@ -124,6 +126,7 @@ impl MagickWand {
         Ok(())
     }
 
+    #[jname(name="magickClutImage")]
     fn clutImage(&self, env: JNIEnv, _: JObject, clut_wand: JObject, method: jint) -> crate::utils::Result<()> {
         let clut_wand = env.get_handle::<MagickWand>(clut_wand)?;
 
@@ -332,6 +335,7 @@ impl MagickWand {
         }
     }
 
+    #[jname(name="magickResizeImage")]
     fn resizeImage(&self, _: JNIEnv, _: JObject, width: jlong, height: jlong, filter: jint) -> crate::utils::Result<()> {
         let width = usize::try_from(width)?;
         let height = usize::try_from(height)?;
@@ -366,6 +370,7 @@ impl MagickWand {
         Ok(self.sample_image(width, height)?)
     }
 
+    #[jname(name="magickResampleImage")]
     #[cfg(not(target_os="android"))]
     #[jtarget(not(target_os="android"))]
     fn resampleImage(
@@ -379,6 +384,7 @@ impl MagickWand {
         self.resample_image(x_resolution, y_resolution, filter);
     }
 
+    #[jname(name="magickResampleImage")]
     #[cfg(target_os="android")]
     #[jtarget(target_os="android")]
     fn resampleImage(
@@ -401,6 +407,7 @@ impl MagickWand {
         Ok(self.liquid_rescale_image(width, height, delta_x, rigidity)?)
     }
 
+    #[jname(name="magickImplode")]
     fn implode(&self, _: JNIEnv, _: JObject, amount: jdouble, method: jint) -> crate::utils::Result<()> {
         #[cfg(target_os="android")]
         let method = u32::try_from(method)?;
@@ -476,7 +483,7 @@ impl MagickWand {
     }
 
     // mutations! section
-    fn transformImageColorspace(&self, _: JNIEnv, _: JObject, colorspace: jint) -> crate::utils::Result<()> {
+    fn magickTransformImageColorspace(&self, _: JNIEnv, _: JObject, colorspace: jint) -> crate::utils::Result<()> {
         #[cfg(target_os="android")]
         let colorspace = u32::try_from(colorspace)?;
 
