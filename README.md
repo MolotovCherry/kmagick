@@ -50,5 +50,11 @@ Magick.initialize().use {
   
   val b = MagickWand()
   b.newImage(100, 200, a)
+  
+  // if you so desire, you can also destroy your wand in advance
+  // just don't attempt to use it afterwards
+  a.destroy()
 }
 ```
+
+For more examples and information on usage, please browse the API in your IDE or check ImageMagick's website.
