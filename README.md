@@ -52,8 +52,16 @@ Magick.initialize().use {
   b.newImage(100, 200, a)
   
   // if you so desire, you can also destroy your wand in advance
-  // just don't attempt to use it afterwards
+  // just don't attempt to use it afterwards.
+  // java might not guarantee the destructor will be called on finalize(),
+  // so you might have to call this yourself to keep memory sane
   a.destroy()
+  
+  // wands also can use the `use` blocks if needed
+  // just remember it'll be destroyed at the end of the block!
+  b.use {
+    it.readImage("/some/path/file.png")
+  }
 }
 ```
 
