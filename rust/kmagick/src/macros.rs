@@ -488,9 +488,9 @@ macro_rules! get_set_wand {
                         Ok(n_obj.into_inner())
                     }
 
-                    fn $set(&mut self, env: jni::JNIEnv, obj: jni::objects::JObject) -> crate::utils::Result<()>{
+                    fn $set(&mut self, env: jni::JNIEnv, _: jni::objects::JObject, wand: jni::objects::JObject) -> crate::utils::Result<()>{
                         use jni_tools::Handle;
-                        let r_obj = env.get_handle::<crate::$ty>(obj)?;
+                        let r_obj = env.get_handle::<crate::$ty>(wand)?;
                         let arg =  &r_obj.instance;
                         self.$m_set(&arg);
                         Ok(())
