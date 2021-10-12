@@ -204,6 +204,11 @@ macro_rules! get_set_enum {
             impl $wand {
                 $(
                     fn $get(&self, env: jni::JNIEnv) -> crate::utils::Result<jni::sys::jobject> {
+                        #[cfg(target_os="android")]
+                        use std::convert::TryFrom;
+                        #[cfg(target_os="android")]
+                        let res = i32::try_from(self.$m_get())?;
+                        #[cfg(not(target_os="android"))]
                         let res = self.$m_get();
 
                         let val = jni::objects::JValue::Int(res);
@@ -227,8 +232,20 @@ macro_rules! get_set_enum {
                         )?.l()?.into_inner())
                     }
 
+                    #[cfg(not(target_os="android"))]
+                    #[jni_tools::jtarget(not(target_os="android"))]
                     fn $set(&mut self, _: jni::JNIEnv, _: jni::objects::JObject, arg: jni::sys::jint) {
                         self.$m_set(arg);
+                    }
+
+                    #[cfg(target_os="android")]
+                    #[jni_tools::jtarget(target_os="android")]
+                    fn $set(&mut self, _: jni::JNIEnv, _: jni::objects::JObject, arg: jni::sys::jint) -> crate::utils::Result<()> {
+                        use std::convert::TryFrom;
+                        let arg = u32::try_from(arg)?;
+
+                        self.$m_set(arg);
+                        Ok(())
                     }
                 )*
             }
@@ -248,6 +265,11 @@ macro_rules! get_set_enum_result {
             impl $wand {
                 $(
                     fn $get(&self, env: jni::JNIEnv) -> crate::utils::Result<jni::sys::jobject> {
+                        #[cfg(target_os="android")]
+                        use std::convert::TryFrom;
+                        #[cfg(target_os="android")]
+                        let res = i32::try_from(self.$m_get())?;
+                        #[cfg(not(target_os="android"))]
                         let res = self.$m_get();
 
                         let val = jni::objects::JValue::Int(res);
@@ -272,6 +294,11 @@ macro_rules! get_set_enum_result {
                     }
 
                     fn $set(&mut self, _: jni::JNIEnv, _: jni::objects::JObject, arg: jni::sys::jint) -> crate::utils::Result<()> {
+                        #[cfg(target_os="android")]
+                        use std::convert::TryFrom;
+                        #[cfg(target_os="android")]
+                        let arg = u32::try_from(arg)?;
+
                         Ok(self.$m_set(arg)?)
                     }
                 )*

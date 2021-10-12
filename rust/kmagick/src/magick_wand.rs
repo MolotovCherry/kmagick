@@ -1,5 +1,5 @@
 use jni::{JNIEnv, objects::{JObject, JString, JValue}, sys::{jboolean, jbyteArray, jdouble, jdoubleArray, jint, jlong, jobject, jobjectArray, jstring}};
-use jni_tools::{jclass, jname, Handle, Utils};
+use jni_tools::{jclass, jname, Handle, Utils, jtarget};
 use std::convert::TryFrom;
 use crate::{
     PixelWand,
@@ -87,6 +87,9 @@ impl MagickWand {
     fn compareImages(&self, env: JNIEnv, _: JObject, reference: JObject, metric: jint) -> crate::utils::Result<jobject> {
         let reference = env.get_handle::<MagickWand>(reference)?;
 
+        #[cfg(target_os="android")]
+        let metric = u32::try_from(metric)?;
+
         let (distortion, r_diffImage) = self.compare_images(&reference.instance, metric);
 
         let mut diffImage = None;
@@ -113,12 +116,20 @@ impl MagickWand {
 
     fn composeImages(&self, env: JNIEnv, _: JObject, reference: JObject, composition_operator: jint, clip_to_self: jboolean, x: jlong, y: jlong) -> crate::utils::Result<()> {
         let reference = env.get_handle::<MagickWand>(reference)?;
+
+        #[cfg(target_os="android")]
+        let composition_operator = u32::try_from(composition_operator)?;
+
         self.compose_images(&reference.instance, composition_operator, clip_to_self != 0, x as isize, y as isize)?;
         Ok(())
     }
 
     fn clutImage(&self, env: JNIEnv, _: JObject, clut_wand: JObject, method: jint) -> crate::utils::Result<()> {
         let clut_wand = env.get_handle::<MagickWand>(clut_wand)?;
+
+        #[cfg(target_os="android")]
+        let method = u32::try_from(method)?;
+
         self.clut_image(&clut_wand.instance, method)?;
         Ok(())
     }
@@ -324,6 +335,10 @@ impl MagickWand {
     fn resizeImage(&self, _: JNIEnv, _: JObject, width: jlong, height: jlong, filter: jint) -> crate::utils::Result<()> {
         let width = usize::try_from(width)?;
         let height = usize::try_from(height)?;
+
+        #[cfg(target_os="android")]
+        let filter = u32::try_from(filter)?;
+
         self.resize_image(width, height, filter);
         Ok(())
     }
@@ -351,6 +366,8 @@ impl MagickWand {
         Ok(self.sample_image(width, height)?)
     }
 
+    #[cfg(not(target_os="android"))]
+    #[jtarget(not(target_os="android"))]
     fn resampleImage(
         &self,
         _: JNIEnv,
@@ -362,6 +379,22 @@ impl MagickWand {
         self.resample_image(x_resolution, y_resolution, filter);
     }
 
+    #[cfg(target_os="android")]
+    #[jtarget(target_os="android")]
+    fn resampleImage(
+        &self,
+        _: JNIEnv,
+        _: JObject,
+        x_resolution: jdouble,
+        y_resolution: jdouble,
+        filter: jint
+    ) -> crate::utils::Result<()> {
+        let filter = u32::try_from(filter)?;
+
+        self.resample_image(x_resolution, y_resolution, filter);
+        Ok(())
+    }
+
     fn liquidRescaleImage(&self, _: JNIEnv, _: JObject, width: jlong, height: jlong, delta_x: jdouble, rigidity: jdouble) -> crate::utils::Result<()> {
         let width = usize::try_from(width)?;
         let height = usize::try_from(height)?;
@@ -369,6 +402,9 @@ impl MagickWand {
     }
 
     fn implode(&self, _: JNIEnv, _: JObject, amount: jdouble, method: jint) -> crate::utils::Result<()> {
+        #[cfg(target_os="android")]
+        let method = u32::try_from(method)?;
+
         Ok(self.instance.implode(amount, method)?)
     }
 
@@ -441,6 +477,9 @@ impl MagickWand {
 
     // mutations! section
     fn transformImageColorspace(&self, _: JNIEnv, _: JObject, colorspace: jint) -> crate::utils::Result<()> {
+        #[cfg(target_os="android")]
+        let colorspace = u32::try_from(colorspace)?;
+
         Ok(self.transform_image_colorspace(colorspace)?)
     }
 
@@ -460,6 +499,9 @@ impl MagickWand {
     }
 
     fn setImageAlphaChannel(&self, _: JNIEnv, _: JObject, alpha_channel: jint) -> crate::utils::Result<()> {
+        #[cfg(target_os="android")]
+        let alpha_channel = u32::try_from(alpha_channel)?;
+
         Ok(self.set_image_alpha_channel(alpha_channel)?)
     }
 
@@ -476,7 +518,17 @@ impl MagickWand {
         let number_of_colors = usize::try_from(number_of_colors)?;
         let tree_depth = usize::try_from(tree_depth)?;
 
-        Ok(self.quantize_image(number_of_colors, colorspace, tree_depth, dither_method, measure_error as i32)?)
+        #[cfg(target_os="android")]
+        let colorspace = u32::try_from(colorspace)?;
+        #[cfg(target_os="android")]
+        let dither_method = u32::try_from(dither_method)?;
+        #[cfg(target_os="android")]
+        let measure_error = u32::try_from(measure_error)?;
+
+        #[cfg(not(target_os="android"))]
+        let measure_error = i32::try_from(measure_error)?;
+
+        Ok(self.quantize_image(number_of_colors, colorspace, tree_depth, dither_method, measure_error)?)
     }
 
     fn quantizeImages(
@@ -492,7 +544,17 @@ impl MagickWand {
         let number_of_colors = usize::try_from(number_of_colors)?;
         let tree_depth = usize::try_from(tree_depth)?;
 
-        Ok(self.quantize_images(number_of_colors, colorspace, tree_depth, dither_method, measure_error as i32)?)
+        #[cfg(target_os="android")]
+        let colorspace = u32::try_from(colorspace)?;
+        #[cfg(target_os="android")]
+        let dither_method = u32::try_from(dither_method)?;
+        #[cfg(target_os="android")]
+        let measure_error = u32::try_from(measure_error)?;
+
+        #[cfg(not(target_os="android"))]
+        let measure_error = i32::try_from(measure_error)?;
+
+        Ok(self.quantize_images(number_of_colors, colorspace, tree_depth, dither_method, measure_error)?)
     }
 
     fn uniqueImageColors(&self) -> crate::utils::Result<()> {
