@@ -7,6 +7,7 @@ mod drawing_wand;
 mod magick_wand;
 mod pixel_wand;
 mod utils;
+mod globals;
 
 // make available at crate level for macros
 pub use drawing_wand::DrawingWand;
@@ -121,9 +122,13 @@ impl Magick {
     }
 
     #[jstatic]
-    fn terminate() {
+    fn terminate(env: JNIEnv) -> utils::Result<()> {
+        // clear cache before terminating since all internal references will become invalid afterwards
+        globals::clear_cache(env)?;
+
         magick_rust::magick_wand_terminus();
         info!("Magick::terminate() Terminated environment");
+        Ok(())
     }
 
     #[jstatic]

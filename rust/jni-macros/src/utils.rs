@@ -1032,7 +1032,7 @@ pub fn generate_impl_functions(
                             use jni_tools::Handle;
 
                             let p_res = std::panic::catch_unwind(|| {
-                                let res = env.take_handle::<#impl_name>(#take_varname);
+                                let res = env.clear_handle::<#impl_name>(#take_varname);
 
                                 #fn_call_res_binding match res {
                                     Ok(#empty_underscore) => #ok_v,

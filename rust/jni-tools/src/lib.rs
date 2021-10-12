@@ -44,7 +44,9 @@ pub trait Kotlin {
     fn take_rust_field_kt<R>(&self, obj: JObject, field: &str) -> Result<R>
         where
             R: Send + 'static;
-    fn clear_rust_field_kt(&self, obj: JObject, field: &str) -> Result<()>;
+    fn clear_rust_field_kt<R>(&self, obj: JObject, field: &str) -> Result<()>
+        where
+            R: Send + 'static;
 }
 
 impl<'a> Kotlin for JNIEnv<'a> {
@@ -143,12 +145,30 @@ impl<'a> Kotlin for JNIEnv<'a> {
         Ok(mbox.into_inner()?)
     }
 
-    // clear handle without any checks if the object is still being used
-    // only clears handle - underlying memory is untouched
-    fn clear_rust_field_kt(&self, obj: JObject, field: &str) -> Result<()> {
+    // clear handle and underlying object
+    // unlike take, this does not return a value, nor will it error out if it hits a null field
+    fn clear_rust_field_kt<R>(&self, obj: JObject, field: &str) -> Result<()>
+        where
+            R: Send + 'static
+    {
         let j_obj = self.get_field(obj, field, Settings::LONG_SIG)?.l()?;
-
         if !j_obj.is_null() {
+            let _ = self.lock_obj(*obj)?;
+
+            let ptr = self.call_method(j_obj, "longValue", "()J", &[])?.j()? as *mut Mutex<R>;
+            if ptr.is_null() {
+                return Ok(())
+            }
+
+            // get the box back from raw and let it drop
+            let mbox = unsafe { Box::from_raw(ptr) };
+
+            // attempt to acquire the lock. This prevents us from consuming the
+            // mutex if there's an outstanding lock. No one else will be able to
+            // get a new one as long as we're in the guarded scope.
+            drop(mbox.try_lock().ok());
+
+            // clear out the java field
             self.set_field(obj, field, Settings::LONG_SIG, JValue::from(std::ptr::null_mut() as jobject))?;
         }
 
@@ -177,7 +197,9 @@ pub trait Handle {
     fn take_handle<R>(&self, obj: JObject) -> Result<R>
         where
             R: Send + 'static;
-    fn clear_handle(&self, obj: JObject) -> Result<()>;
+    fn clear_handle<R>(&self, obj: JObject) -> Result<()>
+        where
+            R: Send + 'static;
 }
 
 impl<'a> Handle for JNIEnv<'a> {
@@ -202,7 +224,10 @@ impl<'a> Handle for JNIEnv<'a> {
         Ok(self.take_rust_field_kt::<R>(obj, Settings::HANDLE)?)
     }
 
-    fn clear_handle(&self, obj: JObject) -> Result<()> {
-        Ok(self.clear_rust_field_kt(obj, Settings::HANDLE)?)
+    fn clear_handle<R>(&self, obj: JObject) -> Result<()>
+        where
+            R: Send + 'static
+    {
+        Ok(self.clear_rust_field_kt::<R>(obj, Settings::HANDLE)?)
     }
 }
