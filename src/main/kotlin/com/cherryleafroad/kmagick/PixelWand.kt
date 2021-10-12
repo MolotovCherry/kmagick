@@ -1,6 +1,7 @@
 package com.cherryleafroad.kmagick
 
 import org.objenesis.ObjenesisStd
+import java.io.Closeable
 
 typealias Quantum = Float
 
@@ -10,7 +11,7 @@ class PixelWandException(message: String) : MagickException(message)
  * PixelWand API. Used for specifying certain colors.
  */
 @Suppress("unused")
-class PixelWand {
+class PixelWand : Closeable {
     constructor() {
         new()
     }
@@ -27,7 +28,7 @@ class PixelWand {
          * Internal use ONLY. Creates instance without calling constructor
          */
         fun newInstance(): PixelWand {
-            val objenesis = ObjenesisStd();
+            val objenesis = ObjenesisStd()
             val instantiator = objenesis.getInstantiatorOf(PixelWand::class.java)
             return instantiator.newInstance()
         }
@@ -106,6 +107,15 @@ class PixelWand {
      * the wand consistently/timely.
      */
     protected fun finalize() {
+        destroy()
+    }
+
+    /**
+     * This isn't meant to be called manually. You can call [destroy] instead. This does the
+     * same thing as [destroy], but it's here to be used with a `use{}` block for
+     * convenience. For example `wand.use { }`
+     */
+    override fun close() {
         destroy()
     }
 

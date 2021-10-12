@@ -1,6 +1,7 @@
 package com.cherryleafroad.kmagick
 
 import org.objenesis.ObjenesisStd
+import java.io.Closeable
 
 class DrawingWandException(message: String) : MagickException(message)
 
@@ -8,7 +9,7 @@ class DrawingWandException(message: String) : MagickException(message)
  * DrawingWand API. For drawing things on the image (such as text).
  */
 @Suppress("unused")
-class DrawingWand {
+class DrawingWand : Closeable {
     constructor() {
         new()
     }
@@ -111,6 +112,15 @@ class DrawingWand {
      * the wand consistently/timely.
      */
     protected fun finalize() {
+        destroy()
+    }
+
+    /**
+     * This isn't meant to be called manually. You can call [destroy] instead. This does the
+     * same thing as [destroy], but it's here to be used with a `use{}` block for
+     * convenience. For example `wand.use { }`
+     */
+    override fun close() {
         destroy()
     }
 

@@ -1,11 +1,13 @@
 package com.cherryleafroad.kmagick
 
+import com.cherryleafroad.kmagick.Magick.terminate
 import org.objenesis.ObjenesisStd
+import java.io.Closeable
 
 class MagickWandException(message: String) : MagickException(message)
 
 @Suppress("unused")
-class MagickWand {
+class MagickWand : Closeable {
     constructor() {
         new()
     }
@@ -101,6 +103,15 @@ class MagickWand {
      * the wand consistently/timely.
      */
     protected fun finalize() {
+        destroy()
+    }
+
+    /**
+     * This isn't meant to be called manually. You can call [destroy] instead. This does the
+     * same thing as [destroy], but it's here to be used with a `use{}` block for
+     * convenience. For example `wand.use { }`
+     */
+    override fun close() {
         destroy()
     }
 
