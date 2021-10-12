@@ -227,8 +227,11 @@ class MagickWand {
      * @param metric The metric.
      * @return A data class containing the computed distortion and the diffImage if there was a difference.
      */
+    fun compareImages(reference: MagickWand, metric: MetricType): Comparison {
+        return magickCompareImages(reference, metric.id)
+    }
     @Throws(MagickWandException::class)
-    external fun compareImages(reference: MagickWand, metric: MetricType): Comparison
+    private external fun magickCompareImages(reference: MagickWand, metric: Int): Comparison
 
     /**
      * Compose another image onto self at (x,y) using composition_operator
@@ -239,10 +242,19 @@ class MagickWand {
      * @param x The column offset of the composited image.
      * @param y The row offset of the composited image.
      */
+    fun compositeImage(
+        sourceWand: MagickWand,
+        compose: CompositeOperator,
+        clipToSelf: Boolean,
+        x: Long,
+        y: Long
+    ) {
+        magickCompositeImage(sourceWand, compose.id, clipToSelf, x, y)
+    }
     @Throws(MagickWandException::class)
-    external fun compositeImage(
+    private external fun magickCompositeImage(
             sourceWand: MagickWand,
-            compose: CompositeOperator,
+            compose: Int,
             clipToSelf: Boolean,
             x: Long,
             y: Long
@@ -254,8 +266,11 @@ class MagickWand {
      * @param clutWand The clut image.
      * @param method The pixel interpolation method.
      */
+    fun clutImage(clutWand: MagickWand, method: PixelInterpolateMethod) {
+        magickClutImage(clutWand, method.id)
+    }
     @Throws(MagickWandException::class)
-    external fun clutImage(clutWand: MagickWand, method: PixelInterpolateMethod)
+    private external fun magickClutImage(clutWand: MagickWand, method: Int)
 
     /**
      * replaces colors in the image from a Hald color lookup table. A Hald color lookup table is a 3-dimensional color
@@ -529,8 +544,11 @@ class MagickWand {
      * Resize the image to the specified [width] and [height], using the
      * specified [filter] type.
      */
+    fun resizeImage(width: Long, height: Long, filter: FilterType) {
+        magickResizeImage(width, height, filter.id)
+    }
     @Throws(MagickWandException::class)
-    external fun resizeImage(width: Long, height: Long, filter: FilterType)
+    external fun magickResizeImage(width: Long, height: Long, filter: Int)
 
     /**
      * Extract a region of the image. The [width] and [height] is used as the size
@@ -557,11 +575,14 @@ class MagickWand {
      * Resample the image to the specified (horizontal) [x] and (vertical) [y] resolution, using the
      * specified [filter] type.
      */
+    fun resampleImage(x: Double, y: Double, filter: FilterType) {
+        magickResampleImage(x, y, filter.id)
+    }
     @Throws(MagickWandException::class)
-    external fun resampleImage(
+    private external fun magickResampleImage(
         x: Double,
         y: Double,
-        filter: FilterType
+        filter: Int
     )
 
     /**
@@ -581,8 +602,11 @@ class MagickWand {
      * @param amount The extent of the implosion.
      * @param method THe pixel interpolation method.
      */
+    fun implode(amount: Double, method: PixelInterpolateMethod) {
+        magickImplode(amount, method.id)
+    }
     @Throws(MagickWandException::class)
-    external fun implodeImage(amount: Double, method: PixelInterpolateMethod)
+    private external fun magickImplode(amount: Double, method: Int)
 
     /**
      * Resize the image to fit within the given dimensions, maintaining
@@ -619,7 +643,7 @@ class MagickWand {
      * @param format Any ImageMagick supported image format (e.g. GIF, JPEG, PNG, etc.).
      */
     @Throws(MagickWandException::class)
-    external fun writeImageBlob(format: String): ByteArray?
+    external fun writeImageBlob(format: String): ByteArray
 
     /**
      * Write the images in the desired format to a new blob.
@@ -627,7 +651,7 @@ class MagickWand {
      * @param format Any ImageMagick supported image format (e.g. GIF, JPEG, PNG, etc.).
      */
     @Throws(MagickWandException::class)
-    external fun writeImagesBlob(format: String): ByteArray?
+    external fun writeImagesBlob(format: String): ByteArray
 
     /**
      * Gets the number of unique colors in the image.
@@ -695,22 +719,22 @@ class MagickWand {
      */
     var colorspace: ColorspaceType
         get() = magickGetColorspace()
-        set(value) = magickSetColorspace(value)
+        set(value) = magickSetColorspace(value.id)
     @Throws(MagickWandException::class)
     private external fun magickGetColorspace(): ColorspaceType
     @Throws(MagickWandException::class)
-    private external fun magickSetColorspace(colorspace: ColorspaceType)
+    private external fun magickSetColorspace(colorspace: Int)
 
     /**
      * The wand compression type.
      */
     var compression: CompressionType
         get() = magickGetCompression()
-        set(value) = magickSetCompression(value)
+        set(value) = magickSetCompression(value.id)
     @Throws(MagickWandException::class)
     private external fun magickGetCompression(): CompressionType
     @Throws(MagickWandException::class)
-    private external fun magickSetCompression(compression: CompressionType)
+    private external fun magickSetCompression(compression: Int)
 
     /**
      * The wand compression quality.
@@ -728,22 +752,22 @@ class MagickWand {
      */
     var gravity: GravityType
         get() = magickGetGravity()
-        set(value) = magickSetGravity(value)
+        set(value) = magickSetGravity(value.id)
     @Throws(MagickWandException::class)
     private external fun magickGetGravity(): GravityType
     @Throws(MagickWandException::class)
-    private external fun magickSetGravity(gravity: GravityType)
+    private external fun magickSetGravity(gravity: Int)
 
     /**
      * The image colorspace. Setting does not modify the image data.
      */
     var imageColorspace: ColorspaceType
         get() = magickGetImageColorspace()
-        set(value) = magickSetImageColorspace(value)
+        set(value) = magickSetImageColorspace(value.id)
     @Throws(MagickWandException::class)
     private external fun magickGetImageColorspace(): ColorspaceType
     @Throws(MagickWandException::class)
-    private external fun magickSetImageColorspace(colorspace: ColorspaceType)
+    private external fun magickSetImageColorspace(colorspace: Int)
 
     /**
      * The image composite operator, useful for specifying how to composite the image thumbnail when using the
@@ -751,22 +775,22 @@ class MagickWand {
      */
     var imageCompose: CompositeOperator
         get() = magickGetImageCompose()
-        set(value) = magickSetImageCompose(value)
+        set(value) = magickSetImageCompose(value.id)
     @Throws(MagickWandException::class)
     private external fun magickGetImageCompose(): CompositeOperator
     @Throws(MagickWandException::class)
-    private external fun magickSetImageCompose(compose: CompositeOperator)
+    private external fun magickSetImageCompose(compose: Int)
 
     /**
      * The image compression.
      */
     var imageCompression: CompressionType
         get() = magickGetImageCompression()
-        set(value) = magickSetImageCompression(value)
+        set(value) = magickSetImageCompression(value.id)
     @Throws(MagickWandException::class)
     private external fun magickGetImageCompression(): CompressionType
     @Throws(MagickWandException::class)
-    private external fun magickSetImageCompression(compression: CompressionType)
+    private external fun magickSetImageCompression(compression: Int)
 
     /**
      * The image compression quality.
@@ -806,22 +830,22 @@ class MagickWand {
      */
     var imageDispose: DisposeType
         get() = magickGetImageDispose()
-        set(value) = magickSetImageDispose(value)
+        set(value) = magickSetImageDispose(value.id)
     @Throws(MagickWandException::class)
     private external fun magickGetImageDispose(): DisposeType
     @Throws(MagickWandException::class)
-    private external fun magickSetImageDispose(dispose: DisposeType)
+    private external fun magickSetImageDispose(dispose: Int)
 
     /**
      * The image endian method.
      */
     var imageEndian: EndianType
         get() = magickGetImageEndian()
-        set(value) = magickSetImageEndian(value)
+        set(value) = magickSetImageEndian(value.id)
     @Throws(MagickWandException::class)
     private external fun magickGetImageEndian(): EndianType
     @Throws(MagickWandException::class)
-    private external fun magickSetImageEndian(imageEndian: EndianType)
+    private external fun magickSetImageEndian(imageEndian: Int)
 
     /**
      * The image fuzz.
@@ -850,33 +874,33 @@ class MagickWand {
      */
     var imageGravity: GravityType
         get() = magickGetImageGravity()
-        set(value) = magickSetImageGravity(value)
+        set(value) = magickSetImageGravity(value.id)
     @Throws(MagickWandException::class)
     private external fun magickGetImageGravity(): GravityType
     @Throws(MagickWandException::class)
-    private external fun magickSetImageGravity(gravity: GravityType)
+    private external fun magickSetImageGravity(gravity: Int)
 
     /**
      * The image interlace scheme.
      */
     var imageInterlaceScheme: InterlaceType
         get() = magickGetImageInterlaceScheme()
-        set(value) = magickSetImageInterlaceScheme(value)
+        set(value) = magickSetImageInterlaceScheme(value.id)
     @Throws(MagickWandException::class)
     private external fun magickGetImageInterlaceScheme(): InterlaceType
     @Throws(MagickWandException::class)
-    private external fun magickSetImageInterlaceScheme(imageInterlaceScheme: InterlaceType)
+    private external fun magickSetImageInterlaceScheme(imageInterlaceScheme: Int)
 
     /**
      * The interpolation method for the specified image.
      */
     var imageInterpolateMethod: PixelInterpolateMethod
         get() = magickGetImageInterpolateMethod()
-        set(value) = magickSetImageInterpolateMethod(value)
+        set(value) = magickSetImageInterpolateMethod(value.id)
     @Throws(MagickWandException::class)
     private external fun magickGetImageInterpolateMethod(): PixelInterpolateMethod
     @Throws(MagickWandException::class)
-    private external fun magickSetImageInterpolateMethod(method: PixelInterpolateMethod)
+    private external fun magickSetImageInterpolateMethod(method: Int)
 
     /**
      * The image iterations.
@@ -895,22 +919,22 @@ class MagickWand {
      */
     var imageOrientation: OrientationType
         get() = magickGetImageOrientation()
-        set(value) = magickSetImageOrientation(value)
+        set(value) = magickSetImageOrientation(value.id)
     @Throws(MagickWandException::class)
     private external fun magickGetImageOrientation(): OrientationType
     @Throws(MagickWandException::class)
-    private external fun magickSetImageOrientation(orientation: OrientationType)
+    private external fun magickSetImageOrientation(orientation: Int)
 
     /**
      * Image rendering intent.
      */
     var imageRenderingIntent: RenderingIntent
         get() = magickGetImageRenderingIntent()
-        set(value) = magickSetImageRenderingIntent(value)
+        set(value) = magickSetImageRenderingIntent(value.id)
     @Throws(MagickWandException::class)
     private external fun magickGetImageRenderingIntent(): RenderingIntent
     @Throws(MagickWandException::class)
-    private external fun magickSetImageRenderingIntent(renderingIntent: RenderingIntent)
+    private external fun magickSetImageRenderingIntent(renderingIntent: Int)
 
     /**
      * The image scene.
@@ -928,44 +952,44 @@ class MagickWand {
      */
     var imageType: ImageType
         get() = magickGetImageType()
-        set(value) = magickSetImageType(value)
+        set(value) = magickSetImageType(value.id)
     @Throws(MagickWandException::class)
     private external fun magickGetImageType(): ImageType
     @Throws(MagickWandException::class)
-    private external fun magickSetImageType(imageType: ImageType)
+    private external fun magickSetImageType(imageType: Int)
 
     /**
      * The image units of resolution.
      */
     var imageUnits: ResolutionType
         get() = magickGetImageUnits()
-        set(value) = magickSetImageUnits(value)
+        set(value) = magickSetImageUnits(value.id)
     @Throws(MagickWandException::class)
     private external fun magickGetImageUnits(): ResolutionType
     @Throws(MagickWandException::class)
-    private external fun magickSetImageUnits(units: ResolutionType)
+    private external fun magickSetImageUnits(units: Int)
 
     /**
      * The image interlace scheme.
      */
     var interlaceScheme: InterlaceType
         get() = magickGetInterlaceScheme()
-        set(value) = magickSetInterlaceScheme(value)
+        set(value) = magickSetInterlaceScheme(value.id)
     @Throws(MagickWandException::class)
     private external fun magickGetInterlaceScheme(): InterlaceType
     @Throws(MagickWandException::class)
-    private external fun magickSetInterlaceScheme(interlaceScheme: InterlaceType)
+    private external fun magickSetInterlaceScheme(interlaceScheme: Int)
 
     /**
      * The image interpolate pixel method.
      */
     var interpolateMethod: PixelInterpolateMethod
         get() = magickGetInterpolateMethod()
-        set(value) = magickSetInterpolateMethod(value)
+        set(value) = magickSetInterpolateMethod(value.id)
     @Throws(MagickWandException::class)
     private external fun magickGetInterpolateMethod(): PixelInterpolateMethod
     @Throws(MagickWandException::class)
-    private external fun magickSetInterpolateMethod(method: PixelInterpolateMethod)
+    private external fun magickSetInterpolateMethod(method: Int)
 
     /**
      * The position of the iterator in the image list.
@@ -995,11 +1019,11 @@ class MagickWand {
      */
     var orientation: OrientationType
         get() = magickGetOrientation()
-        set(value) = magickSetOrientation(value)
+        set(value) = magickSetOrientation(value.id)
     @Throws(MagickWandException::class)
     private external fun magickGetOrientation(): OrientationType
     @Throws(MagickWandException::class)
-    private external fun magickSetOrientation(orientation: OrientationType)
+    private external fun magickSetOrientation(orientation: Int)
 
     /**
      * The font pointsize associated with the MagickWand.
@@ -1017,9 +1041,69 @@ class MagickWand {
      */
     var type: ImageType
         get() = magickGetType()
-        set(value) = magickSetType(value)
+        set(value) = magickSetType(value.id)
     @Throws(MagickWandException::class)
     private external fun magickGetType(): ImageType
     @Throws(MagickWandException::class)
-    private external fun magickSetType(type: ImageType)
+    private external fun magickSetType(type: Int)
+
+    /**
+     * Set the image colorspace, transforming (unlike `set_image_colorspace`) image data in the process.
+     */
+    fun transformImageColorspace(colorspace: ColorspaceType) {
+        magickTransformImageColorspace(colorspace.id)
+    }
+    @Throws(MagickWandException::class)
+    private external fun magickTransformImageColorspace(colorspace: Int)
+
+    /**
+     * Sets the image to the specified alpha level.
+     */
+    @Throws(MagickWandException::class)
+    external fun setImageAlpha(alpha: Double)
+
+    /**
+     * Control the brightness, saturation, and hue of an image
+     */
+    @Throws(MagickWandException::class)
+    external fun modulateImage(brightness: Double, saturation: Double, hue: Double)
+
+    /**
+     * Set the image alpha channel mode.
+     */
+    fun setImageAlphaChannel(alphaChannel: AlphaChannelOption) {
+        magickSetImageAlphaChannel(alphaChannel.id)
+    }
+    @Throws(MagickWandException::class)
+    private external fun magickSetImageAlphaChannel(alphaChannel: Int)
+
+    /**
+     * Reduce the number of colors in the image.
+     */
+    fun quantizeImage(numberOfColors: Long, colorspace: ColorspaceType, treeDepth: Long, ditherMethod: DitherMethod, measureError: Boolean) {
+        magickQuantizeImage(numberOfColors, colorspace.id, treeDepth, ditherMethod.id, measureError)
+    }
+    @Throws(MagickWandException::class)
+    private external fun magickQuantizeImage(numberOfColors: Long, colorspace: Int, treeDepth: Long, ditherMethod: Int, measureError: Boolean)
+
+    /**
+     * Reduce the number of colors in the image.
+     */
+    fun quantizeImages(numberOfColors: Long, colorspace: ColorspaceType, treeDepth: Long, ditherMethod: DitherMethod, measureError: Boolean) {
+        magickQuantizeImages(numberOfColors, colorspace.id, treeDepth, ditherMethod.id, measureError)
+    }
+    @Throws(MagickWandException::class)
+    private external fun magickQuantizeImages(numberOfColors: Long, colorspace: Int, treeDepth: Long, ditherMethod: Int, measureError: Boolean)
+
+    /**
+     * Discard all but one of any pixel color.
+     */
+    @Throws(MagickWandException::class)
+    external fun uniqueImageColors()
+
+    /**
+     * Applies k-means color reduction to the image.
+     */
+    @Throws(MagickWandException::class)
+    external fun kMeans(numberOfColors: Long, maxIterations: Long, tolerance: Double)
 }

@@ -25,7 +25,7 @@ class DrawingWand {
          * Internal use ONLY. Creates instance without calling constructor
          */
         fun newInstance(): DrawingWand {
-            val objenesis = ObjenesisStd();
+            val objenesis = ObjenesisStd()
             val instantiator = objenesis.getInstantiatorOf(DrawingWand::class.java)
             return instantiator.newInstance()
         }
