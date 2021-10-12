@@ -120,6 +120,7 @@ impl Magick {
         Ok(arr)
     }
 
+    #[jname(name="nativeTerminate")]
     #[jstatic]
     fn terminate() {
         magick_rust::magick_wand_terminus();

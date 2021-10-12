@@ -50,10 +50,17 @@ object Magick : Closeable {
      * You ___MUST___ call this manually when you're finished to destruct the environment.
      * This ___WILL NOT___ be called automatically.
      *
+     * This function is a no-op on Android, since calling it will crash your app.
+     *
      * If you would like to automatically call this, try a `use` with resources block.
      * E.g. `Magick.initialize().use { }`
      */
-    external fun terminate()
+    fun terminate() {
+        if (!isAndroid()) {
+            nativeTerminate()
+        }
+    }
+    private external fun nativeTerminate()
 
     /**
      * This isn't meant to be called manually. You can call [terminate] instead. This does the
@@ -68,4 +75,8 @@ object Magick : Closeable {
      * Checks whether the magick system was initialized
      */
     external fun isInitialized(): Boolean
+
+    private fun isAndroid(): Boolean {
+        return System.getProperty("java.vm.name") == "Dalvik"
+    }
 }
