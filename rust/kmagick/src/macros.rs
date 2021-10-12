@@ -5,13 +5,13 @@
 macro_rules! wand_wrapper {
     ($wand:ident) => {
         pub struct $wand {
-            pub instance: magick_rust::$wand
+            pub instance: std::mem::ManuallyDrop<magick_rust::$wand>
         }
 
         unsafe impl Send for $wand {}
 
         impl std::ops::Deref for $wand {
-            type Target = magick_rust::$wand;
+            type Target = std::mem::ManuallyDrop<magick_rust::$wand>;
 
             fn deref(&self) -> &Self::Target {
                 &self.instance
@@ -30,7 +30,7 @@ macro_rules! wand_wrapper {
                 #[jni_tools::jnew]
                 fn new() -> Self {
                     Self {
-                        instance: magick_rust::$wand::new()
+                        instance: std::mem::ManuallyDrop::new(magick_rust::$wand::new())
                     }
                 }
 
@@ -88,9 +88,39 @@ macro_rules! wand_wrapper {
                     Ok(res.l()?.into_inner())
                 }
 
-                #[jni_tools::jdestroy]
-                fn destroy(&self) {
-                    // object dropped when this scope ends
+                // Manually handle the taking of the handle and drops
+                // The reason for this is that the destructor MAY get called AFTER you already did magick terminus
+                // causing a segfault. So effectually, just ignore the destructor if not instantiated.
+                //
+                // we need static since using an instanced method will error out if it's called after
+                // (uses env.get_handle which has null checks)
+                #[jni_tools::jstatic]
+                fn destroy(env: jni::JNIEnv, obj: jni::objects::JObject) -> crate::utils::Result<()> {
+                    use jni_tools::Handle;
+
+                    // we can only drop if magick wand is instantiated
+                    // otherwise underlying data will be gone causing a crash
+                    if crate::Magick::isMagickWandInstantiated() {
+                        // this can only be called here since we know it will not be null (thus passing null checks)
+                        let wand = env.take_handle::<$wand>(obj)?;
+
+                        log::debug!("Dropping {} instance {:?}", stringify!($wand), &*wand.instance as *const _);
+
+                        // drop the instance object -
+                        // we are the only ones holding the wand,
+                        // and we cleared the handle so it can't be used again.
+                        // thus, this struct instance is lost after this scope.
+                        // nothing else depends on the inside instance data
+                        std::mem::ManuallyDrop::into_inner(wand.instance);
+                    } else {
+                        // if we call a method which has null checks, it will fail since we've terminus'd\
+                        // so clear the handle without any checks
+                        env.clear_handle(obj)?;
+
+                        log::debug!("Not dropping {} instance {:?} (but cleared the handle)", stringify!($wand), obj.into_inner())
+                    }
+
+                    Ok(())
                 }
             }
         }
@@ -482,7 +512,7 @@ macro_rules! get_set_wand {
                         )?.l()?;
 
                         let r_obj = crate::$ty {
-                            instance: res
+                            instance: std::mem::ManuallyDrop::new(res)
                         };
                         env.set_handle(n_obj, r_obj)?;
                         Ok(n_obj.into_inner())
@@ -544,7 +574,7 @@ macro_rules! new_from_wand {
         )?.l()?;
 
         let r_obj = crate::$ty {
-            instance: $wand
+            instance: std::mem::ManuallyDrop::new($wand)
         };
         $env.set_handle(n_obj, r_obj)?;
 

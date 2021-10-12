@@ -29,7 +29,9 @@ enum HandleError {
     #[error("Field `{0}` is null")]
     NullField(String),
     #[error("Field `{0}` is already set")]
-    FieldAlreadySet(String)
+    FieldAlreadySet(String),
+    #[error("Failed to re-lock field `{0}`")]
+    ReLockFailed(String)
 }
 
 pub trait Kotlin {
@@ -39,9 +41,10 @@ pub trait Kotlin {
     fn set_rust_field_kt<R>(&self, obj: JObject, field: &str, rust_object: R) -> Result<()>
         where
             R: Send + 'static;
-    fn take_rust_field_kt<'a, R>(&self, obj: JObject, field: &str) -> Result<R>
+    fn take_rust_field_kt<R>(&self, obj: JObject, field: &str) -> Result<R>
         where
             R: Send + 'static;
+    fn clear_rust_field_kt(&self, obj: JObject, field: &str) -> Result<()>;
 }
 
 impl<'a> Kotlin for JNIEnv<'a> {
@@ -71,7 +74,7 @@ impl<'a> Kotlin for JNIEnv<'a> {
 
         unsafe {
             // dereferencing is safe, because we checked it for null
-            Ok((*ptr).lock().unwrap())
+            Ok((*ptr).lock()?)
         }
     }
 
@@ -90,7 +93,7 @@ impl<'a> Kotlin for JNIEnv<'a> {
             return Err(Box::new(HandleError::FieldAlreadySet(field.to_owned())));
         }
 
-        let mbox = Box::new(::std::sync::Mutex::new(rust_object));
+        let mbox = Box::new(std::sync::Mutex::new(rust_object));
         let ptr: *mut Mutex<R> = Box::into_raw(mbox);
 
         let class = self.find_class(Settings::LONG)?;
@@ -130,14 +133,26 @@ impl<'a> Kotlin for JNIEnv<'a> {
             // attempt to acquire the lock. This prevents us from consuming the
             // mutex if there's an outstanding lock. No one else will be able to
             // get a new one as long as we're in the guarded scope.
-            drop(mbox.try_lock().unwrap());
+            drop(mbox.try_lock().or_else(|_| { return Err(HandleError::ReLockFailed(field.to_owned())) }));
 
-            self.set_field(obj, field, Settings::LONG_SIG, JValue::from(::std::ptr::null_mut() as jobject))?;
+            self.set_field(obj, field, Settings::LONG_SIG, JValue::from(std::ptr::null_mut() as jobject))?;
 
             mbox
         };
 
-        Ok(mbox.into_inner().unwrap())
+        Ok(mbox.into_inner()?)
+    }
+
+    // clear handle without any checks if the object is still being used
+    // only clears handle - underlying memory is untouched
+    fn clear_rust_field_kt(&self, obj: JObject, field: &str) -> Result<()> {
+        let j_obj = self.get_field(obj, field, Settings::LONG_SIG)?.l()?;
+
+        if !j_obj.is_null() {
+            self.set_field(obj, field, Settings::LONG_SIG, JValue::from(std::ptr::null_mut() as jobject))?;
+        }
+
+        Ok(())
     }
 }
 
@@ -162,6 +177,7 @@ pub trait Handle {
     fn take_handle<R>(&self, obj: JObject) -> Result<R>
         where
             R: Send + 'static;
+    fn clear_handle(&self, obj: JObject) -> Result<()>;
 }
 
 impl<'a> Handle for JNIEnv<'a> {
@@ -184,5 +200,9 @@ impl<'a> Handle for JNIEnv<'a> {
             R: Send + 'static
     {
         Ok(self.take_rust_field_kt::<R>(obj, Settings::HANDLE)?)
+    }
+
+    fn clear_handle(&self, obj: JObject) -> Result<()> {
+        Ok(self.clear_rust_field_kt(obj, Settings::HANDLE)?)
     }
 }
