@@ -881,6 +881,7 @@ pub fn generate_impl_functions(
                             Err(e) => {
                                 let msg = format!("`{}` threw an exception : {}", #diag, e.to_string());
                                 log::error!("{}", msg);
+                                log::debug!("Error details: {:?}", e);
                                 env.throw_new(#exc, msg).ok();
 
                                 #null_ret
@@ -917,6 +918,7 @@ pub fn generate_impl_functions(
                                 Err(e) => {
                                     let msg = format!("Failed to create new obj for `{}` : {}", #diag, e.to_string());
                                     log::error!("{}", msg);
+                                    log::debug!("Error details: {:?}", e);
                                     env.throw_new(#exc, msg).ok();
                                     return;
                                 }
@@ -943,6 +945,7 @@ pub fn generate_impl_functions(
                                     Err(e) => {
                                         let msg = format!("Failed to set handle for `{}` : {}", #diag, e.to_string());
                                         log::error!("{}", msg);
+                                        log::debug!("Error details: {:?}", e);
                                         env.throw_new(#exc, msg).ok();
                                     }
                                 }
@@ -953,7 +956,6 @@ pub fn generate_impl_functions(
                                 Err(e) => {
                                     let msg = &format!("`{}` panicked", #diag);
                                     log::error!("{}", msg);
-                                    log::debug!("Error details: {:?}", e);
                                     env.throw_new("java/lang/RuntimeException", msg).ok();
                                 }
                             }
@@ -976,7 +978,6 @@ pub fn generate_impl_functions(
                                 Err(e) => {
                                     let msg = &format!("`{}` panicked", #diag);
                                     log::error!("{}", msg);
-                                    log::debug!("Error details: {:?}", e);
                                     env.throw_new("java/lang/RuntimeException", msg).ok();
 
                                     #null_ret
@@ -1054,7 +1055,6 @@ pub fn generate_impl_functions(
                                 Err(e) => {
                                     let msg = &format!("`{}` panicked", #diag);
                                     log::error!("{}", msg);
-                                    log::debug!("Error details: {:?}", e);
                                     env.throw_new("java/lang/RuntimeException", msg).ok();
                                 }
                             }
@@ -1083,8 +1083,8 @@ pub fn generate_impl_functions(
                                     Err(e) => {
                                         let msg = format!("Failed to get handle for `{}` : {}", #diag, e.to_string());
                                         log::error!("{}", msg);
-                                        env.throw_new(#exc, msg).ok();
                                         log::debug!("Error details: {:?}", e);
+                                        env.throw_new(#exc, msg).ok();
 
                                         return #null_ret;
                                     }
@@ -1100,7 +1100,6 @@ pub fn generate_impl_functions(
                                 Err(e) => {
                                     let msg = &format!("`{}` panicked", #diag);
                                     log::error!("{}", msg);
-                                    log::debug!("Error details: {:?}", e);
                                     env.throw_new("java/lang/RuntimeException", msg).ok();
 
                                     #null_ret
