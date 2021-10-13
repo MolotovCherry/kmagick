@@ -5,7 +5,8 @@
 macro_rules! wand_wrapper {
     ($wand:ident) => {
         pub struct $wand {
-            pub instance: magick_rust::$wand
+            pub instance: magick_rust::$wand,
+            pub id: u64
         }
 
         unsafe impl Send for $wand {}
@@ -28,14 +29,29 @@ macro_rules! wand_wrapper {
             #[jni_tools::jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/" $wand "Exception")]
             impl $wand {
                 #[jni_tools::jnew]
-                fn new(env: jni::JNIEnv, obj: jni::objects::JObject) -> crate::utils::Result<Self> {
+                pub fn new(env: jni::JNIEnv, obj: jni::objects::JObject) -> crate::utils::Result<Self> {
+                    let cache = &mut *crate::cache::[<$wand:upper _CACHE>].lock()?;
+                    let id = crate::cache::insert(cache, env.new_global_ref(obj)?);
+
                     let res = Self {
-                        instance: magick_rust::$wand::new()
+                        instance: magick_rust::$wand::new(),
+                        id
                     };
 
-                    let mut cache = crate::globals::[<$wand:upper _CACHE>].lock()?;
-                    cache.push(env.new_global_ref(obj)?);
                     Ok(res)
+                }
+
+                // can't use the from trait since I need more params
+                #[jni_tools::jignore]
+                pub fn from_wand(env: jni::JNIEnv, obj: jni::objects::JObject, wand: magick_rust::$wand) -> crate::utils::Result<Self> {
+                    // this should never fail, so if it does, panicking is probably just as well at this point
+                    let cache = &mut *crate::cache::[<$wand:upper _CACHE>].lock()?;
+                    let id = crate::cache::insert(cache, env.new_global_ref(obj)?);
+
+                    Ok(Self {
+                        instance: wand,
+                        id
+                    })
                 }
 
                 #[jni_tools::jname(name="nativeClone")]
@@ -44,7 +60,7 @@ macro_rules! wand_wrapper {
                     use jni_tools::Handle;
 
                     let r_obj = env.get_handle::<$wand>(wand)?;
-                    Ok(r_obj.clone())
+                    Ok($wand::from_wand(env, wand, r_obj.instance.clone())?)
                 }
 
                 fn clearException(&mut self) -> std::result::Result<(), &'static str> {
@@ -96,14 +112,10 @@ macro_rules! wand_wrapper {
                 #[jni_tools::jdestroy]
                 fn destroy(&self) {
                     // item will automatically be taken and dropped
-                }
-            }
-        }
-
-        impl Clone for $wand {
-            fn clone(&self) -> Self {
-                Self {
-                    instance: self.instance.clone()
+                    // but we need to also remove it from the cache
+                    let mut cache = crate::cache::[<$wand:upper _CACHE>].lock().expect("Failed to lock cache");
+                    cache.remove(&self.id);
+                    log::debug!("Destroyed {} id {}", stringify!($wand), self.id);
                 }
             }
         }
@@ -128,7 +140,7 @@ macro_rules! get_string {
                                 return if e.starts_with(concat!("null ptr returned by ", stringify!($m_get))) {
                                     Ok(std::ptr::null_mut())
                                 } else {
-                                    Err(Box::new(crate::utils::JNIError::RuntimeException(String::from(e))))
+                                    crate::utils::runtime_exception(e)?
                                 };
                             }
                         };
@@ -179,7 +191,7 @@ macro_rules! get_set_string {
                                 return if e.starts_with(concat!("null ptr returned by ", stringify!($m_get))) {
                                     Ok(std::ptr::null_mut())
                                 } else {
-                                    Err(Box::new(crate::utils::JNIError::RuntimeException(String::from(e))))
+                                    crate::utils::runtime_exception(e)?
                                 };
                             }
                         };
@@ -209,12 +221,14 @@ macro_rules! get_set_enum {
             impl $wand {
                 $(
                     fn $get(&self, env: jni::JNIEnv) -> crate::utils::Result<jni::sys::jobject> {
-                        #[cfg(target_os="android")]
-                        use std::convert::TryFrom;
-                        #[cfg(target_os="android")]
-                        let res = i32::try_from(self.$m_get())?;
-                        #[cfg(not(target_os="android"))]
-                        let res = self.$m_get();
+                        cfg_if::cfg_if! {
+                            if #[cfg(target_os="android")] {
+                                use std::convert::TryFrom;
+                                let res = i32::try_from(self.$m_get())?;
+                            } else {
+                                let res = self.$m_get();
+                            }
+                        }
 
                         let val = jni::objects::JValue::Int(res);
                         let cls = env.find_class(
@@ -270,12 +284,14 @@ macro_rules! get_set_enum_result {
             impl $wand {
                 $(
                     fn $get(&self, env: jni::JNIEnv) -> crate::utils::Result<jni::sys::jobject> {
-                        #[cfg(target_os="android")]
-                        use std::convert::TryFrom;
-                        #[cfg(target_os="android")]
-                        let res = i32::try_from(self.$m_get())?;
-                        #[cfg(not(target_os="android"))]
-                        let res = self.$m_get();
+                        cfg_if::cfg_if! {
+                            if #[cfg(target_os="android")] {
+                                use std::convert::TryFrom;
+                                let res = i32::try_from(self.$m_get())?;
+                            } else {
+                                let res = self.$m_get();
+                            }
+                        }
 
                         let val = jni::objects::JValue::Int(res);
                         let cls = env.find_class(
@@ -299,10 +315,12 @@ macro_rules! get_set_enum_result {
                     }
 
                     fn $set(&mut self, _: jni::JNIEnv, _: jni::objects::JObject, arg: jni::sys::jint) -> crate::utils::Result<()> {
-                        #[cfg(target_os="android")]
-                        use std::convert::TryFrom;
-                        #[cfg(target_os="android")]
-                        let arg = u32::try_from(arg)?;
+                        cfg_if::cfg_if! {
+                            if #[cfg(target_os="android")] {
+                                use std::convert::TryFrom;
+                                let arg = u32::try_from(arg)?;
+                            }
+                        }
 
                         Ok(self.$m_set(arg)?)
                     }
@@ -486,9 +504,7 @@ macro_rules! get_set_wand {
                             &[]
                         )?.l()?;
 
-                        let r_obj = crate::$ty {
-                            instance: res
-                        };
+                        let r_obj = crate::$ty::from_wand(env, n_obj, res)?;
                         env.set_handle(n_obj, r_obj)?;
                         Ok(n_obj.into_inner())
                     }
@@ -548,9 +564,7 @@ macro_rules! new_from_wand {
             &[]
         )?.l()?;
 
-        let r_obj = crate::$ty {
-            instance: $wand
-        };
+        let r_obj = crate::$ty::from_wand($env, n_obj, $wand)?;
         $env.set_handle(n_obj, r_obj)?;
 
         n_obj

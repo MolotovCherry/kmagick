@@ -9,11 +9,13 @@ pub enum JNIError {
     RuntimeException(String)
 }
 
-pub fn runtime_exception<T>(string: &str) -> Result<T> {
+pub fn runtime_exception<T, S>(string: S) -> Result<T>
+    where S: AsRef<str> + ToOwned
+{
     Err(
         Box::new(
             JNIError::RuntimeException(
-                String::from(string)
+                string.as_ref().to_owned()
             )
         )
     )

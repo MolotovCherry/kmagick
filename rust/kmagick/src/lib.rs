@@ -7,7 +7,7 @@ mod drawing_wand;
 mod magick_wand;
 mod pixel_wand;
 mod utils;
-mod globals;
+mod cache;
 
 // make available at crate level for macros
 pub use drawing_wand::DrawingWand;
@@ -25,7 +25,7 @@ use jni::{
 use jni::sys::{jint, jobjectArray, jsize, jboolean};
 use jni::objects::{JObject, JString};
 
-use log::{LevelFilter, info};
+use log::{LevelFilter, debug};
 
 cfg_if::cfg_if! {
     if #[cfg(target_os="android")] {
@@ -101,7 +101,7 @@ impl Magick {
 
         magick_rust::magick_wand_genesis();
 
-        info!("Magick::nativeInit() Initialized native environment");
+        debug!("Magick::nativeInit() Initialized native environment");
 
         Ok(())
     }
@@ -123,11 +123,12 @@ impl Magick {
 
     #[jstatic]
     fn terminate(env: JNIEnv) -> utils::Result<()> {
-        // clear cache before terminating since all internal references will become invalid afterwards
-        globals::clear_cache(env)?;
+        // Before terminating, clear cache and take all handles / drop mem, since all internal
+        // references will become invalid afterwards. Last thing we need are UB and segfaults
+        cache::clear(env)?;
 
         magick_rust::magick_wand_terminus();
-        info!("Magick::terminate() Terminated environment");
+        debug!("Magick::terminate() Terminated environment");
         Ok(())
     }
 
@@ -159,10 +160,10 @@ impl Magick {
     #[jignore]
     fn isMagickWandInstantiated() -> bool {
         unsafe {
-            match magick_rust::bindings::IsMagickWandInstantiated() {
-                magick_rust::bindings::MagickBooleanType_MagickTrue => return true,
-                magick_rust::bindings::MagickBooleanType_MagickFalse => return false,
-                _ => return false
+            return match magick_rust::bindings::IsMagickWandInstantiated() {
+                magick_rust::bindings::MagickBooleanType_MagickTrue => true,
+                magick_rust::bindings::MagickBooleanType_MagickFalse => false,
+                _ => false
             }
         }
     }

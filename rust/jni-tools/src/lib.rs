@@ -44,7 +44,7 @@ pub trait Kotlin {
     fn take_rust_field_kt<R>(&self, obj: JObject, field: &str) -> Result<R>
         where
             R: Send + 'static;
-    fn clear_rust_field_kt<R>(&self, obj: JObject, field: &str) -> Result<()>
+    fn clear_rust_field_kt<R>(&self, obj: JObject, field: &str) -> Result<Option<R>>
         where
             R: Send + 'static;
 }
@@ -59,7 +59,7 @@ impl<'a> Kotlin for JNIEnv<'a> {
         let j_obj = self.get_field(obj, field, Settings::LONG_SIG)?.l()?;
 
         if j_obj.is_null() {
-            error!("get_rust_field_kt:: field {} is null", field.to_owned());
+            //error!("get_rust_field_kt:: field {} is null", field.to_owned());
             return Err(
                 Box::new(HandleError::NullField(field.to_owned()))
             );
@@ -68,7 +68,7 @@ impl<'a> Kotlin for JNIEnv<'a> {
         let ptr = self.call_method(j_obj, "longValue", "()J", &[])?.j()? as *mut Mutex<R>;
 
         if ptr.is_null() {
-            error!("take_rust_field_kt:: field {} is null", field.to_owned());
+            //error!("take_rust_field_kt:: field {} is null", field.to_owned());
             return Err(
                 Box::new(HandleError::NullField(field.to_owned()))
             );
@@ -91,7 +91,7 @@ impl<'a> Kotlin for JNIEnv<'a> {
         // means that we're going to leak memory if it gets overwritten.
         let handle_field = self.get_field(obj, field, Settings::LONG_SIG)?.l()?;
         if !handle_field.is_null() {
-            error!("set_rust_field:: field {} already set", field.to_owned());
+            //error!("set_rust_field:: field {} already set", field.to_owned());
             return Err(Box::new(HandleError::FieldAlreadySet(field.to_owned())));
         }
 
@@ -115,7 +115,7 @@ impl<'a> Kotlin for JNIEnv<'a> {
             let j_obj = self.get_field(obj, field, Settings::LONG_SIG)?.l()?;
 
             if j_obj.is_null() {
-                error!("take_rust_field_kt:: field {} is null", field.to_owned());
+                //error!("take_rust_field_kt:: field {} is null", field.to_owned());
                 return Err(
                     Box::new(HandleError::NullField(field.to_owned()))
                 );
@@ -124,7 +124,7 @@ impl<'a> Kotlin for JNIEnv<'a> {
             let ptr = self.call_method(j_obj, "longValue", "()J", &[])?.j()? as *mut Mutex<R>;
 
             if ptr.is_null() {
-                error!("take_rust_field_kt:: field {} is null", field.to_owned());
+                //error!("take_rust_field_kt:: field {} is null", field.to_owned());
                 return Err(
                     Box::new(HandleError::NullField(field.to_owned()))
                 );
@@ -146,33 +146,35 @@ impl<'a> Kotlin for JNIEnv<'a> {
     }
 
     // clear handle and underlying object
-    // unlike take, this does not return a value, nor will it error out if it hits a null field
-    fn clear_rust_field_kt<R>(&self, obj: JObject, field: &str) -> Result<()>
+    // unlike take, this will not error out if it hits a null field, but rather returns None
+    fn clear_rust_field_kt<R>(&self, obj: JObject, field: &str) -> Result<Option<R>>
         where
             R: Send + 'static
     {
         let j_obj = self.get_field(obj, field, Settings::LONG_SIG)?.l()?;
-        if !j_obj.is_null() {
-            let _ = self.lock_obj(*obj)?;
-
-            let ptr = self.call_method(j_obj, "longValue", "()J", &[])?.j()? as *mut Mutex<R>;
-            if ptr.is_null() {
-                return Ok(())
-            }
-
-            // get the box back from raw and let it drop
-            let mbox = unsafe { Box::from_raw(ptr) };
-
-            // attempt to acquire the lock. This prevents us from consuming the
-            // mutex if there's an outstanding lock. No one else will be able to
-            // get a new one as long as we're in the guarded scope.
-            drop(mbox.try_lock().ok());
-
-            // clear out the java field
-            self.set_field(obj, field, Settings::LONG_SIG, JValue::from(std::ptr::null_mut() as jobject))?;
+        if j_obj.is_null() {
+            return Ok(None);
         }
 
-        Ok(())
+        let _ = self.lock_obj(*obj)?;
+
+        let ptr = self.call_method(j_obj, "longValue", "()J", &[])?.j()? as *mut Mutex<R>;
+        if ptr.is_null() {
+            return Ok(None);
+        }
+
+        // get the box back from raw and let it drop
+        let mbox = unsafe { Box::from_raw(ptr) };
+
+        // attempt to acquire the lock. This prevents us from consuming the
+        // mutex if there's an outstanding lock. No one else will be able to
+        // get a new one as long as we're in the guarded scope.
+        drop(mbox.try_lock().or_else(|_| { return Err(HandleError::ReLockFailed(field.to_owned())) }));
+
+        // clear out the java field
+        self.set_field(obj, field, Settings::LONG_SIG, JValue::from(std::ptr::null_mut() as jobject))?;
+
+        Ok(Some(mbox.into_inner()?))
     }
 }
 
@@ -197,7 +199,7 @@ pub trait Handle {
     fn take_handle<R>(&self, obj: JObject) -> Result<R>
         where
             R: Send + 'static;
-    fn clear_handle<R>(&self, obj: JObject) -> Result<()>
+    fn clear_handle<R>(&self, obj: JObject) -> Result<Option<R>>
         where
             R: Send + 'static;
 }
@@ -224,7 +226,7 @@ impl<'a> Handle for JNIEnv<'a> {
         Ok(self.take_rust_field_kt::<R>(obj, Settings::HANDLE)?)
     }
 
-    fn clear_handle<R>(&self, obj: JObject) -> Result<()>
+    fn clear_handle<R>(&self, obj: JObject) -> Result<Option<R>>
         where
             R: Send + 'static
     {

@@ -953,6 +953,7 @@ pub fn generate_impl_functions(
                                 Err(e) => {
                                     let msg = &format!("`{}` panicked", #diag);
                                     log::error!("{}", msg);
+                                    log::debug!("Error details: {:?}", e);
                                     env.throw_new("java/lang/RuntimeException", msg).ok();
                                 }
                             }
@@ -975,6 +976,7 @@ pub fn generate_impl_functions(
                                 Err(e) => {
                                     let msg = &format!("`{}` panicked", #diag);
                                     log::error!("{}", msg);
+                                    log::debug!("Error details: {:?}", e);
                                     env.throw_new("java/lang/RuntimeException", msg).ok();
 
                                     #null_ret
@@ -1013,18 +1015,6 @@ pub fn generate_impl_functions(
                         quote! { ; }
                     };
 
-                    let empty_underscore = if empty_fn {
-                        quote! { _ }
-                    } else {
-                        quote! { v }
-                    };
-
-                    let ok_v = if empty_fn {
-                        quote! { () }
-                    } else {
-                        quote! { v }
-                    };
-
                     stream = quote! {
                         #target
                         #[no_mangle]
@@ -1035,10 +1025,22 @@ pub fn generate_impl_functions(
                                 let res = env.clear_handle::<#impl_name>(#take_varname);
 
                                 #fn_call_res_binding match res {
-                                    Ok(#empty_underscore) => #ok_v,
+                                    Ok(v) => {
+                                        match v {
+                                            Some(r) => r,
+                                            None => {
+                                                // at this point the object reference is gone,
+                                                // because we cleared the cache and cleared the references,
+                                                // although the destructor was still called for jvm alive objects
+                                                // so a no-op is sufficient
+                                                return;
+                                            }
+                                        }
+                                    },
                                     Err(e) => {
-                                        let msg = format!("Failed to take handle for `{}` : {}", #diag, e.to_string());
+                                        let msg = format!("Failed to clear handle for `{}` : {}", #diag, e.to_string());
                                         log::error!("{}", msg);
+                                        log::debug!("Error details: {:?}", e);
                                         env.throw_new(#exc, msg).ok();
                                         return;
                                     }
@@ -1052,6 +1054,7 @@ pub fn generate_impl_functions(
                                 Err(e) => {
                                     let msg = &format!("`{}` panicked", #diag);
                                     log::error!("{}", msg);
+                                    log::debug!("Error details: {:?}", e);
                                     env.throw_new("java/lang/RuntimeException", msg).ok();
                                 }
                             }
@@ -1081,6 +1084,7 @@ pub fn generate_impl_functions(
                                         let msg = format!("Failed to get handle for `{}` : {}", #diag, e.to_string());
                                         log::error!("{}", msg);
                                         env.throw_new(#exc, msg).ok();
+                                        log::debug!("Error details: {:?}", e);
 
                                         return #null_ret;
                                     }
@@ -1096,6 +1100,7 @@ pub fn generate_impl_functions(
                                 Err(e) => {
                                     let msg = &format!("`{}` panicked", #diag);
                                     log::error!("{}", msg);
+                                    log::debug!("Error details: {:?}", e);
                                     env.throw_new("java/lang/RuntimeException", msg).ok();
 
                                     #null_ret
