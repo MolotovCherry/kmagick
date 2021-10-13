@@ -11,7 +11,6 @@ Windows and Android*
 All downloads are in the [releases section](https://github.com/cherryleafroad/kmagick/releases).
 
 ## Setup
-You can find binary releases in the release section.
 
 ### Android
 1. Grab the jar and sources jar and put it in your project.
