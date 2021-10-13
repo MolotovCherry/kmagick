@@ -26,6 +26,15 @@ All downloads are in the [releases section](https://github.com/cherryleafroad/km
 3. Setup your project to use the jar as normal.
 4. Make sure `kmagick.dll` is in your path as well.
 
+## Behavior
+As this is a low level library, crashes are not impossible. I've made every effort to make that impossible however.
+
+If there is a low-level error/crash, this library will catch it and throw a java runtime exception instead of fatally crashing the JVM (which is what would normally happen if it was C!). Additionally, nearly all the functions in here, if they encounter a problem, will throw a related exception type (e.g. `PixelWandException`, `MagickWandException`, etc). You should probably be careful to check for these just in case something makes your code fail.
+
+If there is a panick (a `crash` in Rust terms), please submit an issue along with reproducible steps so I can fix it. Unfortunately I haven't yet been able to capture a reliable panick message yet, so the message might be a little cryptic. I hope I can figure out how to capture more specific messages in the future.
+
+I (currently?) have no control if the C code segfaults your project. Sorry. If there is one, that's an ImageMagick bug and you should report it to them instead.
+
 ## API and Examples
 First of all, check out the official [ImageMagick](https://imagemagick.org/script/magick-wand.php) function reference. If you have any confusion/questions, it'll be answered there. Also, the sources jar contains comments for every function which should be good enough in most cases.
 
