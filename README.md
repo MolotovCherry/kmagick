@@ -20,6 +20,8 @@ All downloads are in the [releases section](https://github.com/cherryleafroad/km
 
 \* I plan to add a Maven config sometime, but I've been too busy and tired.
 
+(The Android ImageMagick library can be found [here](https://github.com/cherryleafroad/Android-ImageMagick7))
+
 ### Windows
 1. Grab the `kmagick.dll` file along with the jar and sources jar.
 2. Install Windows ImageMagick (dll version) and make sure the program files folder is in your `PATH`.
