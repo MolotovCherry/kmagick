@@ -8,7 +8,7 @@ Windows and Android*
 \* Others may work too, but I have not tested Mac or Linux.
 
 ## Download
-All downloads are in the [https://github.com/cherryleafroad/kmagick/releases](releases section).
+All downloads are in the [releases section](https://github.com/cherryleafroad/kmagick/releases).
 
 ## Setup
 You can find binary releases in the release section.
