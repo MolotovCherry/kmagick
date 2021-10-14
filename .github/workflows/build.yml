@@ -193,3 +193,24 @@ jobs:
         with:
           name: build-android
           path: kmagick-rs/rust/target/aarch64-linux-android/debug/libkmagick.so
+
+  build-kmagick:
+    name: Build KMagick Jar
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout KMagick
+        uses: actions/checkout@v2
+        with:
+          path: kmagick-rs
+
+      - name: Compile Jar
+        run: |
+          ./gradlew build
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-kmagick
+          path: kmagick-rs/build/libs/kmagick*.jar
+
