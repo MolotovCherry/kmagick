@@ -2,7 +2,14 @@
 # options: x86 x84_64 ; default: x86_64
 param([String]$arch="x86_64", [switch]$static, [switch]$release, [switch]$expand)
 
-$imdir = Resolve-Path -Path "C:/Program Files/ImageMagick-*"
+$imdir = "$PSScriptRoot/../../install"
+if (Test-Path $imdir) {
+    $imdir = Resolve-Path -Path "$PSScriptRoot/../../install"
+} else {
+    # regular windows machine - not github actions
+    $imdir = Resolve-Path -Path "C:/Program Files/ImageMagick-*"
+}
+
 $includedir = "$imdir\include"
 $imlibs = "CORE_RL_MagickWand_;CORE_RL_MagickCore_"
 
