@@ -525,15 +525,15 @@ impl MagickWand {
         let number_of_colors = usize::try_from(number_of_colors)?;
         let tree_depth = usize::try_from(tree_depth)?;
 
-        #[cfg(target_os="android")]
-        let colorspace = u32::try_from(colorspace)?;
-        #[cfg(target_os="android")]
-        let dither_method = u32::try_from(dither_method)?;
-        #[cfg(target_os="android")]
-        let measure_error = u32::try_from(measure_error)?;
-
-        #[cfg(not(target_os="android"))]
-        let measure_error = i32::try_from(measure_error)?;
+        cfg_if::cfg_if! {
+            if #[cfg(target_os="android")] {
+                let colorspace = u32::try_from(colorspace)?;
+                let dither_method = u32::try_from(dither_method)?;
+                let measure_error = u32::try_from(measure_error)?;
+            } else {
+                let measure_error = i32::try_from(measure_error)?;
+            }
+        }
 
         Ok(self.quantize_image(number_of_colors, colorspace, tree_depth, dither_method, measure_error)?)
     }
@@ -551,15 +551,15 @@ impl MagickWand {
         let number_of_colors = usize::try_from(number_of_colors)?;
         let tree_depth = usize::try_from(tree_depth)?;
 
-        #[cfg(target_os="android")]
-        let colorspace = u32::try_from(colorspace)?;
-        #[cfg(target_os="android")]
-        let dither_method = u32::try_from(dither_method)?;
-        #[cfg(target_os="android")]
-        let measure_error = u32::try_from(measure_error)?;
-
-        #[cfg(not(target_os="android"))]
-        let measure_error = i32::try_from(measure_error)?;
+        cfg_if::cfg_if! {
+            if #[cfg(target_os="android")] {
+                let colorspace = u32::try_from(colorspace)?;
+                let dither_method = u32::try_from(dither_method)?;
+                let measure_error = u32::try_from(measure_error)?;
+            } else {
+                let measure_error = i32::try_from(measure_error)?;
+            }
+        }
 
         Ok(self.quantize_images(number_of_colors, colorspace, tree_depth, dither_method, measure_error)?)
     }
