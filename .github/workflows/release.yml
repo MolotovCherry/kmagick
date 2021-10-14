@@ -276,11 +276,13 @@ jobs:
       - name: Compile Jar
         working-directory: kmagick-rs
         run: |
-          ./gradlew build
+          ./gradlew jar
+          ./gradlew sourcesJar
 
       - name: Rename artifacts
         working-directory: kmagick-rs
         run: |
+          Move-Item -Path build/libs/kmagick-*-sources.jar -Destination ./kmagick-sources.jar
           Move-Item -Path build/libs/kmagick*.jar -Destination ./kmagick.jar
 
       - name: Upload the artifacts
@@ -288,4 +290,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          args: 'kmagick-rs/kmagick.jar'
+          args: 'kmagick-rs/*.jar'
