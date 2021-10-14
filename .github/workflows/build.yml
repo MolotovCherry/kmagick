@@ -197,7 +197,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: build-windows
+          name: build-windows-i686
           path: kmagick-rs/rust/target/i686-pc-windows-msvc/debug/kmagick.dll
 
 
