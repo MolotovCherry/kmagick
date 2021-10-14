@@ -43,7 +43,7 @@ jobs:
         run: |
           git checkout ${{ steps.tag.outputs.TAG }}
           cd kmagick-rs
-          git checkout ${{ steps.latest_release.outputs.tag }}
+          git checkout ${{ steps.latest_release.outputs.tag_name }}
 
       - name: Cache ImageMagick Setup
         id: cache-imagemagick
@@ -125,6 +125,7 @@ jobs:
           release_id: ${{ steps.latest_release.outputs.id }}
           overwrite: true
           draft: false
+          tag_name: ${{ steps.latest_release.outputs.tag_name }}
 
 
   build-android:
@@ -160,7 +161,7 @@ jobs:
         run: |
           git checkout ${{ steps.tag.outputs.TAG }}
           cd kmagick-rs
-          git checkout ${{ steps.latest_release.outputs.tag }}
+          git checkout ${{ steps.latest_release.outputs.tag_name }}
       
       - name: Fetch latest Android shared libs
         uses: i3h/download-release-asset@v1
@@ -236,6 +237,7 @@ jobs:
           release_id: ${{ steps.latest_release.outputs.id }}
           overwrite: true
           draft: false
+          tag_name: ${{ steps.latest_release.outputs.tag_name }}
 
 
   build-kmagick:
@@ -256,7 +258,7 @@ jobs:
 
       - name: Checkout tag
         run: |
-          git checkout ${{ steps.latest_release.outputs.tag }}
+          git checkout ${{ steps.latest_release.outputs.tag_name }}
 
       - name: Compile Jar
         run: |
@@ -277,3 +279,4 @@ jobs:
           release_id: ${{ steps.latest_release.outputs.id }}
           overwrite: true
           draft: false
+          tag_name: ${{ steps.latest_release.outputs.tag_name }}
