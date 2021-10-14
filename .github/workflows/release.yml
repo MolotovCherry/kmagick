@@ -41,9 +41,9 @@ jobs:
 
       - name: Checkout tags
         run: |
-          git checkout tags/${{ steps.tag.outputs.TAG }}
+          git checkout ${{ steps.tag.outputs.TAG }}
           cd kmagick-rs
-          git checkout tags/${{ steps.latest_release.outputs.tag }}
+          git checkout ${{ steps.latest_release.outputs.tag }}
 
       - name: Cache ImageMagick Setup
         id: cache-imagemagick
@@ -157,9 +157,9 @@ jobs:
 
       - name: Checkout tags
         run: |
-          git checkout tags/${{ steps.tag.outputs.TAG }}
+          git checkout ${{ steps.tag.outputs.TAG }}
           cd kmagick-rs
-          git checkout tags/${{ steps.latest_release.outputs.tag }}
+          git checkout ${{ steps.latest_release.outputs.tag }}
       
       - name: Fetch latest Android shared libs
         uses: i3h/download-release-asset@v1
@@ -244,24 +244,33 @@ jobs:
     steps:
       - name: Checkout KMagick
         uses: actions/checkout@v2
+
+      - name: Get latest release
+        id: latest_release
+        uses: kaliber5/action-get-release@v1
         with:
-          path: kmagick-rs
+          token: ${{ github.token }}
+          latest: true
+
+      - name: Checkout tag
+        run: |
+          git checkout ${{ steps.latest_release.outputs.tag }}
 
       - name: Compile Jar
-        working-directory: kmagick-rs
         run: |
           ./gradlew jar
           ./gradlew sourcesJar
 
       - name: Rename artifacts
-        working-directory: kmagick-rs
         run: |
           Move-Item -Path build/libs/kmagick-*-sources.jar -Destination ./kmagick-sources.jar
           Move-Item -Path build/libs/kmagick*.jar -Destination ./kmagick.jar
 
-      - name: Upload the artifacts
-        uses: skx/github-action-publish-binaries@master
+      - name: Update release artifacts
+        uses: xresloader/upload-to-github-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          args: 'kmagick-rs/*.jar'
+          file: '*.jar'
+          release_id: ${{ steps.latest_release.outputs.id }}
+          overwrite: true
