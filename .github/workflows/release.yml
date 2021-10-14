@@ -104,7 +104,7 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             kmagick-rs/rust/target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('kmagick-rs/rust/*.toml', 'kmagick-rs/rust/*/*.toml') }}-build-win
+          key: ${{ runner.os }}-cargo-${{ hashFiles('kmagick-rs/rust/*.toml', 'kmagick-rs/rust/*/*.toml') }}-build-win-release
 
       - name: Build Windows
         working-directory: kmagick-rs/rust
@@ -124,6 +124,7 @@ jobs:
           file: 'kmagick-rs/rust/*.dll'
           release_id: ${{ steps.latest_release.outputs.id }}
           overwrite: true
+          draft: false
 
 
   build-android:
@@ -214,7 +215,7 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             kmagick-rs/rust/target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('kmagick-rs/rust/*.toml', 'kmagick-rs/rust/*/*.toml') }}-build-android
+          key: ${{ runner.os }}-cargo-${{ hashFiles('kmagick-rs/rust/*.toml', 'kmagick-rs/rust/*/*.toml') }}-build-android-release
 
       - name: Build Android
         working-directory: kmagick-rs/rust
@@ -234,6 +235,7 @@ jobs:
           file: 'kmagick-rs/rust/*.so'
           release_id: ${{ steps.latest_release.outputs.id }}
           overwrite: true
+          draft: false
 
 
   build-kmagick:
@@ -274,3 +276,4 @@ jobs:
           file: '*.jar'
           release_id: ${{ steps.latest_release.outputs.id }}
           overwrite: true
+          draft: false
