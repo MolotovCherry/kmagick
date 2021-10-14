@@ -35,7 +35,7 @@ As this is a low level library, crashes are not impossible. I've made every effo
 
 If there is a low-level error/crash, this library will catch it and throw a java runtime exception instead of fatally crashing the JVM (which is what would normally happen if it was C!). Additionally, nearly all the functions in here, if they encounter a problem, will throw a related exception type (e.g. `PixelWandException`, `MagickWandException`, etc) along with a helpful human readable message. You should probably be careful to check for these just in case something makes your code fail.
 
-If there is a panick (a `crash` in Rust terms), please submit an issue along with reproducible steps so I can fix it. Unfortunately I haven't yet been able to capture a reliable panick message yet, so the message might be a little cryptic. I hope I can figure out how to capture more specific messages in the future.
+If there is a panick (a `crash` in Rust terms), please submit an issue along with reproducible steps so I can fix it. Unfortunately due to limitations the message might be a little cryptic, but provide as much info as you can (along with reproducible steps).
 
 I (currently?) have no control if the C code segfaults your project. Sorry. If there is one, that's an ImageMagick bug and you should report it to them instead.
 
