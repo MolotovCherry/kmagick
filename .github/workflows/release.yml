@@ -139,15 +139,10 @@ jobs:
         run: echo "LIBCLANG_PATH=$((gcm clang).source -replace "clang.exe")" >> $env:GITHUB_ENV
 
       - name: Cache Cargo
-        uses: actions/cache@v2
+        uses: Swatinem/rust-cache@v1
         with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            kmagick-rs/rust/target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('kmagick-rs/rust/*.toml', 'kmagick-rs/rust/*/*.toml') }}-${{ matrix.target }}-release
+          key: ${{ matrix.target }}-release
+          working-directory: kmagick-rs
 
       - name: Get NDK
         if: matrix.android
