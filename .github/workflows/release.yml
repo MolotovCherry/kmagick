@@ -71,6 +71,22 @@ jobs:
           cd kmagick-rs
           git checkout ${{ steps.latest_release.outputs.tag_name }}
 
+      - name: Fetch latest Android shared libs
+        if: matrix.android
+        uses: i3h/download-release-asset@v1
+        with:
+          tag: latest
+          owner: cherryleafroad
+          repo: Android-ImageMagick7
+          file: imagemagick-7-android-shared.zip
+          path: jniLibs/
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract archives
+        if: matrix.android
+        run: |
+          Expand-Archive -Path jniLibs/imagemagick-7-android-shared.zip -DestinationPath jniLibs/
+
       - name: Cache ImageMagick Setup
         if: matrix.windows
         id: cache-imagemagick
