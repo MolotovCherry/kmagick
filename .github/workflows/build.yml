@@ -24,17 +24,20 @@ jobs:
             windows: true
             tool: build-win.ps1
             output: kmagick.dll
+            toolchain: nightly-2021-10-13
             
           - target: i686-pc-windows-msvc
             im_arch: x86
             windows: true
             tool: build-win.ps1 -arch x86
             output: kmagick.dll
+            toolchain: nightly-2021-10-13
             
           - target: aarch64-linux-android
             android: true
             tool: build-android.ps1
             output: libkmagick.so
+            toolchain: nightly-2021-10-13
 
     steps:
       - name: Checkout Android ImageMagick
@@ -119,6 +122,12 @@ jobs:
 
       - name: Set LIBCLANG_PATH
         run: echo "LIBCLANG_PATH=$((gcm clang).source -replace "clang.exe")" >> $env:GITHUB_ENV
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.toolchain }}
+          target: ${{ matrix.target }}
 
       - name: Cache Cargo
         uses: Swatinem/rust-cache@v1
