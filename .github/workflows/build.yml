@@ -76,7 +76,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: app
-          key: imagemagick-${{ steps.tag.outputs.TAG }}
+          key: imagemagick-${{ steps.tag.outputs.TAG }}-${{ matrix.im_arch }}
 
       - name: Download ImageMagick Windows DLL release
         if: steps.cache-imagemagick.outputs.cache-hit != 'true' && matrix.windows
