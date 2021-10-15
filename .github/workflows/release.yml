@@ -10,30 +10,27 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  metadata:
+    name: Generate Matrix
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Make matrix
+        id: generate
+        run: python .github-deps/generate-matrix.py rust/rust-toolchain.toml
+
+    outputs:
+        matrix: ${{ steps.generate.outputs.matrix }}
+
   build:
     name: Build
     runs-on: windows-latest
+    needs: metadata
 
     strategy:
-      matrix:
-        target: [x86_64-pc-windows-msvc, i686-pc-windows-msvc, aarch64-linux-android]
-        include:
-          - target: x86_64-pc-windows-msvc
-            im_arch: x64
-            windows: true
-            tool: build-win.ps1 -release
-            output: kmagick.dll
-            
-          - target: i686-pc-windows-msvc
-            im_arch: x86
-            windows: true
-            tool: build-win.ps1 -arch x86 -release
-            output: kmagick.dll
-            
-          - target: aarch64-linux-android
-            android: true
-            tool: build-android.ps1 -release
-            output: libkmagick.so
+      matrix: ${{ fromJson(needs.metadata.outputs.matrix) }}
 
     steps:
       - name: Checkout Android ImageMagick
@@ -171,7 +168,7 @@ jobs:
 
       - name: Build
         working-directory: kmagick-rs/rust
-        run: ./${{ matrix.tool }}
+        run: ./${{ matrix.release.tool }}
 
       - name: Rename artifacts
         working-directory: kmagick-rs/rust
