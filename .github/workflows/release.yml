@@ -68,6 +68,13 @@ jobs:
           $tag = ($dir | Split-Path -Leaf).Substring(12)
           Write-Host "::set-output name=TAG::$tag"
 
+      - name: Get toolchain version
+        uses: SebRollen/toml-action@v1.0.0
+        id: toolchain
+        with:
+          file: kmagick-rs/rust/rust-toolchain.toml
+          field: toolchain.channel
+
       - name: Checkout tags
         run: |
           git checkout ${{ steps.tag.outputs.TAG }}
@@ -144,7 +151,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: ${{ matrix.toolchain }}
+          toolchain: ${{ steps.toolchain.outputs.value }}
           target: ${{ matrix.target }}
           default: true
 
