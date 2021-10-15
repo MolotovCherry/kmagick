@@ -146,6 +146,7 @@ jobs:
           profile: minimal
           toolchain: ${{ matrix.toolchain }}
           target: ${{ matrix.target }}
+          default: true
 
       - name: Cache Cargo
         uses: Swatinem/rust-cache@v1
