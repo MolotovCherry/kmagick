@@ -19,6 +19,7 @@ for target in config["toolchain"]["targets"]:
     mac = False
     tool = ""
     output = ""
+    profile = config["toolchain"]["profile"]
 
     # figure out the arch of target
     if "x86_64" in target:
@@ -68,6 +69,7 @@ for target in config["toolchain"]["targets"]:
         "mac": mac,
         "im_arch": im_arch,
         "output": output,
+        "profile": profile,
         "debug": {
             "tool": tool
         },

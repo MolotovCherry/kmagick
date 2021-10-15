@@ -127,7 +127,7 @@ jobs:
 
       - uses: actions-rs/toolchain@v1
         with:
-          profile: minimal
+          profile: ${{ matrix.profile }}
           toolchain: ${{ steps.toolchain.outputs.value }}
           target: ${{ matrix.target }}
           default: true
