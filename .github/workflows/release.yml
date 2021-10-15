@@ -21,7 +21,7 @@ jobs:
           - target: x86_64-pc-windows-msvc
             im_arch: x64
             windows: true
-            tool: build-win.ps1
+            tool: build-win.ps1 -release
             output: kmagick
             output_final_suffix: -x64
             output_end: .dll
@@ -29,13 +29,13 @@ jobs:
           - target: i686-pc-windows-msvc
             im_arch: x86
             windows: true
-            tool: build-win.ps1 -arch x86
+            tool: build-win.ps1 -arch x86 -release
             output: kmagick
             output_end: .dll
             
           - target: aarch64-linux-android
             android: true
-            tool: build-android.ps1
+            tool: build-android.ps1 -release
             output: libkmagick
             output_final_suffix: -x64
             output_end: .so
@@ -71,7 +71,7 @@ jobs:
           cd kmagick-rs
           git checkout ${{ steps.latest_release.outputs.tag_name }}
 
-       - name: Cache ImageMagick Setup
+      - name: Cache ImageMagick Setup
         if: matrix.windows
         id: cache-imagemagick
         uses: actions/cache@v2
@@ -156,7 +156,7 @@ jobs:
       - name: Rename artifacts
         working-directory: kmagick-rs/rust
         run: |
-          Move-Item -Path target/${{ matrix.target }}/release/${{ matrix.output }} -Destination ./${{ matrix.output }}${{ matrix.output_final_suffix }}${{ matrix.output_end }}
+          Move-Item -Path target/${{ matrix.target }}/release/${{ matrix.output }}${{ matrix.output_end }} -Destination ./${{ matrix.output }}${{ matrix.output_final_suffix }}${{ matrix.output_end }}
 
       - name: Update release artifacts
         uses: xresloader/upload-to-github-release@v1
