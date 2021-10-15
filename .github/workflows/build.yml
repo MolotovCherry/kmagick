@@ -24,20 +24,17 @@ jobs:
             windows: true
             tool: build-win.ps1
             output: kmagick.dll
-            toolchain: nightly-2021-10-13
             
           - target: i686-pc-windows-msvc
             im_arch: x86
             windows: true
             tool: build-win.ps1 -arch x86
             output: kmagick.dll
-            toolchain: nightly-2021-10-13
             
           - target: aarch64-linux-android
             android: true
             tool: build-android.ps1
             output: libkmagick.so
-            toolchain: nightly-2021-10-13
 
     steps:
       - name: Checkout Android ImageMagick
@@ -56,6 +53,13 @@ jobs:
           $dir = Get-ChildItem -Directory -Path "ImageMagick-*" | Select-Object -Last 1
           $tag = ($dir | Split-Path -Leaf).Substring(12)
           Write-Host "::set-output name=TAG::$tag"
+
+      - name: Get toolchain version
+        uses: SebRollen/toml-action@v1.0.0
+        id: toolchain
+        with:
+          file: kmagick-rs/rust/rust-toolchain.toml
+          field: toolchain.channel
 
       - name: Fetch latest Android shared libs
         if: matrix.android
@@ -126,7 +130,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: ${{ matrix.toolchain }}
+          toolchain: ${{ steps.toolchain.outputs.value }}
           target: ${{ matrix.target }}
           default: true
 
