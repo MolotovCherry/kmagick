@@ -134,7 +134,7 @@ jobs:
         uses: Swatinem/rust-cache@v1
         with:
           key: ${{ matrix.target }}
-          working-directory: kmagick-rs
+          working-directory: kmagick-rs/rust
 
       - name: Get NDK
         if: matrix.android
