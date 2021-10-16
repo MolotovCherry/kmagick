@@ -1,0 +1,213 @@
+name: Handle Release
+
+on:
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  metadata:
+    name: Generate Matrix
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Make matrix
+        id: generate
+        run: python .github-deps/generate-matrix.py rust/rust-toolchain.toml
+
+    outputs:
+        matrix: ${{ steps.generate.outputs.matrix }}
+
+  build:
+    name: Build
+    runs-on: windows-latest
+    needs: metadata
+
+    strategy:
+      matrix: ${{ fromJson(needs.metadata.outputs.matrix) }}
+
+    steps:
+      - name: Checkout Android ImageMagick
+        uses: actions/checkout@v2
+        with:
+          repository: cherryleafroad/Android-ImageMagick7
+
+      - name: Checkout KMagick
+        uses: actions/checkout@v2
+        with:
+          path: kmagick-rs
+
+      - name: Get latest release
+        id: latest_release
+        uses: kaliber5/action-get-release@v1
+        with:
+          token: ${{ github.token }}
+          latest: true
+
+      - name: Get latest release tag
+        id: tag
+        run: |
+          $dir = Get-ChildItem -Directory -Path "ImageMagick-*" | Select-Object -Last 1
+          $tag = ($dir | Split-Path -Leaf).Substring(12)
+          Write-Host "::set-output name=TAG::$tag"
+      - name: Get toolchain version
+        uses: SebRollen/toml-action@v1.0.0
+        id: toolchain
+        with:
+          file: kmagick-rs/rust/rust-toolchain.toml
+          field: toolchain.channel
+
+      - name: Fetch latest Android shared libs
+        if: matrix.android
+        uses: i3h/download-release-asset@v1
+        with:
+          tag: latest
+          owner: cherryleafroad
+          repo: Android-ImageMagick7
+          file: imagemagick-7-android-shared.zip
+          path: jniLibs/
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract archives
+        if: matrix.android
+        run: |
+          Expand-Archive -Path jniLibs/imagemagick-7-android-shared.zip -DestinationPath jniLibs/
+      - name: Cache ImageMagick Setup
+        if: matrix.windows
+        id: cache-imagemagick
+        uses: actions/cache@v2
+        with:
+          path: app
+          key: imagemagick-${{ steps.tag.outputs.TAG }}-${{ matrix.im_arch }}
+
+      - name: Download ImageMagick Windows DLL release
+        if: steps.cache-imagemagick.outputs.cache-hit != 'true' && matrix.windows
+        uses: carlosperate/download-file-action@v1.0.3
+        with:
+            file-url: 'https://download.imagemagick.org/ImageMagick/download/binaries/ImageMagick-${{ steps.tag.outputs.TAG }}-Q16-HDRI-${{ matrix.im_arch }}-dll.exe'
+            file-name: 'ImageMagick.exe'
+
+      - name: Fetch latest Innoextract
+        if: steps.cache-imagemagick.outputs.cache-hit != 'true' && matrix.windows
+        uses: i3h/download-release-asset@v1
+        with:
+          tag: latest
+          owner: dscharrer
+          repo: innoextract
+          file: /innoextract-.*-windows\.zip/
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # running the installer does not work in the runner
+      - name: Install ImageMagick Windows
+        if: steps.cache-imagemagick.outputs.cache-hit != 'true' && matrix.windows
+        run: |
+          $inno = Resolve-Path -Path innoextract-*-windows.zip
+          Expand-Archive -Path $inno -DestinationPath inno/
+          inno/innoextract.exe ImageMagick.exe
+    
+      - name: Cache LLVM and Clang
+        id: cache-llvm
+        uses: actions/cache@v2
+        with:
+          path: |
+            ${{ runner.temp }}/llvm
+          key: llvm-12
+
+      - name: Install LLVM and Clang # required for bindgen to work, see https://github.com/rust-lang/rust-bindgen/issues/1797
+        uses: KyleMayes/install-llvm-action@v1
+        with:
+          version: "12.0"
+          directory: ${{ runner.temp }}/llvm
+          cached: ${{ steps.cache-llvm.outputs.cache-hit }}
+
+      - name: Set LIBCLANG_PATH
+        run: echo "LIBCLANG_PATH=$((gcm clang).source -replace "clang.exe")" >> $env:GITHUB_ENV
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: ${{ matrix.profile }}
+          toolchain: ${{ steps.toolchain.outputs.value }}
+          target: ${{ matrix.target }}
+          default: true
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v1
+        with:
+          key: ${{ matrix.target }}-release
+          working-directory: kmagick-rs/rust
+
+      - name: Get NDK
+        if: matrix.android
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r22b
+
+      - name: Fix LLVM NDK Paths
+        if: matrix.android
+        run: |
+          $ndkRoot = Resolve-Path -Path "${{ runner.temp }}/*/android-ndk-r22b"
+          echo "ANDROID_NDK_HOME=$ndkRoot" >> $env:GITHUB_ENV
+          echo "NDK_HOME=$ndkRoot" >> $env:GITHUB_ENV
+          echo "$ndkRoot" >> $env:GITHUB_PATH
+          echo "CLANG_PATH=$ndkRoot\toolchains\llvm\prebuilt\windows-x86_64\bin\clang.exe" >> $env:GITHUB_ENV
+          echo "$ndkRoot\toolchains\llvm\prebuilt\windows-x86_64\bin\" >> $env:GITHUB_PATH
+      - name: Build
+        working-directory: kmagick-rs/rust
+        run: ./${{ matrix.release.tool }}
+
+      - name: Rename artifacts
+        working-directory: kmagick-rs/rust
+        run: |
+          Compress-Archive -Path target/${{ matrix.target }}/release/${{ matrix.output }} -DestinationPath kmagick-${{ matrix.target }}.zip
+          
+      - name: Update release artifacts
+        uses: xresloader/upload-to-github-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          file: 'kmagick-rs/rust/*.zip'
+          release_id: ${{ steps.latest_release.outputs.id }}
+          overwrite: true
+          draft: false
+          tag_name: ${{ steps.latest_release.outputs.tag_name }}
+
+
+  build-kmagick:
+    name: Build KMagick Jar
+    runs-on: windows-latest
+    if: github.event_name == 'release'
+
+    steps:
+      - name: Checkout KMagick
+        uses: actions/checkout@v2
+
+      - name: Get latest release
+        id: latest_release
+        uses: kaliber5/action-get-release@v1
+        with:
+          token: ${{ github.token }}
+          latest: true
+
+      - name: Compile Jar
+        run: |
+          ./gradlew jar
+          ./gradlew sourcesJar
+          
+      - name: Rename artifacts
+        run: |
+          Move-Item -Path build/libs/kmagick-*-sources.jar -Destination ./kmagick-sources.jar
+          Move-Item -Path build/libs/kmagick*.jar -Destination ./kmagick.jar
+          
+      - name: Update release artifacts
+        uses: xresloader/upload-to-github-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          file: '*.jar'
+          release_id: ${{ steps.latest_release.outputs.id }}
+          overwrite: true
+          draft: false
+          tag_name: ${{ steps.latest_release.outputs.tag_name }}
