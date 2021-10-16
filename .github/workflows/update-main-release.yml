@@ -1,4 +1,4 @@
-name: Handle Release
+name: Manual Update Release Master
 
 on:
   workflow_dispatch:
