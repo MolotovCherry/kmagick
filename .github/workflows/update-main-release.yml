@@ -178,7 +178,6 @@ jobs:
   build-kmagick:
     name: Build KMagick Jar
     runs-on: windows-latest
-    if: github.event_name == 'release'
 
     steps:
       - name: Checkout KMagick
