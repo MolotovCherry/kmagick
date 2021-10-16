@@ -5,7 +5,6 @@ on:
     types: [created]
   repository_dispatch:
     types: [new-release]
-  workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
@@ -191,7 +190,7 @@ jobs:
   build-kmagick:
     name: Build KMagick Jar
     runs-on: windows-latest
-    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'release'
 
     steps:
       - name: Checkout KMagick
