@@ -54,7 +54,6 @@ macro_rules! wand_wrapper {
                     })
                 }
 
-                #[jni_tools::jname(name="nativeClone")]
                 #[jni_tools::jnew]
                 fn clone(env: jni::JNIEnv, _: jni::objects::JObject, wand: jni::objects::JObject) -> super::utils::Result<Self> {
                     use jni_tools::Handle;

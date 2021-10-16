@@ -10,7 +10,7 @@ class PixelWandException(message: String) : MagickException(message)
 /**
  * PixelWand API. Used for specifying certain colors.
  */
-@Suppress("unused")
+@Suppress("unused", "MemberVisibilityCanBePrivate")
 class PixelWand : Closeable {
     constructor() {
         new()
@@ -20,7 +20,7 @@ class PixelWand : Closeable {
      * Internal use ONLY. Copies another wand
      */
     internal constructor(wand: PixelWand) {
-        nativeClone(wand)
+        clone(wand)
     }
 
     internal companion object {
@@ -43,7 +43,7 @@ class PixelWand : Closeable {
      * Check to see if this is initialized with the underlying C obj.
      * If it's not, then calling any functions will result in a null exception.
      *
-     * This object is _ALWAYS_ initialized, unless you call [destroy] and try to call a method again.
+     * This object is _ALWAYS_ initialized, unless [destroy], [finalize], or [Magick.terminate] got called.
      */
     val isInitialized: Boolean
         get() = handle != null
@@ -69,7 +69,7 @@ class PixelWand : Closeable {
         return PixelWand(this)
     }
     @Throws(PixelWandException::class)
-    private external fun nativeClone(wand: PixelWand)
+    private external fun clone(wand: PixelWand)
 
     /**
      * Clear any internal exceptions
@@ -97,7 +97,6 @@ class PixelWand : Closeable {
      * `finalize()` is not guaranteed to be called at all, nor called on time.
      * It's recommended to manually destroy all wands when finished.
      */
-    @Throws(PixelWandException::class)
     external fun destroy()
 
     /**
@@ -176,9 +175,7 @@ class PixelWand : Closeable {
     var index: Quantum
         get() = pixelGetIndex()
         set(value) = pixelSetIndex(value)
-    @Throws(PixelWandException::class)
     private external fun pixelGetIndex(): Quantum
-    @Throws(PixelWandException::class)
     private external fun pixelSetIndex(index: Quantum)
 
     /**
@@ -187,9 +184,7 @@ class PixelWand : Closeable {
     var fuzz: Double
         get() = pixelGetFuzz()
         set(value) = pixelSetFuzz(value)
-    @Throws(PixelWandException::class)
     private external fun pixelGetFuzz(): Double
-    @Throws(PixelWandException::class)
     private external fun pixelSetFuzz(fuzz: Double)
 
     /**
@@ -199,9 +194,7 @@ class PixelWand : Closeable {
     var alpha: Double
         get() = pixelGetAlpha()
         set(value) = pixelSetAlpha(value)
-    @Throws(PixelWandException::class)
     private external fun pixelGetAlpha(): Double
-    @Throws(PixelWandException::class)
     private external fun pixelSetAlpha(alpha: Double)
 
     /**
@@ -210,9 +203,7 @@ class PixelWand : Closeable {
     var alphaQuantum: Quantum
         get() = pixelGetAlphaQuantum()
         set(value) = pixelSetAlphaQuantum(value)
-    @Throws(PixelWandException::class)
     private external fun pixelGetAlphaQuantum(): Quantum
-    @Throws(PixelWandException::class)
     private external fun pixelSetAlphaQuantum(alpha: Quantum)
 
     /**
@@ -221,9 +212,7 @@ class PixelWand : Closeable {
     var black: Double
         get() = pixelGetBlack()
         set(value) = pixelSetBlack(value)
-    @Throws(PixelWandException::class)
     private external fun pixelGetBlack(): Double
-    @Throws(PixelWandException::class)
     private external fun pixelSetBlack(black: Double)
 
     /**
@@ -232,9 +221,7 @@ class PixelWand : Closeable {
     var blackQuantum: Quantum
         get() = pixelGetBlackQuantum()
         set(value) = pixelSetBlackQuantum(value)
-    @Throws(PixelWandException::class)
     private external fun pixelGetBlackQuantum(): Quantum
-    @Throws(PixelWandException::class)
     private external fun pixelSetBlackQuantum(black: Quantum)
 
     /**
@@ -243,9 +230,7 @@ class PixelWand : Closeable {
     var blue: Double
         get() = pixelGetBlue()
         set(value) = pixelSetBlue(value)
-    @Throws(PixelWandException::class)
     private external fun pixelGetBlue(): Double
-    @Throws(PixelWandException::class)
     private external fun pixelSetBlue(blue: Double)
 
     /**
@@ -254,9 +239,7 @@ class PixelWand : Closeable {
     var blueQuantum: Quantum
         get() = pixelGetBlueQuantum()
         set(value) = pixelSetBlueQuantum(value)
-    @Throws(PixelWandException::class)
     private external fun pixelGetBlueQuantum(): Quantum
-    @Throws(PixelWandException::class)
     private external fun pixelSetBlueQuantum(blue: Quantum)
 
     /**
@@ -265,9 +248,7 @@ class PixelWand : Closeable {
     var cyan: Double
         get() = pixelGetCyan()
         set(value) = pixelSetCyan(value)
-    @Throws(PixelWandException::class)
     private external fun pixelGetCyan(): Double
-    @Throws(PixelWandException::class)
     private external fun pixelSetCyan(cyan: Double)
 
     /**
@@ -276,9 +257,7 @@ class PixelWand : Closeable {
     var cyanQuantum: Quantum
         get() = pixelGetCyanQuantum()
         set(value) = pixelSetCyanQuantum(value)
-    @Throws(PixelWandException::class)
     private external fun pixelGetCyanQuantum(): Quantum
-    @Throws(PixelWandException::class)
     private external fun pixelSetCyanQuantum(cyan: Quantum)
 
     /**
@@ -287,9 +266,7 @@ class PixelWand : Closeable {
     var green: Double
         get() = pixelGetGreen()
         set(value) = pixelSetGreen(value)
-    @Throws(PixelWandException::class)
     private external fun pixelGetGreen(): Double
-    @Throws(PixelWandException::class)
     private external fun pixelSetGreen(green: Double)
 
     /**
@@ -298,9 +275,7 @@ class PixelWand : Closeable {
     var greenQuantum: Quantum
         get() = pixelGetGreenQuantum()
         set(value) = pixelSetGreenQuantum(value)
-    @Throws(PixelWandException::class)
     private external fun pixelGetGreenQuantum(): Quantum
-    @Throws(PixelWandException::class)
     private external fun pixelSetGreenQuantum(green: Quantum)
 
     /**
@@ -309,9 +284,7 @@ class PixelWand : Closeable {
     var magenta: Double
         get() = pixelGetMagenta()
         set(value) = pixelSetMagenta(value)
-    @Throws(PixelWandException::class)
     private external fun pixelGetMagenta(): Double
-    @Throws(PixelWandException::class)
     private external fun pixelSetMagenta(magenta: Double)
 
     /**
@@ -320,9 +293,7 @@ class PixelWand : Closeable {
     var magentaQuantum: Quantum
         get() = pixelGetMagentaQuantum()
         set(value) = pixelSetMagentaQuantum(value)
-    @Throws(PixelWandException::class)
     private external fun pixelGetMagentaQuantum(): Quantum
-    @Throws(PixelWandException::class)
     private external fun pixelSetMagentaQuantum(magenta: Quantum)
 
     /**
@@ -331,9 +302,7 @@ class PixelWand : Closeable {
     var red: Double
         get() = pixelGetRed()
         set(value) = pixelSetRed(value)
-    @Throws(PixelWandException::class)
     private external fun pixelGetRed(): Double
-    @Throws(PixelWandException::class)
     private external fun pixelSetRed(red: Double)
 
     /**
@@ -342,9 +311,7 @@ class PixelWand : Closeable {
     var redQuantum: Quantum
         get() = pixelGetRedQuantum()
         set(value) = pixelSetRedQuantum(value)
-    @Throws(PixelWandException::class)
     private external fun pixelGetRedQuantum(): Quantum
-    @Throws(PixelWandException::class)
     private external fun pixelSetRedQuantum(red: Quantum)
 
     /**
@@ -353,9 +320,7 @@ class PixelWand : Closeable {
     var yellow: Double
         get() = pixelGetYellow()
         set(value) = pixelSetYellow(value)
-    @Throws(PixelWandException::class)
     private external fun pixelGetYellow(): Double
-    @Throws(PixelWandException::class)
     private external fun pixelSetYellow(yellow: Double)
 
     /**
@@ -364,8 +329,6 @@ class PixelWand : Closeable {
     var yellowQuantum: Quantum
         get() = pixelGetYellowQuantum()
         set(value) = pixelSetYellowQuantum(value)
-    @Throws(PixelWandException::class)
     private external fun pixelGetYellowQuantum(): Quantum
-    @Throws(PixelWandException::class)
     private external fun pixelSetYellowQuantum(yellow: Quantum)
 }

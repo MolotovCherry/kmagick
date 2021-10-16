@@ -1,6 +1,5 @@
 package com.cherryleafroad.kmagick
 
-import com.cherryleafroad.kmagick.Magick.terminate
 import org.objenesis.ObjenesisStd
 import java.io.Closeable
 
@@ -16,7 +15,7 @@ class MagickWand : Closeable {
      * Internal use ONLY. Copies another wand
      */
     internal constructor(wand: MagickWand) {
-        nativeClone(wand)
+        clone(wand)
     }
 
     internal companion object {
@@ -39,7 +38,7 @@ class MagickWand : Closeable {
      * Check to see if this is initialized with the underlying C obj.
      * If it's not, then calling any functions will result in a null exception.
      *
-     * This object is _ALWAYS_ initialized, unless you call [destroy] and try to call a method again.
+     * This object is _ALWAYS_ initialized, unless [destroy], [finalize], or [Magick.terminate] got called.
      */
     val isInitialized: Boolean
         get() = handle != null
@@ -65,7 +64,7 @@ class MagickWand : Closeable {
         return MagickWand(this)
     }
     @Throws(MagickWandException::class)
-    private external fun nativeClone(wand: MagickWand)
+    private external fun clone(wand: MagickWand)
 
     /**
      * Clear any internal exceptions
@@ -75,6 +74,7 @@ class MagickWand : Closeable {
     /**
      * Get the type of internal exception
      */
+    @Throws(MagickWandException::class)
     fun getExceptionType(): ExceptionType {
         val exceptionType = nativeGetExceptionType()
         return (ExceptionType::id::find)(exceptionType)!!
@@ -93,7 +93,6 @@ class MagickWand : Closeable {
      * `finalize()` is not guaranteed to be called at all, nor called on time.
      * It's recommended to manually destroy all wands when finished.
      */
-    @Throws(MagickWandException::class)
     external fun destroy()
 
     /**
@@ -119,11 +118,40 @@ class MagickWand : Closeable {
      * Adds a blank image canvas of the specified size and background color to the wand.
      *
      * @param width The width of the image.
-     * @param height The hiehgt of the image.
+     * @param height The height of the image.
      * @param background The background color of the image.
      */
     @Throws(MagickWandException::class)
     external fun newImage(width: Long, height: Long, background: PixelWand)
+
+    /**
+     * Adds a blank image canvas of the specified size and background color to the wand.
+     *
+     * @param width The width of the image.
+     * @param height The height of the image.
+     * @param background The background color of the image.
+     */
+    @Throws(MagickWandException::class)
+    fun newImage(width: Long, height: Long, background: String) {
+        PixelWand().also {
+            it.color = background
+            newImage(width, height, it)
+        }
+    }
+
+    /**
+     * Adds a blank image canvas of the specified size to the wand. Background color is pre-set to transparent.
+     *
+     * @param width The width of the image.
+     * @param height The height of the image.
+     */
+    @Throws(MagickWandException::class)
+    fun newImage(width: Long, height: Long) {
+        PixelWand().also {
+            it.color = "rgba(0, 0, 0, 0)"
+            newImage(width, height, it)
+        }
+    }
 
     /**
      * The limit for a particular resource.
@@ -133,10 +161,10 @@ class MagickWand : Closeable {
      */
     @Throws(MagickWandException::class)
     fun setResourceLimit(type: ResourceType, limit: Long) {
-        magickSetResourceLimit(type.id, limit)
+        setResourceLimit(type.id, limit)
     }
     @Throws(MagickWandException::class)
-    private external fun magickSetResourceLimit(type: Int, limit: Long)
+    private external fun setResourceLimit(type: Int, limit: Long)
 
     /**
      * Associates one or options with the wand (e.g. setOption("jpeg:perserve","yes")).
@@ -238,11 +266,12 @@ class MagickWand : Closeable {
      * @param metric The metric.
      * @return A data class containing the computed distortion and the diffImage if there was a difference.
      */
+    @Throws(MagickWandException::class)
     fun compareImages(reference: MagickWand, metric: MetricType): Comparison {
-        return magickCompareImages(reference, metric.id)
+        return compareImages(reference, metric.id)
     }
     @Throws(MagickWandException::class)
-    private external fun magickCompareImages(reference: MagickWand, metric: Int): Comparison
+    private external fun compareImages(reference: MagickWand, metric: Int): Comparison
 
     /**
      * Compose another image onto self at (x,y) using composition_operator
@@ -253,6 +282,7 @@ class MagickWand : Closeable {
      * @param x The column offset of the composited image.
      * @param y The row offset of the composited image.
      */
+    @Throws(MagickWandException::class)
     fun compositeImage(
         sourceWand: MagickWand,
         compose: CompositeOperator,
@@ -260,10 +290,10 @@ class MagickWand : Closeable {
         x: Long,
         y: Long
     ) {
-        magickCompositeImage(sourceWand, compose.id, clipToSelf, x, y)
+        compositeImage(sourceWand, compose.id, clipToSelf, x, y)
     }
     @Throws(MagickWandException::class)
-    private external fun magickCompositeImage(
+    private external fun compositeImage(
             sourceWand: MagickWand,
             compose: Int,
             clipToSelf: Boolean,
@@ -277,11 +307,12 @@ class MagickWand : Closeable {
      * @param clutWand The clut image.
      * @param method The pixel interpolation method.
      */
+    @Throws(MagickWandException::class)
     fun clutImage(clutWand: MagickWand, method: PixelInterpolateMethod) {
-        magickClutImage(clutWand, method.id)
+        clutImage(clutWand, method.id)
     }
     @Throws(MagickWandException::class)
-    private external fun magickClutImage(clutWand: MagickWand, method: Int)
+    private external fun clutImage(clutWand: MagickWand, method: Int)
 
     /**
      * replaces colors in the image from a Hald color lookup table. A Hald color lookup table is a 3-dimensional color
@@ -555,6 +586,7 @@ class MagickWand : Closeable {
      * Resize the image to the specified [width] and [height], using the
      * specified [filter] type.
      */
+    @Throws(MagickWandException::class)
     fun resizeImage(width: Long, height: Long, filter: FilterType) {
         magickResizeImage(width, height, filter.id)
     }
@@ -586,11 +618,12 @@ class MagickWand : Closeable {
      * Resample the image to the specified (horizontal) [x] and (vertical) [y] resolution, using the
      * specified [filter] type.
      */
+    @Throws(MagickWandException::class)
     fun resampleImage(x: Double, y: Double, filter: FilterType) {
-        magickResampleImage(x, y, filter.id)
+        resampleImage(x, y, filter.id)
     }
     @Throws(MagickWandException::class)
-    private external fun magickResampleImage(
+    private external fun resampleImage(
         x: Double,
         y: Double,
         filter: Int
@@ -613,11 +646,12 @@ class MagickWand : Closeable {
      * @param amount The extent of the implosion.
      * @param method THe pixel interpolation method.
      */
+    @Throws(MagickWandException::class)
     fun implode(amount: Double, method: PixelInterpolateMethod) {
-        magickImplode(amount, method.id)
+        implode(amount, method.id)
     }
     @Throws(MagickWandException::class)
-    private external fun magickImplode(amount: Double, method: Int)
+    private external fun implode(amount: Double, method: Int)
 
     /**
      * Resize the image to fit within the given dimensions, maintaining
@@ -630,7 +664,6 @@ class MagickWand : Closeable {
      * Detect if the loaded image is not in top-left orientation, and
      * hence should be "auto" oriented, so it is suitable for viewing.
      */
-    @Throws(MagickWandException::class)
     external fun requiresOrientation(): Boolean
 
     /**
@@ -639,7 +672,6 @@ class MagickWand : Closeable {
      *
      * Returns `true` if successful or `false` if an error occurred.
      */
-    @Throws(MagickWandException::class)
     external fun autoOrient(): Boolean
 
     /**
@@ -1061,11 +1093,12 @@ class MagickWand : Closeable {
     /**
      * Set the image colorspace, transforming (unlike `set_image_colorspace`) image data in the process.
      */
+    @Throws(MagickWandException::class)
     fun transformImageColorspace(colorspace: ColorspaceType) {
-        magickTransformImageColorspace(colorspace.id)
+        transformImageColorspace(colorspace.id)
     }
     @Throws(MagickWandException::class)
-    private external fun magickTransformImageColorspace(colorspace: Int)
+    private external fun transformImageColorspace(colorspace: Int)
 
     /**
      * Sets the image to the specified alpha level.
@@ -1082,29 +1115,32 @@ class MagickWand : Closeable {
     /**
      * Set the image alpha channel mode.
      */
+    @Throws(MagickWandException::class)
     fun setImageAlphaChannel(alphaChannel: AlphaChannelOption) {
-        magickSetImageAlphaChannel(alphaChannel.id)
+        setImageAlphaChannel(alphaChannel.id)
     }
     @Throws(MagickWandException::class)
-    private external fun magickSetImageAlphaChannel(alphaChannel: Int)
+    private external fun setImageAlphaChannel(alphaChannel: Int)
 
     /**
      * Reduce the number of colors in the image.
      */
+    @Throws(MagickWandException::class)
     fun quantizeImage(numberOfColors: Long, colorspace: ColorspaceType, treeDepth: Long, ditherMethod: DitherMethod, measureError: Boolean) {
-        magickQuantizeImage(numberOfColors, colorspace.id, treeDepth, ditherMethod.id, measureError)
+        quantizeImage(numberOfColors, colorspace.id, treeDepth, ditherMethod.id, measureError)
     }
     @Throws(MagickWandException::class)
-    private external fun magickQuantizeImage(numberOfColors: Long, colorspace: Int, treeDepth: Long, ditherMethod: Int, measureError: Boolean)
+    private external fun quantizeImage(numberOfColors: Long, colorspace: Int, treeDepth: Long, ditherMethod: Int, measureError: Boolean)
 
     /**
      * Reduce the number of colors in the image.
      */
+    @Throws(MagickWandException::class)
     fun quantizeImages(numberOfColors: Long, colorspace: ColorspaceType, treeDepth: Long, ditherMethod: DitherMethod, measureError: Boolean) {
-        magickQuantizeImages(numberOfColors, colorspace.id, treeDepth, ditherMethod.id, measureError)
+        quantizeImages(numberOfColors, colorspace.id, treeDepth, ditherMethod.id, measureError)
     }
     @Throws(MagickWandException::class)
-    private external fun magickQuantizeImages(numberOfColors: Long, colorspace: Int, treeDepth: Long, ditherMethod: Int, measureError: Boolean)
+    private external fun quantizeImages(numberOfColors: Long, colorspace: Int, treeDepth: Long, ditherMethod: Int, measureError: Boolean)
 
     /**
      * Discard all but one of any pixel color.

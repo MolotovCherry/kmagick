@@ -8,7 +8,7 @@ class DrawingWandException(message: String) : MagickException(message)
 /**
  * DrawingWand API. For drawing things on the image (such as text).
  */
-@Suppress("unused")
+@Suppress("unused", "MemberVisibilityCanBePrivate")
 class DrawingWand : Closeable {
     constructor() {
         new()
@@ -18,7 +18,7 @@ class DrawingWand : Closeable {
      * Internal use ONLY. Copies another wand
      */
     internal constructor(wand: DrawingWand) {
-        nativeClone(wand)
+        clone(wand)
     }
 
     internal companion object {
@@ -41,7 +41,7 @@ class DrawingWand : Closeable {
      * Check to see if this is initialized with the underlying C obj.
      * If it's not, then calling any functions will result in a null exception.
      *
-     * This object is _ALWAYS_ initialized, unless you call [destroy] and try to call a method again.
+     * This object is _ALWAYS_ initialized, unless [destroy], [finalize], or [Magick.terminate] got called.
      */
     val isInitialized: Boolean
         get() = handle != null
@@ -67,7 +67,7 @@ class DrawingWand : Closeable {
         return DrawingWand(this)
     }
     @Throws(DrawingWandException::class)
-    private external fun nativeClone(wand: DrawingWand)
+    private external fun clone(wand: DrawingWand)
 
     /**
      * Clear any internal exceptions
@@ -102,7 +102,6 @@ class DrawingWand : Closeable {
      * `finalize()` is not guaranteed to be called at all, nor called on time.
      * It's recommended to manually destroy all wands when finished.
      */
-    @Throws(DrawingWandException::class)
     external fun destroy()
 
     /**
@@ -264,9 +263,7 @@ class DrawingWand : Closeable {
     var opacity: Double
         get() = drawGetOpacity()
         set(value) = drawSetOpacity(value)
-    @Throws(DrawingWandException::class)
     private external fun drawGetOpacity(): Double
-    @Throws(DrawingWandException::class)
     private external fun drawSetOpacity(opacity: Double)
 
     /**
@@ -308,9 +305,7 @@ class DrawingWand : Closeable {
     var fillOpacity: Double
         get() = drawGetFillOpacity()
         set(value) = drawSetFillOpacity(value)
-    @Throws(DrawingWandException::class)
     private external fun drawGetFillOpacity(): Double
-    @Throws(DrawingWandException::class)
     private external fun drawSetFillOpacity(fillOpacity: Double)
 
     /**
@@ -319,9 +314,7 @@ class DrawingWand : Closeable {
     var fontSize: Double
         get() = drawGetFontSize()
         set(value) = drawSetFontSize(value)
-    @Throws(DrawingWandException::class)
     private external fun drawGetFontSize(): Double
-    @Throws(DrawingWandException::class)
     private external fun drawSetFontSize(pointSize: Double)
 
     /**
@@ -364,9 +357,7 @@ class DrawingWand : Closeable {
     var strokeDashOffset: Double
         get() = drawGetStrokeDashOffset()
         set(value) = drawSetStrokeDashOffset(value)
-    @Throws(DrawingWandException::class)
     private external fun drawGetStrokeDashOffset(): Double
-    @Throws(DrawingWandException::class)
     private external fun drawSetStrokeDashOffset(dashOffset: Double)
 
     /**
@@ -410,9 +401,7 @@ class DrawingWand : Closeable {
     var strokeOpacity: Double
         get() = drawGetStrokeOpacity()
         set(value) = drawSetStrokeOpacity(value)
-    @Throws(DrawingWandException::class)
     private external fun drawGetStrokeOpacity(): Double
-    @Throws(DrawingWandException::class)
     private external fun drawSetStrokeOpacity(opacity: Double)
 
     /**
@@ -421,9 +410,7 @@ class DrawingWand : Closeable {
     var strokeWidth: Double
         get() = drawGetStrokeWidth()
         set(value) = drawSetStrokeWidth(value)
-    @Throws(DrawingWandException::class)
     private external fun drawGetStrokeWidth(): Double
-    @Throws(DrawingWandException::class)
     private external fun drawSetStrokeWidth(strokeWidth: Double)
 
     /**
@@ -490,9 +477,7 @@ class DrawingWand : Closeable {
     var textKerning: Double
         get() = drawGetTextKerning()
         set(value) = drawSetTextKerning(value)
-    @Throws(DrawingWandException::class)
     private external fun drawGetTextKerning(): Double
-    @Throws(DrawingWandException::class)
     private external fun drawSetTextKerning(kerning: Double)
 
     /**
@@ -501,9 +486,7 @@ class DrawingWand : Closeable {
     var textInterlineSpacing: Double
         get() = drawGetTextInterlineSpacing()
         set(value) = drawSetTextInterlineSpacing(value)
-    @Throws(DrawingWandException::class)
     private external fun drawGetTextInterlineSpacing(): Double
-    @Throws(DrawingWandException::class)
     private external fun drawSetTextInterlineSpacing(interlineSpacing: Double)
 
     /**
@@ -512,8 +495,6 @@ class DrawingWand : Closeable {
     var textInterwordSpacing: Double
         get() = drawGetTextInterwordSpacing()
         set(value) = drawSetTextInterwordSpacing(value)
-    @Throws(DrawingWandException::class)
     private external fun drawGetTextInterwordSpacing(): Double
-    @Throws(DrawingWandException::class)
     private external fun drawSetTextInterwordSpacing(interwordSpacing: Double)
 }
