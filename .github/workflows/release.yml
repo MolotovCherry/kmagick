@@ -191,7 +191,7 @@ jobs:
   build-kmagick:
     name: Build KMagick Jar
     runs-on: windows-latest
-    if: github.event_name == 'release'
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout KMagick
