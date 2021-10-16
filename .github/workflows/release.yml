@@ -5,6 +5,7 @@ on:
     types: [created]
   repository_dispatch:
     types: [new-release]
+  workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
