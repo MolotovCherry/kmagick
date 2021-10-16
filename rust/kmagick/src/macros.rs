@@ -55,11 +55,18 @@ macro_rules! wand_wrapper {
                 }
 
                 #[jni_tools::jnew]
-                fn clone(env: jni::JNIEnv, _: jni::objects::JObject, wand: jni::objects::JObject) -> super::utils::Result<Self> {
+                fn clone(env: jni::JNIEnv, obj: jni::objects::JObject, wand: jni::objects::JObject) -> super::utils::Result<Self> {
                     use jni_tools::Handle;
 
-                    let r_obj = env.get_handle::<$wand>(wand)?;
-                    Ok($wand::from_wand(env, wand, r_obj.instance.clone())?)
+                    let c_wand = env.get_handle::<$wand>(wand)?;
+                    Ok($wand::from_wand(env, obj, c_wand.instance.clone())?)
+                }
+
+                fn isWand(&self) -> jni::sys::jboolean {
+                    match self.is_wand() {
+                        Ok(_) => true as jni::sys::jboolean,
+                        Err(_) => false as jni::sys::jboolean
+                    }
                 }
 
                 fn clearException(&mut self) -> std::result::Result<(), &'static str> {

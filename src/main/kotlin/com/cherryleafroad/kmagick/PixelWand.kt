@@ -57,7 +57,6 @@ class PixelWand : Closeable {
     /**
      * Check to see if this is still the correct wand.
      */
-    @Throws(PixelWandException::class)
     external fun isWand(): Boolean
 
     /**

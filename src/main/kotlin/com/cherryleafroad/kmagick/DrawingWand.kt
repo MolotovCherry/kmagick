@@ -55,7 +55,6 @@ class DrawingWand : Closeable {
     /**
      * Verifies whether this is a DrawingWand.
      */
-    @Throws(DrawingWandException::class)
     external fun isWand(): Boolean
 
     /**

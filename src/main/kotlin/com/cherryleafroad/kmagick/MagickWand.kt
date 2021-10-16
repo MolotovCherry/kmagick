@@ -52,7 +52,6 @@ class MagickWand : Closeable {
     /**
      * Check to see if this is still the correct wand.
      */
-    @Throws(MagickWandException::class)
     external fun isWand(): Boolean
 
     /**
