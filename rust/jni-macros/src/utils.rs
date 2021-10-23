@@ -69,7 +69,7 @@ pub fn get_cfg_target(attributes: &Vec<Attribute>) -> TokenStream {
         if found_cfg {
             let cfg_tokens = &attr.tokens;
             tk = quote! {
-                #[cfg#cfg_tokens]
+                #[cfg #cfg_tokens]
             };
         }
 
@@ -933,7 +933,7 @@ pub fn generate_impl_functions(
                     stream = quote! {
                         #target
                         #[no_mangle]
-                        pub extern "system" fn #java_name(env: jni::JNIEnv#inputs) {
+                        pub extern "system" fn #java_name(env: jni::JNIEnv #inputs) {
                             use jni_tools::Handle;
 
                             let p_res = std::panic::catch_unwind(|| {
@@ -966,7 +966,7 @@ pub fn generate_impl_functions(
                     stream = quote! {
                         #target
                         #[no_mangle]
-                        pub extern "system" fn #java_name(env: jni::JNIEnv#inputs) #ret_type {
+                        pub extern "system" fn #java_name(env: jni::JNIEnv #inputs) #ret_type {
                             let p_res = std::panic::catch_unwind(|| {
                                 #res_binding #impl_name::#fn_name(#fn_call_args)#res_semicolon
 
@@ -1019,7 +1019,7 @@ pub fn generate_impl_functions(
                     stream = quote! {
                         #target
                         #[no_mangle]
-                        pub extern "system" fn #java_name(env: jni::JNIEnv#inputs) {
+                        pub extern "system" fn #java_name(env: jni::JNIEnv #inputs) {
                             use jni_tools::Handle;
 
                             let p_res = std::panic::catch_unwind(|| {
@@ -1072,7 +1072,7 @@ pub fn generate_impl_functions(
                     stream = quote! {
                         #target
                         #[no_mangle]
-                        pub extern "system" fn #java_name(env: jni::JNIEnv#inputs) #ret_type {
+                        pub extern "system" fn #java_name(env: jni::JNIEnv #inputs) #ret_type {
                             use jni_tools::Handle;
 
                             let p_res = std::panic::catch_unwind(|| {

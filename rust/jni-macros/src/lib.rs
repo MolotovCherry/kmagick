@@ -126,7 +126,7 @@ pub fn jmethod(attr: TokenStream, item: TokenStream) -> TokenStream {
 
         #target
         #[no_mangle]
-        pub extern "system" fn #java_fn(env: jni::JNIEnv#fn_inputs) #java_return {
+        pub extern "system" fn #java_fn(env: jni::JNIEnv #fn_inputs) #java_return {
             let p_res = std::panic::catch_unwind(|| {
                 #res_binding #real_fn_name(#fn_call)#res_semicolon
 
