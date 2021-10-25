@@ -62,6 +62,7 @@ for target in config["toolchain"]["targets"]:
     release_tool += " -release"
 
     t = {
+        "toolchain": config["toolchain"]["channel"],
         "target": target,
         "windows": windows,
         "android": android,
