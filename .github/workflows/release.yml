@@ -5,6 +5,7 @@ on:
     types: [created]
   repository_dispatch:
     types: [new-release]
+  workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
@@ -56,10 +57,17 @@ jobs:
           ref: ${{ steps.latest_release_im.outputs.tag_name }}
 
       - name: Checkout KMagick
+        if: github.event_name != 'workflow_dispatch'
         uses: actions/checkout@v2
         with:
           path: kmagick-rs
           ref: ${{ steps.latest_release.outputs.tag_name }}
+
+      - name: Checkout KMagick
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/checkout@v2
+        with:
+          path: kmagick-rs
 
       - name: Fetch latest Android shared libs
         if: matrix.android
