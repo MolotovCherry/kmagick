@@ -47,8 +47,7 @@ jobs:
         with:
           token: ${{ github.token }}
           latest: true
-          owner: cherryleafroad
-          name: Android-ImageMagick7
+          repo: Android-ImageMagick7
 
       - name: Checkout Android ImageMagick
         uses: actions/checkout@v2
