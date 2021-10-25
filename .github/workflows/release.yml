@@ -33,16 +33,6 @@ jobs:
       matrix: ${{ fromJson(needs.metadata.outputs.matrix) }}
 
     steps:
-      - name: Checkout Android ImageMagick
-        uses: actions/checkout@v2
-        with:
-          repository: cherryleafroad/Android-ImageMagick7
-
-      - name: Checkout KMagick
-        uses: actions/checkout@v2
-        with:
-          path: kmagick-rs
-
       - name: Get latest release
         id: latest_release
         uses: kaliber5/action-get-release@v1
@@ -50,25 +40,26 @@ jobs:
           token: ${{ github.token }}
           latest: true
 
-      - name: Get latest release tag
-        id: tag
-        run: |
-          $dir = Get-ChildItem -Directory -Path "ImageMagick-*" | Select-Object -Last 1
-          $tag = ($dir | Split-Path -Leaf).Substring(12)
-          Write-Host "::set-output name=TAG::$tag"
-
-      - name: Get toolchain version
-        uses: SebRollen/toml-action@v1.0.0
-        id: toolchain
+      - name: Get latest IM release
+        id: latest_release_im
+        uses: kaliber5/action-get-release@v1
         with:
-          file: kmagick-rs/rust/rust-toolchain.toml
-          field: toolchain.channel
+          token: ${{ github.token }}
+          latest: true
+          owner: cherryleafroad
+          name: Android-ImageMagick7
 
-      - name: Checkout tags
-        run: |
-          git checkout ${{ steps.tag.outputs.TAG }}
-          cd kmagick-rs
-          git checkout ${{ steps.latest_release.outputs.tag_name }}
+      - name: Checkout Android ImageMagick
+        uses: actions/checkout@v2
+        with:
+          repository: cherryleafroad/Android-ImageMagick7
+          ref: ${{ steps.latest_release_im.outputs.tag_name }}
+
+      - name: Checkout KMagick
+        uses: actions/checkout@v2
+        with:
+          path: kmagick-rs
+          ref: ${{ steps.latest_release.outputs.tag_name }}
 
       - name: Fetch latest Android shared libs
         if: matrix.android
@@ -92,13 +83,13 @@ jobs:
         uses: actions/cache@v2
         with:
           path: app
-          key: imagemagick-${{ steps.tag.outputs.TAG }}-${{ matrix.im_arch }}
+          key: imagemagick-${{ steps.latest_release_im.outputs.tag_name }}-${{ matrix.im_arch }}
 
       - name: Download ImageMagick Windows DLL release
         if: steps.cache-imagemagick.outputs.cache-hit != 'true' && matrix.windows
         uses: carlosperate/download-file-action@v1.0.3
         with:
-            file-url: 'https://download.imagemagick.org/ImageMagick/download/binaries/ImageMagick-${{ steps.tag.outputs.TAG }}-Q16-HDRI-${{ matrix.im_arch }}-dll.exe'
+            file-url: 'https://download.imagemagick.org/ImageMagick/download/binaries/ImageMagick-${{ steps.latest_release_im.outputs.tag_name }}-Q16-HDRI-${{ matrix.im_arch }}-dll.exe'
             file-name: 'ImageMagick.exe'
 
       - name: Fetch latest Innoextract
@@ -140,7 +131,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           profile: ${{ matrix.profile }}
-          toolchain: ${{ steps.toolchain.outputs.value }}
+          toolchain: ${{ matrix.toolchain }}
           target: ${{ matrix.target }}
           default: true
 
@@ -193,19 +184,17 @@ jobs:
     if: github.event_name == 'release'
 
     steps:
-      - name: Checkout KMagick
-        uses: actions/checkout@v2
-
       - name: Get latest release
         id: latest_release
         uses: kaliber5/action-get-release@v1
         with:
           token: ${{ github.token }}
           latest: true
-
-      - name: Checkout tag
-        run: |
-          git checkout ${{ steps.latest_release.outputs.tag_name }}
+    
+      - name: Checkout KMagick
+        uses: actions/checkout@v2
+        with:
+            ref: ${{ steps.latest_release.outputs.tag_name }}
 
       - name: Compile Jar
         run: |
