@@ -189,7 +189,7 @@ jobs:
   build-kmagick:
     name: Build KMagick Jar
     runs-on: windows-latest
-    if: github.event_name == 'release'
+    if: github.event_name != 'repository_dispatch'
 
     steps:
       - name: Get latest release
