@@ -18,7 +18,7 @@ All downloads are in the [releases section](https://github.com/cherryleafroad/km
 1. Grab the jar and sources jar and put it in your project.
 2. Add this line to your dependencies: `implementation fileTree(dir: 'libs', include: ['*.jar'])`
 3. Place the jars in the `app/libs` folder.
-4. Place ImageMagick shared so files in your `app/src/main/jniLibs` folder along with the Android `kmagick.so` library in the download section.
+4. Place the [Android ImageMagick shared library](https://github.com/cherryleafroad/Android-ImageMagick7/releases) `so` files in your `app/src/main/jniLibs` folder along with the Android `kmagick.so` library.
 
 Debug messages can be found in Android logcat under the id `MAGICK`. Make sure you first set the appropriate `LogLevel` to see them.
 
