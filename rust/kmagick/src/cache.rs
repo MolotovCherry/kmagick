@@ -1,10 +1,10 @@
+use std::sync::atomic::{AtomicU64, Ordering};
 use lazy_static::lazy_static;
 use std::sync::Mutex;
 use jni::objects::GlobalRef;
 use jni::JNIEnv;
 use jni_tools::Handle;
 use fxhash::FxHashMap;
-use rand::Rng;
 use crate::{
     PixelWand, MagickWand, DrawingWand
 };
@@ -20,7 +20,7 @@ macro_rules! TakeObj {
         for wand in $cache.values() {
             // clear handle and let object drop to prevent invalid references to an already deleted obj
             let wand = $env.take_handle::<$wand>(wand.as_obj())?;
-            log::debug!("Destroyed dangling {} id {}", stringify!($wand), wand.id);
+            log::debug!("Destroyed {} id {}", stringify!($wand), wand.id);
         }
     }}
 }
@@ -44,21 +44,19 @@ pub fn clear(env: JNIEnv) -> crate::utils::Result<()> {
 }
 
 // returns the id used for the key
-pub fn insert(cache: &mut FxHashMap<u64, GlobalRef>, value: GlobalRef) -> u64 {
-    let mut rng = rand::thread_rng();
-    let mut id: u64;
+pub fn insert(cache: &Mutex<FxHashMap<u64, GlobalRef>>, value: GlobalRef) -> crate::utils::Result<u64> {
+    static ID_COUNT: AtomicU64 = AtomicU64::new(0);
 
-    // randomly generate an id as many times as needed until the key doesn't exist
-    // of course, 99.999% of the time it'll break on the first iteration
-    loop {
-        id = rng.gen();
-        if !cache.contains_key(&id) {
-            cache.insert(id, value);
-            break;
-        }
+    let cache = &mut *cache.lock().expect("Poisoned lock");
+    let id = ID_COUNT.fetch_add(1, Ordering::Relaxed);
 
-        log::debug!("Found a key collision : {}", id);
-    }
+    cache.insert(id, value);
+    Ok(id)
+}
 
-    id
+// Remove entry from the cache
+pub fn remove(cache: &Mutex<FxHashMap<u64, GlobalRef>>, id: u64) {
+    let cache = &mut *cache.lock().expect("Poisoned lock");
+    cache.remove(&id);
+    log::debug!("Destroyed {} id {}", stringify!($wand), id);
 }

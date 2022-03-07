@@ -30,8 +30,8 @@ macro_rules! wand_wrapper {
             impl $wand {
                 #[jni_tools::jnew]
                 pub fn new(env: jni::JNIEnv, obj: jni::objects::JObject) -> crate::utils::Result<Self> {
-                    let cache = &mut *crate::cache::[<$wand:upper _CACHE>].lock()?;
-                    let id = crate::cache::insert(cache, env.new_global_ref(obj)?);
+                    let cache = &*crate::cache::[<$wand:upper _CACHE>];
+                    let id = crate::cache::insert(cache, env.new_global_ref(obj)?)?;
 
                     let res = Self {
                         instance: magick_rust::$wand::new(),
@@ -45,8 +45,8 @@ macro_rules! wand_wrapper {
                 #[jni_tools::jignore]
                 pub fn from_wand(env: jni::JNIEnv, obj: jni::objects::JObject, wand: magick_rust::$wand) -> crate::utils::Result<Self> {
                     // this should never fail, so if it does, panicking is probably just as well at this point
-                    let cache = &mut *crate::cache::[<$wand:upper _CACHE>].lock()?;
-                    let id = crate::cache::insert(cache, env.new_global_ref(obj)?);
+                    let cache = &*crate::cache::[<$wand:upper _CACHE>];
+                    let id = crate::cache::insert(cache, env.new_global_ref(obj)?)?;
 
                     Ok(Self {
                         instance: wand,
@@ -119,9 +119,8 @@ macro_rules! wand_wrapper {
                 fn destroy(&self) {
                     // item will automatically be taken and dropped
                     // but we need to also remove it from the cache
-                    let mut cache = crate::cache::[<$wand:upper _CACHE>].lock().expect("Failed to lock cache");
-                    cache.remove(&self.id);
-                    log::debug!("Destroyed {} id {}", stringify!($wand), self.id);
+                    let cache = &*crate::cache::[<$wand:upper _CACHE>];
+                    crate::cache::remove(cache, self.id);
                 }
             }
         }

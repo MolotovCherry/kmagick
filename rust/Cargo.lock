@@ -298,7 +298,6 @@ dependencies = [
  "log",
  "magick_rust",
  "paste",
- "rand",
  "simplelog",
  "thiserror",
 ]
