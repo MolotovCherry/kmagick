@@ -1,3 +1,5 @@
+#![allow(non_snake_case)]
+
 use jni::{JNIEnv, objects::{JObject, JString, JValue}, sys::{jboolean, jbyteArray, jdouble, jdoubleArray, jint, jlong, jobject, jobjectArray, jstring}};
 use jni_tools::{jclass, jname, Handle, Utils, jtarget};
 use std::convert::TryFrom;

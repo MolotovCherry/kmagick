@@ -1,5 +1,5 @@
 [toolchain]
-channel = "nightly-2021-10-21"
+channel = "1.59.0"
 components = []
 targets = [ "x86_64-pc-windows-msvc", "i686-pc-windows-msvc", "aarch64-linux-android" ]
 profile = "minimal"
