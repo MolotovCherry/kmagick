@@ -13,7 +13,7 @@ crate-type = ["cdylib"]
 android_logger = "0.10.1"
 
 [target.'cfg(not(target_os = "android"))'.dependencies]
-simplelog = "0.10.0"
+simplelog = "0.11.2"
 
 # disable hdri feature does not disable hdri. it only fixes a compile bug that happens
 # when hdri is disabled
@@ -22,9 +22,9 @@ jni = "0.19.0"
 log = "0.4.14"
 magick_rust = { version = "0.15.0", features = ["disable-hdri"] }
 jni-tools = { path = "../jni-tools" }
-paste = "1.0.5"
+paste = "1.0.6"
 cfg-if = "1.0.0"
-thiserror = "1.0.29"
-bytemuck = "1.7.2"
+thiserror = "1.0.30"
+bytemuck = "1.8.0"
 lazy_static = "1.4.0"
 fxhash = "0.2.1"
