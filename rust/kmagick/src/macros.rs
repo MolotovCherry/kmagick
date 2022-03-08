@@ -120,7 +120,7 @@ macro_rules! wand_wrapper {
                     // item will automatically be taken and dropped
                     // but we need to also remove it from the cache
                     let cache = &*crate::cache::[<$wand:upper _CACHE>];
-                    crate::cache::remove(cache, self.id);
+                    crate::cache::remove(cache, self.id, stringify!($wand));
                 }
             }
         }

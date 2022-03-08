@@ -44,6 +44,9 @@ pub fn clear(env: JNIEnv) -> crate::utils::Result<()> {
 }
 
 // returns the id used for the key
+// for an entire u64's worth, it is guaranteed to not have any collisions
+// the id will wraparound after that
+// TODO: doubt that'll ever be a problem, but if it is, make an issue report so it can be redesigned
 pub fn insert(cache: &Mutex<FxHashMap<u64, GlobalRef>>, value: GlobalRef) -> crate::utils::Result<u64> {
     static ID_COUNT: AtomicU64 = AtomicU64::new(0);
 
@@ -55,8 +58,8 @@ pub fn insert(cache: &Mutex<FxHashMap<u64, GlobalRef>>, value: GlobalRef) -> cra
 }
 
 // Remove entry from the cache
-pub fn remove(cache: &Mutex<FxHashMap<u64, GlobalRef>>, id: u64) {
+pub fn remove(cache: &Mutex<FxHashMap<u64, GlobalRef>>, id: u64, name: &str) {
     let cache = &mut *cache.lock().expect("Poisoned lock");
     cache.remove(&id);
-    log::debug!("Destroyed {} id {}", stringify!($wand), id);
+    log::debug!("Destroyed {name} id {id}");
 }
