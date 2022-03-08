@@ -21,10 +21,10 @@ OriginalFilename = "KMAGICK.DLL"
 FileDescription = "Kotlin ImageMagick bindings"
 InternalName = "kmagick"
 
-[target.'cfg(android)'.dependencies]
+[target.'cfg(target_os = "android")'.dependencies]
 android_logger = "0.10.1"
 
-[target.'cfg(not(android))'.dependencies]
+[target.'cfg(not(target_os = "android"))'.dependencies]
 simplelog = "0.11.2"
 
 # disable hdri feature does not disable hdri. it only fixes a compile bug that happens
