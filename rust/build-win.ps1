@@ -7,7 +7,7 @@ if (Test-Path $imdir) {
     $imdir = Resolve-Path -Path "$PSScriptRoot/../../app"
 } else {
     # regular windows machine - not github actions
-    $imdir = Resolve-Path -Path "C:/Program Files/ImageMagick-*"
+    $imdir = Resolve-Path -Path "D:/Program Files/ImageMagick-*"
 }
 
 $includedir = "$imdir\include"
