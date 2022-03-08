@@ -3,16 +3,28 @@ name = "kmagick-rs"
 version = "0.1.0"
 edition = "2021"
 
+build = "build.rs"
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
 name ="kmagick"
 crate-type = ["cdylib"]
 
-[target.'cfg(target_os = "android")'.dependencies]
+[build-dependencies]
+winres = "0.1.12"
+
+# windows only metadata
+[package.metadata.winres]
+ProductName = "KMagick"
+OriginalFilename = "KMAGICK.DLL"
+FileDescription = "Kotlin ImageMagick bindings"
+InternalName = "kmagick"
+
+[target.'cfg(android)'.dependencies]
 android_logger = "0.10.1"
 
-[target.'cfg(not(target_os = "android"))'.dependencies]
+[target.'cfg(not(android))'.dependencies]
 simplelog = "0.11.2"
 
 # disable hdri feature does not disable hdri. it only fixes a compile bug that happens
