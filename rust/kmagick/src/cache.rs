@@ -60,6 +60,12 @@ pub fn insert(cache: &Mutex<FxHashMap<u64, GlobalRef>>, value: GlobalRef) -> cra
 // Remove entry from the cache
 pub fn remove(cache: &Mutex<FxHashMap<u64, GlobalRef>>, id: u64, name: &str) {
     let cache = &mut *cache.lock().expect("Poisoned lock");
-    cache.remove(&id);
-    log::debug!("Destroyed {name} id {id}");
+    if let Some(_) = cache.remove(&id) {
+        log::debug!("Destroyed {name} id {id}");
+    } else {
+        // it's concievable a race condition can occurr where another thread might try to remove
+        // from the cache when another thread terminated it, thereby causing this to be already gone
+        log::debug!("{name} id {id} already removed from cache");
+    }
+
 }
