@@ -31,7 +31,7 @@ macro_rules! wand_wrapper {
                 #[jni_tools::jnew]
                 pub fn new(env: jni::JNIEnv, obj: jni::objects::JObject) -> crate::utils::Result<Self> {
                     let cache = &*crate::cache::[<$wand:upper _CACHE>];
-                    let id = crate::cache::insert(cache, env.new_global_ref(obj)?)?;
+                    let id = crate::cache::insert(cache, env.new_global_ref(obj)?, stringify!($wand))?;
 
                     let res = Self {
                         instance: magick_rust::$wand::new(),
@@ -46,7 +46,7 @@ macro_rules! wand_wrapper {
                 pub fn from_wand(env: jni::JNIEnv, obj: jni::objects::JObject, wand: magick_rust::$wand) -> crate::utils::Result<Self> {
                     // this should never fail, so if it does, panicking is probably just as well at this point
                     let cache = &*crate::cache::[<$wand:upper _CACHE>];
-                    let id = crate::cache::insert(cache, env.new_global_ref(obj)?)?;
+                    let id = crate::cache::insert(cache, env.new_global_ref(obj)?, stringify!($wand))?;
 
                     Ok(Self {
                         instance: wand,

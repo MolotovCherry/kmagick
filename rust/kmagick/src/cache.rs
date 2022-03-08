@@ -47,13 +47,16 @@ pub fn clear(env: JNIEnv) -> crate::utils::Result<()> {
 // for an entire u64's worth, it is guaranteed to not have any collisions
 // the id will wraparound after that
 // TODO: doubt that'll ever be a problem, but if it is, make an issue report so it can be redesigned
-pub fn insert(cache: &Mutex<FxHashMap<u64, GlobalRef>>, value: GlobalRef) -> crate::utils::Result<u64> {
+pub fn insert(cache: &Mutex<FxHashMap<u64, GlobalRef>>, value: GlobalRef, name: &str) -> crate::utils::Result<u64> {
     static ID_COUNT: AtomicU64 = AtomicU64::new(0);
 
     let cache = &mut *cache.lock().expect("Poisoned lock");
     let id = ID_COUNT.fetch_add(1, Ordering::Relaxed);
 
     cache.insert(id, value);
+
+    log::debug!("Inserted {name} id {id}");
+
     Ok(id)
 }
 

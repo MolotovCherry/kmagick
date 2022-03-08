@@ -25,7 +25,7 @@ use jni::{
 use jni::sys::{jint, jobjectArray, jsize, jboolean};
 use jni::objects::{JObject, JString};
 
-use log::{LevelFilter, debug};
+use log::LevelFilter;
 
 cfg_if::cfg_if! {
     if #[cfg(target_os="android")] {
@@ -101,7 +101,7 @@ impl Magick {
 
         magick_rust::magick_wand_genesis();
 
-        debug!("Magick::nativeInit() Initialized native environment");
+        log::debug!("Magick::nativeInit() Initialized native environment");
 
         Ok(())
     }
@@ -125,10 +125,11 @@ impl Magick {
     fn terminate(env: JNIEnv) -> utils::Result<()> {
         // Before terminating, clear cache and take all handles / drop mem, since all internal
         // references will become invalid afterwards. Last thing we need are UB and segfaults
+        log::debug!("Magick::terminate(): Clearing all wands");
         cache::clear(env)?;
 
         magick_rust::magick_wand_terminus();
-        debug!("Magick::terminate() Terminated environment");
+        log::debug!("Magick::terminate(): Terminated environment");
         Ok(())
     }
 
