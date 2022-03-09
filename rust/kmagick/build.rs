@@ -3,7 +3,8 @@ use winres;
 
 fn main() {
     let is_windows = env::var("CARGO_CFG_WINDOWS").is_ok();
-    if !is_windows {
+    // HOST must also be windows to run stamping tool
+    if !is_windows || !cfg!(windows) {
         return
     }
 
