@@ -2,6 +2,7 @@
 members = [
   "kmagick",
   "jni-macros",
+  "jni-proc-macros",
   "jni-tools"
 ]
 
