@@ -96,7 +96,7 @@ impl ParsedAttr {
             }
         } else {
             // special: not(target_os="foo") ; only for jtarget
-            inner = self.jtarget_ts;
+            inner.extend(self.jtarget_ts.clone());
         }
 
         inner
@@ -154,7 +154,7 @@ impl ParsedAttr {
         // parse into AttributeArgs
         let attrs: AttributeArgs = match syn::parse::Parser::parse(
             Punctuated::<NestedMeta, Token![,]>::parse_terminated,
-            *attrs,
+            attrs.clone(),
         ) {
             | Ok(it) => it.into_iter().collect(),
             | Err(e) => return Err(e),
@@ -186,7 +186,7 @@ impl ParsedAttr {
                             if name == "jtarget" {
                                 // not() is in the path segments
                                 if l.path.segments.len() == 1 {
-                                    let i = l.path.segments.first().unwrap().ident;
+                                    let i = &l.path.segments.first().unwrap().ident;
                                     if i != "not" {
                                         return Err(syn::Error::new(l.span(), r#"Only not(target_os="foo") is supported"#))
                                     }
@@ -199,9 +199,9 @@ impl ParsedAttr {
 
                                                     Meta::NameValue(n) => {
                                                         if n.path.segments.len() == 1 {
-                                                            name = n.path.segments.first().unwrap().ident;
-                                                            value = match n.lit {
-                                                                Lit::Str(s) => s,
+                                                            name = n.path.segments.first().unwrap().ident.clone();
+                                                            value = match &n.lit {
+                                                                Lit::Str(s) => s.clone(),
                                                                 n => return Err(syn::Error::new(n.span(), "Value must be a string"))
                                                             }
                                                         } else {
@@ -284,7 +284,7 @@ impl ParsedAttr {
         let mut ts = TokenStream::new();
 
         if self.name == "jtarget" {
-            let inner = self.jtarget_ts;
+            let inner = &self.jtarget_ts;
             ts.extend(
                 quote! {
                     #[cfg(#inner)]

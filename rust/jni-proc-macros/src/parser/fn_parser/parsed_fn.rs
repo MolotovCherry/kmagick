@@ -39,7 +39,7 @@ pub struct ParsedFn {
 impl ToTokens for ParsedFn {
     // return original function in tokens
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        match self.method {
+        match &self.method {
             MethodType::ImplItemMethod(m) => tokens.extend(m.to_token_stream()),
             MethodType::ItemFn(f) => tokens.extend(f.to_token_stream())
         }
@@ -49,7 +49,7 @@ impl ToTokens for ParsedFn {
 impl ParsedFn {
     /// returns None if annotated with jignore, it's a no-op
     pub fn parse_fn(input: &proc_macro::TokenStream) -> syn::Result<Option<Self>> {
-        let item_fn = syn::parse::<ItemFn>(*input)?;
+        let item_fn = syn::parse::<ItemFn>(input.clone())?;
         Self::parse(
             &item_fn,
             MethodType::ItemFn(item_fn)
@@ -155,7 +155,7 @@ impl ParsedFn {
             name,
             vis,
             attrs,
-            fn_args: fn_args.iter().map(|a| (a.0.0, a.0.1)).collect(),
+            fn_args: fn_args.iter().map(|a| (a.0.0.clone(), a.0.1)).collect(),
             binding_fn_args,
             self_is_mut,
             has_self,

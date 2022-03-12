@@ -20,7 +20,7 @@ impl ParsedImpl {
         // extract impl name
         let name = match *item_impl.self_ty {
             Type::Path(p) => {
-                p.path.segments.last().unwrap().ident
+                p.path.segments.last().unwrap().ident.clone()
             }
 
             n => return Err(syn::Error::new(n.span(), "Wrong impl type"))

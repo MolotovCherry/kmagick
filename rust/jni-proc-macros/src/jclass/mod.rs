@@ -1,2 +1,4 @@
 mod impl_generator;
-pub mod jclass;
+mod jclass;
+
+pub use jclass::*;

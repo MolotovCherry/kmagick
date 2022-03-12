@@ -1,13 +1,6 @@
-use proc_macro2::{Ident, TokenStream, TokenTree};
-use quote::{format_ident, quote, ToTokens};
-use rand::Rng;
-use syn::{Attribute, Block, FnArg, ImplItem, ItemImpl, Pat, PathArguments, ReturnType, Type};
-use syn::punctuated::Punctuated;
-use syn::token::Comma;
-
-use crate::{ParsedAttr, ParsedFn};
-
-
+use proc_macro2::{TokenStream, TokenTree};
+use quote::{format_ident, ToTokens};
+use syn::Attribute;
 
 
 pub fn java_fn_name(class: &str, fn_name: &str) -> TokenStream {
@@ -25,8 +18,6 @@ pub fn fix_class_path(class: &String, slashes: bool) -> String {
         class.replace(".", "/").replace("_", "/")
     }
 }
-
-
 
 pub fn get_set_take_attrs(attributes: &Vec<Attribute>) -> (Option<String>, Option<String>, Option<String>) {
     let mut jget_option = None;
