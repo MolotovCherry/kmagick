@@ -33,7 +33,7 @@ pub(super) fn attr_verifier(attrs: AttributeArgs, values: &HashMap<Ident, LitStr
             return Err(syn::Error::new(proc_macro2::Span::mixed_site(), format!("Attributes are required")))
         }
 
-        // validate all keys to make sure they're okay to use
+        // validate all keys to make sure they're allowed
         for key in values.keys() {
             let ks = &*key.to_string();
             if !allowed_args.0.contains(&ks) {
@@ -45,7 +45,15 @@ pub(super) fn attr_verifier(attrs: AttributeArgs, values: &HashMap<Ident, LitStr
                 )
             }
         }
+
+        // make sure all required args exist
+        let string_vec = values.keys().map(|f| &*f.to_string()).collect::<Vec<_>>();
+        for req in allowed_args.1 {
+            if !string_vec.contains(&req) {
+                return Err(syn::Error::new(proc_macro2::Span::mixed_site(), format!("Key {req} required")))
+            }
+        }
     }
-    
+
     Ok(())
 }

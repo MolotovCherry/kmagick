@@ -1,10 +1,11 @@
 use std::collections::HashSet;
 use proc_macro2::Ident;
 use syn::{PathArguments, ReturnType};
+use syn::spanned::Spanned;
 use super::super::ParsedAttr;
 
-/// Ok result is (return_ident, is_result, is_return)
-pub(super) fn parse_return(ret: &ReturnType, impl_name: Option<&Ident>, attrs: &HashSet<ParsedAttr>) -> syn::Result<(Option<String>, bool, bool)> {
+/// Ok result is (return_ident, is_result, is_return, ReturnType)
+pub(super) fn parse_return(ret: &ReturnType, impl_name: Option<&Ident>, attrs: &HashSet<ParsedAttr>) -> syn::Result<(Option<String>, bool, bool, ReturnType)> {
     let mut allowed_ret = vec![
         "jarray", "jboolean", "jbooleanArray", "jbyte", "jbyteArray",
         "jchar", "jcharArray", "jclass", "jdouble", "jdoubleArray",
@@ -37,6 +38,7 @@ pub(super) fn parse_return(ret: &ReturnType, impl_name: Option<&Ident>, attrs: &
     let mut inner_ty = None;
     let mut is_return = false;
     let mut is_result = false;
+    let mut raw_return = ReturnType::Default;
 
     match &ret {
         ReturnType::Type(_, ty) => {
@@ -51,6 +53,7 @@ pub(super) fn parse_return(ret: &ReturnType, impl_name: Option<&Ident>, attrs: &
                     // The last type on the segment stream, e.g. the JNIResult in `jni::JNIResult`
                     inner_ty = Some(&segment.ident);
                     is_return = true;
+                    raw_return = ReturnType::Type(syn::Token![->](ty.span()), Box::new(ty.clone()));
 
                     if is_jdestroy {
                         return Err(syn::Error::new_spanned(v, "Destroy method cannot have return type"))
@@ -154,6 +157,7 @@ pub(super) fn parse_return(ret: &ReturnType, impl_name: Option<&Ident>, attrs: &
                         PathArguments::None => {
                             // leave inner_ty at default
                             is_result = false;
+                            raw_return = ReturnType::Default;
                         }
 
                         //
@@ -179,6 +183,7 @@ pub(super) fn parse_return(ret: &ReturnType, impl_name: Option<&Ident>, attrs: &
                         inner_ty = None;
                         is_return = false;
                         is_result = false;
+                        raw_return = ReturnType::Default;
                     }
                     return Err(syn::Error::new_spanned(ty, "Must be an empty ok () type"))
                 }
@@ -206,9 +211,10 @@ pub(super) fn parse_return(ret: &ReturnType, impl_name: Option<&Ident>, attrs: &
                 inner_ty = None;
                 is_return = false;
                 is_result = false;
+                raw_return = ReturnType::Default;
             }
         }
     }
 
-    Ok((inner_ty.map(|f| f.to_string()), is_result, is_return))
+    Ok((inner_ty.map(|f| f.to_string()), is_result, is_return, raw_return))
 }

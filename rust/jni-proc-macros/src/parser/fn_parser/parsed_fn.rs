@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{quote, ToTokens};
-use syn::{ImplItemMethod, ItemFn, Visibility};
+use syn::{ImplItemMethod, ItemFn, ReturnType, Visibility};
 use crate::parser::{AttrGet, GenericFn, ParsedAttr};
 use crate::parser::fn_parser::fn_parser::fn_arg_parser;
 use crate::parser::fn_parser::validate_args::validate_types;
@@ -33,7 +33,9 @@ pub struct ParsedFn {
     pub is_returning: bool,
     result_type: String,
     pub null_ret_type: TokenStream,
-    method: MethodType
+    method: MethodType,
+    /// the raw returntype of the function
+    pub ret_type: ReturnType
 }
 
 impl ToTokens for ParsedFn {
@@ -141,7 +143,7 @@ impl ParsedFn {
         //
         // Return type processing
         //
-        let (result_type, is_result, is_returning) = parse_return(item_fn.output(), Some(&name), &attrs)?;
+        let (result_type, is_result, is_returning, raw_return) = parse_return(item_fn.output(), Some(&name), &attrs)?;
         let result_type = result_type.unwrap_or("".to_string());
         let null_ret_type = Self::get_null_ret_type(&result_type);
         //  End return type processing
@@ -165,7 +167,8 @@ impl ParsedFn {
             is_result,
             is_returning,
             null_ret_type,
-            method
+            method,
+            ret_type: raw_return
         }))
     }
 

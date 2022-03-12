@@ -21,11 +21,16 @@ pub fn jmethod_internal(attr: TokenStream, item: TokenStream) -> TokenStream {
         target.extend(f.to_cfg_tokens());
     });
 
-    // cls is required
     // this is already verified, so unwrap is ok
-    let java_fn = utils::java_fn_name(&attrs.get("cls").expect("cls key required").value(), &item_fn.name());
+    let java_fn = utils::java_fn_name(&attrs.get("cls").unwrap().value(), &item_fn.name());
+    let exc = attrs.get("exc").unwrap();
 
-    let exc = attrs.get("exc").expect("exc key required");
+    let fn_name_str = item_fn.name();
+    let fn_name = item_fn.name;
+
+    let caller_args = item_fn.get_calling_args();
+    let binding_args = item_fn.get_binding_args();
+    let java_return = item_fn.ret_type;
 
     let res_binding = if item_fn.is_result {
         quote! {
@@ -69,7 +74,7 @@ pub fn jmethod_internal(attr: TokenStream, item: TokenStream) -> TokenStream {
             match c_res {
                 Ok(#v_or_underscore) => #v_or_unit,
                 Err(e) => {
-                    let msg = format!("`{}` threw an exception : {}", #name_str, e);
+                    let msg = format!("`{}` threw an exception : {}", #fn_name_str, e);
                     log::error!("{}", msg);
                     env.throw_new(#exc, msg).ok();
 
@@ -86,9 +91,9 @@ pub fn jmethod_internal(attr: TokenStream, item: TokenStream) -> TokenStream {
 
         #target
         #[no_mangle]
-        pub extern "system" fn #java_fn(env: jni::JNIEnv #fn_inputs) #java_return {
+        pub extern "system" fn #java_fn(#binding_args) #java_return {
             let p_res = std::panic::catch_unwind(|| {
-                #res_binding #real_fn_name(#fn_call)#res_semicolon
+                #res_binding #fn_name(#caller_args)#res_semicolon
 
                 #match_res
             });
@@ -96,7 +101,7 @@ pub fn jmethod_internal(attr: TokenStream, item: TokenStream) -> TokenStream {
             match p_res {
                 Ok(#v_or_underscore) => #v_or_unit,
                 Err(e) => {
-                    let msg = &format!("`{}()` panicked", #name_str);
+                    let msg = &format!("`{}()` panicked", #fn_name_str);
                     log::error!("{}", msg);
                     env.throw_new("java/lang/RuntimeException", msg).ok();
 
@@ -106,5 +111,5 @@ pub fn jmethod_internal(attr: TokenStream, item: TokenStream) -> TokenStream {
         }
     };
 
-    new_tokens
+    new_tokens.into()
 }
