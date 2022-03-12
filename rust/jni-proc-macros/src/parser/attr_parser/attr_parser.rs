@@ -4,9 +4,10 @@ use std::hash::{Hash, Hasher};
 
 use proc_macro2::{Ident, TokenStream};
 use quote::{quote, ToTokens};
-use syn::{Attribute, AttributeArgs, Lit, LitStr, Meta, NestedMeta, Token};
+use syn::{Attribute, AttributeArgs, LitStr, NestedMeta, Token};
 use syn::punctuated::Punctuated;
-use syn::spanned::Spanned;
+use crate::parser::attr_parser::attr_processor::process_attrs;
+use crate::parser::attr_parser::attr_verifier::attr_verifier;
 
 
 pub struct ParsedAttr {
@@ -140,7 +141,7 @@ impl ParsedAttr {
         self.name.to_string()
     }
 
-    pub(super) fn parse_attribute(name: &Ident, attrs: &Attribute) -> syn::Result<Self> {
+    pub(crate) fn parse_attribute(name: &Ident, attrs: &Attribute) -> syn::Result<Self> {
         // sometimes a #[name] may include parens #[name()] or #[name(value="target")].
         // That is to say, the tokenstream is () or (value="target").
         // This only happens with other attributes, not the main attributes passed directly into the proc macro fn.
@@ -160,117 +161,17 @@ impl ParsedAttr {
             | Err(e) => return Err(e),
         };
 
-
+        //
+        // Process attrs
+        //
         let mut values = HashMap::new();
-
         let mut jtarget_ts = TokenStream::new();
-        for attr in attrs {
-            let value;
-            let name;
-
-            match attr {
-                // only accept a named argument
-                NestedMeta::Meta(m) => {
-                    match m {
-                        Meta::NameValue(nv) => {
-                            name = nv.path.segments.last().unwrap().ident.clone();
-
-                            match nv.lit {
-                                Lit::Str(s) => value = s,
-                                n => return Err(syn::Error::new(n.span(), "Value must be a string"))
-                            }
-                        }
-
-                        // for jtarget, not(target_os="foo")
-                        Meta::List(l) => {
-                            if name == "jtarget" {
-                                // not() is in the path segments
-                                if l.path.segments.len() == 1 {
-                                    let i = &l.path.segments.first().unwrap().ident;
-                                    if i != "not" {
-                                        return Err(syn::Error::new(l.span(), r#"Only not(target_os="foo") is supported"#))
-                                    }
-
-                                    if l.nested.len() == 1 {
-                                        match l.nested.first().unwrap() {
-                                            NestedMeta::Meta(m) => {
-                                                match m {
-                                                    _ => return Err(syn::Error::new(l.span(), r#"Only not(target_os="foo") is supported"#)),
-
-                                                    Meta::NameValue(n) => {
-                                                        if n.path.segments.len() == 1 {
-                                                            name = n.path.segments.first().unwrap().ident.clone();
-                                                            value = match &n.lit {
-                                                                Lit::Str(s) => s.clone(),
-                                                                n => return Err(syn::Error::new(n.span(), "Value must be a string"))
-                                                            }
-                                                        } else {
-                                                            return Err(syn::Error::new(l.span(), r#"Only not(target_os="foo") is supported"#))
-                                                        }
-                                                    }
-                                                }
-                                            }
-
-                                            _ => return Err(syn::Error::new(l.span(), r#"Only not(target_os="foo") is supported"#))
-                                        }
-                                    } else {
-                                        return Err(syn::Error::new(l.span(), r#"Only not(target_os="foo") is supported"#))
-                                    }
-
-                                    jtarget_ts = quote! {
-                                        not(target_os=#value)
-                                    };
-                                } else {
-                                    return Err(syn::Error::new(l.span(), r#"Only not(target_os="foo") is supported"#))
-                                }
-                            } else {
-                                // except for jtarget(not(target_os="foo")), all other possible values are name="value"
-                                return Err(syn::Error::new(l.span(), r#"Format not in name="value" syntax"#))
-                            }
-                        }
-
-                        p => return Err(syn::Error::new(p.span(), r#"Format not in name="value" syntax"#))
-                    }
-                }
-
-                // refuse direct literals with no keys
-                NestedMeta::Lit(l) => return Err(syn::Error::new(l.span(), r#"Format not in name="value" syntax"#))
-            }
-
-            values.insert(name, value);
-        }
+        process_attrs(&mut values, &mut jtarget_ts, &attrs)?;
 
         //
         // validate correct arguments were passed to attr
         //
-        let allowed_args = match &*name.to_string() {
-            "jclass" | "jmethod" => vec!["cls", "exc", "pkg"],
-            "jtarget" => vec!["target_os"],
-            "jname" => vec!["name"],
-            _ => vec![]
-        };
-
-        if !allowed_args.is_empty() {
-            if attrs.is_empty() {
-                return Err(syn::Error::new(proc_macro2::Span::mixed_site(), format!("Attributes are required")))
-            }
-
-            // validate all keys to make sure they're okay to use
-            for key in values.keys() {
-                let ks = &*key.to_string();
-                if !allowed_args.contains(&ks) {
-                    return Err(
-                        syn::Error::new(
-                            ks.span(),
-                            format!("Invalid key; valid options are: {}", allowed_args.join(", "))
-                        )
-                    )
-                }
-            }
-        }
-        //
-        //
-        //
+        attr_verifier(attrs, &values, &*name.to_string())?;
 
         Ok(Self {
             name: name.clone(),
