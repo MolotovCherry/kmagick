@@ -15,7 +15,10 @@ enum MethodType {
 }
 
 pub struct ParsedFn {
-    pub name: Ident,
+    /// name to use in generated function
+    pub bind_name: Ident,
+    /// original function call name
+    pub orig_name: Ident,
     pub vis: Visibility,
     pub attrs: HashSet<ParsedAttr>,
     /// these args are from the actual fn. we must adhere to sending these exact one's over
@@ -54,19 +57,21 @@ impl ParsedFn {
         let item_fn = syn::parse::<ItemFn>(input.clone())?;
         Self::parse(
             &item_fn,
-            MethodType::ItemFn(item_fn)
+            MethodType::ItemFn(item_fn),
+            None
         )
     }
 
-    pub fn parse_impl_fn(input: ImplItemMethod) -> syn::Result<Option<Self>> {
+    pub fn parse_impl_fn(input: ImplItemMethod, impl_name: Ident) -> syn::Result<Option<Self>> {
         Self::parse(
             &input,
-            MethodType::ImplItemMethod(input)
+            MethodType::ImplItemMethod(input),
+            Some(impl_name)
         )
     }
 
     /// returns None if annotated with jignore, it's a no-op
-    fn parse<T: GenericFn>(item_fn: &T, method: MethodType) -> syn::Result<Option<Self>> {
+    fn parse<T: GenericFn>(item_fn: &T, method: MethodType, impl_name: Option<Ident>) -> syn::Result<Option<Self>> {
         let mut attrs: HashSet<ParsedAttr> = HashSet::new();
         for attr in item_fn.attrs() {
             attrs.insert(
@@ -80,13 +85,13 @@ impl ParsedFn {
         // return None if this is jignore
         let mut is_static = None;
         // handle jname attribute for renaming fn
-        let mut name = None;
+        let mut bind_name = None;
         if attrs.contains("jignore") {
             return Ok(None)
         } else if attrs.contains("jstatic") {
             is_static = Some(true);
         } else if attrs.contains("jname") {
-            name = Some(
+            bind_name = Some(
                 Ident::new(
                     &*attrs.get_attr_key_s("jname", "name").unwrap(),
                     item_fn.sig().ident.span()
@@ -95,11 +100,13 @@ impl ParsedFn {
         }
 
         // use normal name if jname is missing
-        if let None = name {
-            name = Some(item_fn.sig().ident.clone());
+        if let None = bind_name {
+            bind_name = Some(item_fn.sig().ident.clone());
         }
         // shadow name since it will always be Some()
-        let name = name.unwrap();
+        let bind_name = bind_name.unwrap();
+        //  remember original name of fn for calling
+        let orig_name = item_fn.sig().ident.clone();
 
         //
         // process args
@@ -143,7 +150,7 @@ impl ParsedFn {
         //
         // Return type processing
         //
-        let (result_type, is_result, is_returning, raw_return) = parse_return(item_fn.output(), Some(&name), &attrs)?;
+        let (result_type, is_result, is_returning, raw_return) = parse_return(item_fn.output(), impl_name, &attrs)?;
         let result_type = result_type.unwrap_or("".to_string());
         let null_ret_type = Self::get_null_ret_type(&result_type);
         //  End return type processing
@@ -154,7 +161,8 @@ impl ParsedFn {
         let is_empty = item_fn.block().stmts.is_empty();
 
         Ok(Some(Self {
-            name,
+            bind_name,
+            orig_name,
             vis,
             attrs,
             fn_args: fn_args.iter().map(|a| (a.0.0.clone(), a.0.1)).collect(),
@@ -272,10 +280,6 @@ impl ParsedFn {
     /// check if function is name
     pub fn is_name(&self) -> bool {
         self.attrs.contains("jname")
-    }
-
-    pub fn name(&self) -> String {
-        self.name.to_string()
     }
 
     fn get_null_ret_type(ret_type: &str) -> TokenStream {

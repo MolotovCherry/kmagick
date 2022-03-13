@@ -5,7 +5,7 @@ use syn::spanned::Spanned;
 use super::super::ParsedAttr;
 
 /// Ok result is (return_ident, is_result, is_return, ReturnType)
-pub(super) fn parse_return(ret: &ReturnType, impl_name: Option<&Ident>, attrs: &HashSet<ParsedAttr>) -> syn::Result<(Option<String>, bool, bool, ReturnType)> {
+pub(super) fn parse_return(ret: &ReturnType, impl_name: Option<Ident>, attrs: &HashSet<ParsedAttr>) -> syn::Result<(Option<String>, bool, bool, ReturnType)> {
     let mut allowed_ret = vec![
         "jarray", "jboolean", "jbooleanArray", "jbyte", "jbyteArray",
         "jchar", "jcharArray", "jclass", "jdouble", "jdoubleArray",

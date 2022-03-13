@@ -15,7 +15,7 @@ pub fn jmethod_internal(attr: TokenStream, item: TokenStream) -> TokenStream {
         Some(v) => v
     };
 
-    let attrs = compile_err!(ParsedAttr::parse(&item_fn.name, &attr));
+    let attrs = compile_err!(ParsedAttr::parse(&item_fn.bind_name, &attr));
 
     // if jtarget tag exists, make a matching #[cfg()] tokenstream for later
     let mut target = proc_macro2::TokenStream::new();
@@ -24,12 +24,12 @@ pub fn jmethod_internal(attr: TokenStream, item: TokenStream) -> TokenStream {
     });
 
     // cls is required
-    let java_fn = utils::java_fn_name(&attrs.get("cls").unwrap().value(), &item_fn.name());
+    let java_fn = utils::java_fn_name(&attrs.get("cls").unwrap().value(), &item_fn.bind_name.to_string());
     // default if not specified is java lang runtime exception
     let exc = attrs.get("exc").unwrap_or(&LitStr::new("java/lang/RuntimeException", Span::mixed_site()));
 
-    let fn_name_str = item_fn.name();
-    let fn_name = item_fn.name;
+    let fn_name_str = item_fn.orig_name.to_string();
+    let fn_name = item_fn.orig_name;
 
     let caller_args = item_fn.get_calling_args();
     let binding_args = item_fn.get_binding_args();
