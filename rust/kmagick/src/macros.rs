@@ -69,8 +69,9 @@ macro_rules! wand_wrapper {
                     }
                 }
 
-                fn clearException(&mut self) ->jni_tools::JNIResult<()> {
-                    Ok(self.clear_exception()?)
+                fn clearException(&mut self) -> jni_tools::JNIResult<()> {
+                    let res = self.clear_exception().map_err(|f| f.to_string())?;
+                    Ok(res)
                 }
 
                 #[jni_tools::jname(name="nativeGetExceptionType")]
@@ -514,7 +515,7 @@ macro_rules! get_set_wand {
                         Ok(n_obj.into_inner())
                     }
 
-                    fn $set(&mut self, env: jni::JNIEnv, _: jni::objects::JObject, wand: jni::objects::JObject) -> jni_tools::JNIResult<()>{
+                    fn $set(&mut self, env: jni::JNIEnv, _: jni::objects::JObject, wand: jni::objects::JObject) -> jni_tools::JNIResult<()> {
                         use jni_tools::Handle;
                         let r_obj = env.get_handle::<crate::$ty>(wand)?;
                         let arg =  &r_obj.instance;
@@ -536,7 +537,7 @@ macro_rules! magick_enum_int_conversion {
         impl EnumIntConversion for magick_rust::$name {
             type Output = magick_rust::$name;
 
-            fn try_from_int(v: i32) -> jni_tools::JNIResult<magick_rust::$name> {
+            fn try_from_int(v: i32) -> crate::utils::Result<magick_rust::$name> {
                 match v {
                     $(x if x == magick_rust::$name::$vname as i32 => Ok(magick_rust::$name::$vname),)*
                     _ => crate::utils::runtime_exception(concat!(stringify!($name), " failed enum to int conversion")),

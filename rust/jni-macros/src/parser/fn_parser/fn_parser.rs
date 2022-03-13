@@ -1,3 +1,4 @@
+use proc_macro2::Ident;
 use proc_macro2::TokenStream;
 use quote::ToTokens;
 use rand::Rng;
@@ -8,7 +9,7 @@ use syn::spanned::Spanned;
 const CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 /// (((name, name_span), (ty, ty_span)), has_self, self_is_mut)
-pub(super) fn fn_arg_parser(inputs: Vec<FnArg>) -> syn::Result<(Vec<(TokenStream, TokenStream)>, bool, bool)> {
+pub(super) fn fn_arg_parser(inputs: Vec<FnArg>) -> syn::Result<(Vec<(TokenStream, TokenStream, TokenStream)>, bool, bool)> {
     let mut fn_args = vec![];
     let mut self_is_mut = false;
     let mut has_self = false;
@@ -22,7 +23,7 @@ pub(super) fn fn_arg_parser(inputs: Vec<FnArg>) -> syn::Result<(Vec<(TokenStream
 
             // normal arg
             FnArg::Typed(t) => {
-                let (name, ty);
+                let (name, ty, end_type);
 
                 match *t.pat {
                     Pat::Ident(i) => {
@@ -31,13 +32,15 @@ pub(super) fn fn_arg_parser(inputs: Vec<FnArg>) -> syn::Result<(Vec<(TokenStream
 
                     // when encountering an _ arg, we need a real arg name to send it in the generated fn
                     // so generate a random id for the arg
-                    Pat::Wild(_) => {
-                        name = (0..10)
+                    Pat::Wild(w) => {
+                        let res = (0..10)
                             .map(|_| {
                                 let idx = rand::thread_rng().gen_range(0..CHARSET.len());
                                 CHARSET[idx] as char
                             })
-                            .collect::<String>().to_token_stream();
+                            .collect::<String>();
+
+                        name = Ident::new(&*res, w.span()).to_token_stream();
                     }
 
                     n => return Err(syn::Error::new(n.span(), "Invalid arg name"))
@@ -45,7 +48,8 @@ pub(super) fn fn_arg_parser(inputs: Vec<FnArg>) -> syn::Result<(Vec<(TokenStream
 
                 match *t.ty {
                     Type::Path(p) => {
-                        ty = p.path.segments.last().unwrap().to_token_stream();
+                        ty = p.path.segments.to_token_stream();
+                        end_type = p.path.segments.last().unwrap().to_token_stream();
                     }
 
                     t => return Err(syn::Error::new(t.span(), "Invalid arg type"))
@@ -54,7 +58,7 @@ pub(super) fn fn_arg_parser(inputs: Vec<FnArg>) -> syn::Result<(Vec<(TokenStream
                 // (arg name, arg name span),
                 // (arg type, arg type span)
                 fn_args.push(
-                    (name, ty)
+                    (name, ty, end_type)
                 );
             }
         }

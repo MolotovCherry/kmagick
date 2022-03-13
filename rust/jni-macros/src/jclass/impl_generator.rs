@@ -1,14 +1,16 @@
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use syn::LitStr;
-use crate::parser::ParsedImpl;
 
+use crate::parser::ParsedImpl;
 
 pub(super) fn generate_impl_functions(
     item_impl: ParsedImpl,
     exc: LitStr
 ) -> syn::Result<Vec<TokenStream>> {
     let mut funcs: Vec<TokenStream> = vec![];
+
+    let impl_name = item_impl.name;
 
     for _fn in item_impl.functions {
         let mut target = TokenStream::new();
@@ -17,43 +19,33 @@ pub(super) fn generate_impl_functions(
         });
 
         // jget set take
-        let mut get = TokenStream::new();
+        let mut get = _fn.obj_name.clone();
         if _fn.attrs.contains("jget") {
             _fn.call_attr("jget", |f| {
                 let tk = f.get("from").unwrap().value().to_token_stream();
-                let tk = syn::parse2::<TokenStream>(tk).unwrap();
-                get.extend(tk);
+                get = tk;
             });
-        } else {
-            get.extend(quote! { obj });
         }
 
-        let mut take = TokenStream::new();
+        let mut take = _fn.obj_name.clone();
         if _fn.attrs.contains("jtake") {
             _fn.call_attr("jtake", |f| {
                 let tk = f.get("from").unwrap().value().to_token_stream();
-                let tk = syn::parse2::<TokenStream>(tk).unwrap();
-                take.extend(tk);
+                take = tk;
             });
-        } else {
-            take.extend(quote! { obj });
         }
 
-        let mut set = TokenStream::new();
+        let mut set = _fn.obj_name.clone();
         if _fn.attrs.contains("jset") {
             _fn.call_attr("jset", |f| {
                 let tk = f.get("to").unwrap().value().to_token_stream();
-                let tk = syn::parse2::<TokenStream>(tk).unwrap();
-                set.extend(tk);
+                set = tk;
             });
-        } else {
-            set.extend(quote! { obj });
         }
 
         let call_args = _fn.calling_fn_args;
         let binding_args = _fn.binding_fn_args;
         let fn_name = _fn.orig_name;
-        let impl_name = _fn.bind_name;
         let empty_fn = _fn.is_empty;
         let attrs = _fn.attrs;
         let ret_type = _fn.ret_type;
@@ -61,10 +53,9 @@ pub(super) fn generate_impl_functions(
         let fn_is_mut = _fn.self_is_mut;
         let is_returning = _fn.is_returning;
         let java_name = _fn.java_binding_fn_name;
+        let env = _fn.env_name;
 
-        let impl_name_str = item_impl.name.to_string();
-
-        let diag = format!("{}::{}()", impl_name_str, fn_name);
+        let diag = format!("{}::{}()", impl_name, fn_name);
 
         //
         // special changing syntax
@@ -102,7 +93,7 @@ pub(super) fn generate_impl_functions(
                         let msg = format!("`{}` threw an exception : {}", #diag, e.to_string());
                         log::error!("{}", msg);
                         log::debug!("Error details: {:?}", e);
-                        env.throw_new(#exc, msg).ok();
+                        #env.throw_new(#exc, msg).ok();
 
                         #null_ret
                     }
@@ -138,7 +129,7 @@ pub(super) fn generate_impl_functions(
                             let msg = format!("Failed to create new obj for `{}` : {}", #diag, e.to_string());
                             log::error!("{}", msg);
                             log::debug!("Error details: {:?}", e);
-                            env.throw_new(#exc, msg).ok();
+                            #env.throw_new(#exc, msg).ok();
                             return;
                         }
                     };
@@ -157,7 +148,7 @@ pub(super) fn generate_impl_functions(
 
                     let p_res = std::panic::catch_unwind(|| {
                         #mat_res
-                        let res = env.set_handle(#set, r_obj);
+                        let res = #env.set_handle(#set, r_obj);
 
                         match res {
                             Ok(_) => (),
@@ -165,7 +156,7 @@ pub(super) fn generate_impl_functions(
                                 let msg = format!("Failed to set handle for `{}` : {}", #diag, e.to_string());
                                 log::error!("{}", msg);
                                 log::debug!("Error details: {:?}", e);
-                                env.throw_new(#exc, msg).ok();
+                                #env.throw_new(#exc, msg).ok();
                             }
                         }
                     });
@@ -175,7 +166,7 @@ pub(super) fn generate_impl_functions(
                         Err(e) => {
                             let msg = &format!("`{}` panicked", #diag);
                             log::error!("{}", msg);
-                            env.throw_new("java/lang/RuntimeException", msg).ok();
+                            #env.throw_new("java/lang/RuntimeException", msg).ok();
                         }
                     }
                 }
@@ -197,7 +188,7 @@ pub(super) fn generate_impl_functions(
                         Err(e) => {
                             let msg = &format!("`{}` panicked", #diag);
                             log::error!("{}", msg);
-                            env.throw_new("java/lang/RuntimeException", msg).ok();
+                            #env.throw_new("java/lang/RuntimeException", msg).ok();
 
                             #null_ret
                         }
@@ -242,7 +233,7 @@ pub(super) fn generate_impl_functions(
                     use jni_tools::Handle;
 
                     let p_res = std::panic::catch_unwind(|| {
-                        let res = env.clear_handle::<#impl_name>(#take);
+                        let res = #env.clear_handle::<#impl_name>(#take);
 
                         #fn_call_res_binding match res {
                             Ok(v) => {
@@ -261,7 +252,7 @@ pub(super) fn generate_impl_functions(
                                 let msg = format!("Failed to clear handle for `{}` : {}", #diag, e.to_string());
                                 log::error!("{}", msg);
                                 log::debug!("Error details: {:?}", e);
-                                env.throw_new(#exc, msg).ok();
+                                #env.throw_new(#exc, msg).ok();
                                 return;
                             }
                         }#fn_call_sem
@@ -274,7 +265,7 @@ pub(super) fn generate_impl_functions(
                         Err(e) => {
                             let msg = &format!("`{}` panicked", #diag);
                             log::error!("{}", msg);
-                            env.throw_new("java/lang/RuntimeException", msg).ok();
+                            #env.throw_new("java/lang/RuntimeException", msg).ok();
                         }
                     }
                 }
@@ -295,7 +286,7 @@ pub(super) fn generate_impl_functions(
                     use jni_tools::Handle;
 
                     let p_res = std::panic::catch_unwind(|| {
-                        let res = env.get_handle::<#impl_name>(#get);
+                        let res = #env.get_handle::<#impl_name>(#get);
 
                         let #mut_kwrd r_obj = match res {
                             Ok(v) => v,
@@ -303,7 +294,7 @@ pub(super) fn generate_impl_functions(
                                 let msg = format!("Failed to get handle for `{}` : {}", #diag, e.to_string());
                                 log::error!("{}", msg);
                                 log::debug!("Error details: {:?}", e);
-                                env.throw_new(#exc, msg).ok();
+                                #env.throw_new(#exc, msg).ok();
 
                                 return #null_ret;
                             }

@@ -40,7 +40,9 @@ pub struct ParsedFn {
     pub null_ret_type: TokenStream,
     method: MethodType,
     /// the raw returntype of the function
-    pub ret_type: ReturnType
+    pub ret_type: ReturnType,
+    pub env_name: TokenStream,
+    pub obj_name: TokenStream
 }
 
 impl ToTokens for ParsedFn {
@@ -128,7 +130,7 @@ impl ParsedFn {
         // validate input types are correct
         //
         validate_types(
-            fn_args.iter().map(|(_, ty)| ty).collect(),
+            fn_args.iter().map(|(_, _, ty)| ty).collect(),
             item_fn.is_impl(),
             is_static.is_some()
         )?;
@@ -139,7 +141,7 @@ impl ParsedFn {
         // the first ones MUST be env and jniobject/jclass (validated above))
 
         // (name, type)
-        let mut binding_fn_args: Vec<(TokenStream, TokenStream)> = fn_args.clone();
+        let mut binding_fn_args = fn_args.iter().map(|f| (f.0.clone(), f.1.clone())).collect();
         match fn_args.len() {
             // nothing, huh?
             0 => {
@@ -157,6 +159,10 @@ impl ParsedFn {
             _ => ()
         }
 
+        // extract names, cause we will need it
+        let env_name = binding_fn_args[0].0.clone();
+        let obj_name = binding_fn_args[1].0.clone();
+
         // final procesing for the args
         let binding_fn_args = Self::get_binding_args(binding_fn_args);
         let calling_fn_args = Self::get_calling_args(fn_args.iter().map(|f| &f.0).collect());
@@ -164,9 +170,9 @@ impl ParsedFn {
         //
         // Return type processing
         //
-        let (result_type, is_result, is_returning, raw_return) = parse_return(item_fn.output(), impl_name, &attrs)?;
-        let result_type = result_type.unwrap_or("".to_string());
-        let null_ret_type = Self::get_null_ret_type(&result_type, is_returning);
+        let (result_type, is_result, is_returning, raw_return) = parse_return(item_fn.output(), &impl_name, &attrs)?;
+        let result_type = result_type.unwrap_or(Ident::new("_", Span::mixed_site()));
+        let null_ret_type = Self::get_null_ret_type(&result_type.to_string(), result_type, is_returning);
         //  End return type processing
         //
 
@@ -182,7 +188,7 @@ impl ParsedFn {
             // get it from the cls attribute
             main_attr.get_s("cls").unwrap()
         } else {
-            main_attr.get_s("pkg").unwrap()
+            format!("{}_{}", main_attr.get_s("pkg").unwrap(), impl_name.unwrap())
         };
         let class = clss.replace("/", "_").replace(".", "_").replace("\"", "");
         let java_binding_fn_name = format_ident!("Java_{}_{}", class, bind_name).to_token_stream();
@@ -204,7 +210,9 @@ impl ParsedFn {
             is_returning,
             null_ret_type,
             method,
-            ret_type: raw_return
+            ret_type: raw_return,
+            env_name,
+            obj_name
         }))
     }
 
@@ -248,11 +256,11 @@ impl ParsedFn {
         tk
     }
 
-    fn get_null_ret_type(ret_type: &str, is_returning: bool) -> TokenStream {
+    // (null_mut, return type)
+    fn get_null_ret_type(ret_type: &str, ret_ident: Ident, is_returning: bool) -> TokenStream {
         let mut tks = TokenStream::new();
 
         if is_returning {
-            let res_type = ret_type.to_token_stream();
             match ret_type {
                 // object types
                 "jobject" | "jclass" | "jthrowable" | "jstring" | "jarray" |
@@ -265,11 +273,11 @@ impl ParsedFn {
                 // numeric types
                 "jint" | "jlong" | "jbyte" | "jboolean" | "jchar" | "jshort" |
                 "jsize" => {
-                    tks.extend(quote! { 0 as jni::sys::#res_type })
+                    tks.extend(quote! { 0 as jni::sys::#ret_ident })
                 },
 
                 "jfloat" | "jdouble" => {
-                    tks.extend(quote! { 0.0 as jni::sys::#res_type })
+                    tks.extend(quote! { 0.0 as jni::sys::#ret_ident })
                 },
 
                 _ => ()

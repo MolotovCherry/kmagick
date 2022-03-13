@@ -13,7 +13,9 @@ use thiserror::Error;
 pub mod macros;
 pub use jni_macros::*;
 
-pub type Result<T> = std::result::Result<T, Box<dyn Error>>;
+type Result<T> = std::result::Result<T, Box<dyn Error>>;
+
+// to be used with JNI Result types
 pub type JNIResult<T> = std::result::Result<T, Box<dyn Error>>;
 
 

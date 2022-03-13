@@ -1,13 +1,12 @@
-#![allow(unused_assignments)]
-
 use std::collections::HashSet;
-use proc_macro2::Ident;
+use proc_macro2::{Ident, TokenStream};
+use quote::{quote, ToTokens};
 use syn::{PathArguments, ReturnType};
 use syn::spanned::Spanned;
 use super::super::ParsedAttr;
 
 /// Ok result is (return_ident, is_result, is_return, ReturnType)
-pub(super) fn parse_return(ret: &ReturnType, impl_name: Option<Ident>, attrs: &HashSet<ParsedAttr>) -> syn::Result<(Option<String>, bool, bool, ReturnType)> {
+pub(super) fn parse_return(ret: &ReturnType, impl_name: &Option<Ident>, attrs: &HashSet<ParsedAttr>) -> syn::Result<(Option<Ident>, bool, bool, ReturnType)> {
     let mut allowed_ret = vec![
         "jarray", "jboolean", "jbooleanArray", "jbyte", "jbyteArray",
         "jchar", "jcharArray", "jclass", "jdouble", "jdoubleArray",
@@ -29,7 +28,7 @@ pub(super) fn parse_return(ret: &ReturnType, impl_name: Option<Ident>, attrs: &H
 
 
     // The only valid return types for jnew are Self and ident_name
-    let impl_name = impl_name.unwrap().to_string();
+    let impl_name = impl_name.clone().unwrap().to_string();
     if is_impl && is_jnew {
         allowed_ret = vec![
             &*impl_name,
@@ -39,9 +38,15 @@ pub(super) fn parse_return(ret: &ReturnType, impl_name: Option<Ident>, attrs: &H
     }
 
     // variables for later
+    #[allow(unused_assignments)]
     let mut inner_ty = None;
+    #[allow(unused_assignments)]
+    let mut full_ty= TokenStream::new();
+    #[allow(unused_assignments)]
     let mut is_return = false;
+    #[allow(unused_assignments)]
     let mut is_result = false;
+    #[allow(unused_assignments)]
     let mut raw_return = ReturnType::Default;
 
     match &ret {
@@ -56,6 +61,7 @@ pub(super) fn parse_return(ret: &ReturnType, impl_name: Option<Ident>, attrs: &H
 
                     // The last type on the segment stream, e.g. the JNIResult in `jni::JNIResult`
                     inner_ty = Some(&segment.ident);
+                    full_ty = v.path.segments.to_token_stream();
                     is_return = true;
                     raw_return = ReturnType::Type(syn::Token![->](ty.span()), Box::new(ty.clone()));
 
@@ -158,11 +164,15 @@ pub(super) fn parse_return(ret: &ReturnType, impl_name: Option<Ident>, attrs: &H
 
                         //
                         // no args ..?
+                        // this gets called for needing to return jfloat, jboolean, etc types
+                        // return type was actually missing
                         //
                         PathArguments::None => {
                             // leave inner_ty at default
-                            is_result = false;
-                            raw_return = ReturnType::Default;
+                            is_result = true;
+                            raw_return = syn::parse2::<ReturnType>(
+                                quote![-> #full_ty]
+                            )?;
                         }
 
                         //
@@ -222,5 +232,5 @@ pub(super) fn parse_return(ret: &ReturnType, impl_name: Option<Ident>, attrs: &H
         }
     }
 
-    Ok((inner_ty.map(|f| f.to_string()), is_result, is_return, raw_return))
+    Ok((inner_ty.map(|f| f.clone()), is_result, is_return, raw_return))
 }

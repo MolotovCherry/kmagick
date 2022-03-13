@@ -8,6 +8,7 @@ mod magick_wand;
 mod pixel_wand;
 mod utils;
 mod cache;
+mod errors;
 
 // make available at crate level for macros
 pub use drawing_wand::DrawingWand;
@@ -96,7 +97,7 @@ struct Magick;
 #[jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad.kmagick/MagickException")]
 impl Magick {
     #[jstatic]
-    fn nativeInit() -> Result<()> {
+    fn nativeInit() -> jni_tools::JNIResult<()> {
         init()?;
 
         magick_rust::magick_wand_genesis();
@@ -107,7 +108,7 @@ impl Magick {
     }
 
     #[jstatic]
-    fn magickQueryFonts(env: JNIEnv, _: JObject, pattern: JString) -> Result<jobjectArray> {
+    fn magickQueryFonts(env: JNIEnv, _: JObject, pattern: JString) -> jni_tools::JNIResult<jobjectArray> {
         let pat: String = env.get_jstring(pattern)?;
 
         let fonts = magick_rust::magick_query_fonts(&*pat)?;
@@ -122,7 +123,7 @@ impl Magick {
     }
 
     #[jstatic]
-    fn terminate(env: JNIEnv) -> utils::Result<()> {
+    fn terminate(env: JNIEnv) -> jni_tools::JNIResult<()> {
         // Before terminating, clear cache and take all handles / drop mem, since all internal
         // references will become invalid afterwards. Last thing we need are UB and segfaults
         log::debug!("Magick::terminate(): Clearing all wands");
