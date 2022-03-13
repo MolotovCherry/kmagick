@@ -262,13 +262,6 @@ dependencies = [
 name = "jni-macros"
 version = "0.1.0"
 dependencies = [
- "jni-proc-macros",
-]
-
-[[package]]
-name = "jni-proc-macros"
-version = "0.1.0"
-dependencies = [
  "proc-macro2",
  "quote",
  "rand",

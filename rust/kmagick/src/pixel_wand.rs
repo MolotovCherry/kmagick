@@ -1,11 +1,12 @@
 use jni::{JNIEnv, objects::{JObject, JValue}, sys::{jboolean, jdouble, jobject}};
+
 use jni_tools::jclass;
 
 wand_wrapper!(PixelWand);
 
 #[jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/PixelWandException")]
 impl PixelWand {
-    fn isSimilar(&self, env: JNIEnv, _: JObject, other: JObject, fuzz: jdouble) -> crate::utils::Result<jboolean> {
+    fn isSimilar(&self, env: JNIEnv, _: JObject, other: JObject, fuzz: jdouble) -> jni_tools::JNIResult<jboolean> {
         use jni_tools::Handle;
 
         let r_obj = env.get_handle::<PixelWand>(other)?;
@@ -21,7 +22,7 @@ impl PixelWand {
         Ok(res as jboolean)
     }
 
-    fn pixelGetHSL(&self, env:jni::JNIEnv) -> crate::utils::Result<jobject> {
+    fn pixelGetHSL(&self, env:jni::JNIEnv) -> jni_tools::JNIResult<jobject> {
         let res = self.get_hsl();
 
         let cls = env.find_class("com/cherryleafroad/kmagick/HSL")?;
@@ -36,7 +37,7 @@ impl PixelWand {
         Ok(n_obj.into_inner())
     }
 
-    fn pixelSetHSL(&self, env: JNIEnv, _: JObject, hsl: JObject) -> crate::utils::Result<()> {
+    fn pixelSetHSL(&self, env: JNIEnv, _: JObject, hsl: JObject) -> jni_tools::JNIResult<()> {
         let hue = env.get_field(hsl, "hue", "D")?.d()?;
         let saturation = env.get_field(hsl, "saturation", "D")?.d()?;
         let lightness = env.get_field(hsl, "lightness", "D")?.d()?;

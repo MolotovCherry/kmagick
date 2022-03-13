@@ -29,7 +29,7 @@ macro_rules! wand_wrapper {
             #[jni_tools::jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/" $wand "Exception")]
             impl $wand {
                 #[jni_tools::jnew]
-                pub fn new(env: jni::JNIEnv, obj: jni::objects::JObject) -> crate::utils::Result<Self> {
+                pub fn new(env: jni::JNIEnv, obj: jni::objects::JObject) -> jni_tools::JNIResult<Self> {
                     let cache = &*crate::cache::[<$wand:upper _CACHE>];
                     let id = crate::cache::insert(cache, env.new_global_ref(obj)?, stringify!($wand))?;
 
@@ -43,7 +43,7 @@ macro_rules! wand_wrapper {
 
                 // can't use the from trait since I need more params
                 #[jni_tools::jignore]
-                pub fn from_wand(env: jni::JNIEnv, obj: jni::objects::JObject, wand: magick_rust::$wand) -> crate::utils::Result<Self> {
+                pub fn from_wand(env: jni::JNIEnv, obj: jni::objects::JObject, wand: magick_rust::$wand) -> jni_tools::JNIResult<Self> {
                     // this should never fail, so if it does, panicking is probably just as well at this point
                     let cache = &*crate::cache::[<$wand:upper _CACHE>];
                     let id = crate::cache::insert(cache, env.new_global_ref(obj)?, stringify!($wand))?;
@@ -138,7 +138,7 @@ macro_rules! get_string {
             #[jni_tools::jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/" $wand "Exception")]
             impl $wand {
                 $(
-                    fn $get(&self, env: jni::JNIEnv) -> crate::utils::Result<jni::sys::jobject> {
+                    fn $get(&self, env: jni::JNIEnv) -> jni_tools::JNIResult<jni::sys::jobject> {
                         let res = match self.$m_get() {
                             Ok(v) => v,
                             Err(e) => {
@@ -168,7 +168,7 @@ macro_rules! set_string {
             #[jni_tools::jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/" $wand "Exception")]
             impl $wand {
                 $(
-                    fn $set(&mut self, env: jni::JNIEnv, _: jni::objects::JObject, arg: jni::objects::JString) -> crate::utils::Result<()> {
+                    fn $set(&mut self, env: jni::JNIEnv, _: jni::objects::JObject, arg: jni::objects::JString) -> jni_tools::JNIResult<()> {
                         use jni_tools::Utils;
                         let arg = env.get_jstring(arg)?;
                         Ok(self.$m_set(&*arg)?)
@@ -189,7 +189,7 @@ macro_rules! get_set_string {
             #[jni_tools::jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/" $wand "Exception")]
             impl $wand {
                 $(
-                    fn $get(&self, env: jni::JNIEnv) -> crate::utils::Result<jni::sys::jobject> {
+                    fn $get(&self, env: jni::JNIEnv) -> jni_tools::JNIResult<jni::sys::jobject> {
                         let res = match self.$m_get() {
                             Ok(v) => v,
                             Err(e) => {
@@ -204,7 +204,7 @@ macro_rules! get_set_string {
                         Ok(env.new_string(&*res)?.into_inner())
                     }
 
-                    fn $set(&mut self, env: jni::JNIEnv, _: jni::objects::JObject, arg: jni::objects::JString) -> crate::utils::Result<()> {
+                    fn $set(&mut self, env: jni::JNIEnv, _: jni::objects::JObject, arg: jni::objects::JString) -> jni_tools::JNIResult<()> {
                         use jni_tools::Utils;
                         let arg = env.get_jstring(arg)?;
                         Ok(self.$m_set(&*arg)?)
@@ -225,7 +225,7 @@ macro_rules! get_set_enum {
             #[jni_tools::jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/" $wand "Exception")]
             impl $wand {
                 $(
-                    fn $get(&self, env: jni::JNIEnv) -> crate::utils::Result<jni::sys::jobject> {
+                    fn $get(&self, env: jni::JNIEnv) -> jni_tools::JNIResult<jni::sys::jobject> {
                         cfg_if::cfg_if! {
                             if #[cfg(target_os="android")] {
                                 use std::convert::TryFrom;
@@ -264,7 +264,7 @@ macro_rules! get_set_enum {
 
                     #[cfg(target_os="android")]
                     #[jni_tools::jtarget(target_os="android")]
-                    fn $set(&mut self, _: jni::JNIEnv, _: jni::objects::JObject, arg: jni::sys::jint) -> crate::utils::Result<()> {
+                    fn $set(&mut self, _: jni::JNIEnv, _: jni::objects::JObject, arg: jni::sys::jint) -> jni_tools::JNIResult<()> {
                         use std::convert::TryFrom;
                         let arg = u32::try_from(arg)?;
 
@@ -288,7 +288,7 @@ macro_rules! get_set_enum_result {
             #[jni_tools::jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/" $wand "Exception")]
             impl $wand {
                 $(
-                    fn $get(&self, env: jni::JNIEnv) -> crate::utils::Result<jni::sys::jobject> {
+                    fn $get(&self, env: jni::JNIEnv) -> jni_tools::JNIResult<jni::sys::jobject> {
                         cfg_if::cfg_if! {
                             if #[cfg(target_os="android")] {
                                 use std::convert::TryFrom;
@@ -319,7 +319,7 @@ macro_rules! get_set_enum_result {
                         )?.l()?.into_inner())
                     }
 
-                    fn $set(&mut self, _: jni::JNIEnv, _: jni::objects::JObject, arg: jni::sys::jint) -> crate::utils::Result<()> {
+                    fn $set(&mut self, _: jni::JNIEnv, _: jni::objects::JObject, arg: jni::sys::jint) -> jni_tools::JNIResult<()> {
                         cfg_if::cfg_if! {
                             if #[cfg(target_os="android")] {
                                 use std::convert::TryFrom;
@@ -390,7 +390,7 @@ macro_rules! get_sized {
             #[jni_tools::jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/" $wand "Exception")]
             impl $wand {
                 $(
-                    fn $get(&self) -> crate::utils::Result<jni::sys::jlong> {
+                    fn $get(&self) -> jni_tools::JNIResult<jni::sys::jlong> {
                         use std::convert::TryFrom;
 
                         // i64 == jlong
@@ -414,7 +414,7 @@ macro_rules! get_set_sized {
             #[jni_tools::jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/" $wand "Exception")]
             impl $wand {
                 $(
-                    fn $get(&self) -> crate::utils::Result<jni::sys::jlong> {
+                    fn $get(&self) -> jni_tools::JNIResult<jni::sys::jlong> {
                         use std::convert::TryFrom;
 
                         // i64 == jlong
@@ -423,7 +423,7 @@ macro_rules! get_set_sized {
                         Ok(i64::try_from(self.$m_get())?)
                     }
 
-                    fn $set(&mut self, _: jni::JNIEnv, _: jni::objects::JObject, arg: jni::sys::jlong) -> crate::utils::Result<()> {
+                    fn $set(&mut self, _: jni::JNIEnv, _: jni::objects::JObject, arg: jni::sys::jlong) -> jni_tools::JNIResult<()> {
                         use std::convert::TryFrom;
 
                         // try from i64 -> isize/i32/i64 (will always work)
@@ -450,7 +450,7 @@ macro_rules! get_set_sized_result {
             #[jni_tools::jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/" $wand "Exception")]
             impl $wand {
                 $(
-                    fn $get(&self) -> crate::utils::Result<jni::sys::jlong> {
+                    fn $get(&self) -> jni_tools::JNIResult<jni::sys::jlong> {
                         use std::convert::TryFrom;
 
                         // i64 == jlong
@@ -459,7 +459,7 @@ macro_rules! get_set_sized_result {
                         Ok(i64::try_from(self.$m_get())?)
                     }
 
-                    fn $set(&mut self, _: jni::JNIEnv, _: jni::objects::JObject, arg: jni::sys::jlong) -> crate::utils::Result<()> {
+                    fn $set(&mut self, _: jni::JNIEnv, _: jni::objects::JObject, arg: jni::sys::jlong) -> jni_tools::JNIResult<()> {
                         use std::convert::TryFrom;
 
                         // try from i64 -> isize/i32/i64 (will always work)
@@ -483,7 +483,7 @@ macro_rules! get_set_wand {
             #[jni_tools::jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/" $wand "Exception")]
             impl $wand {
                 $(
-                    fn $get(&self, env: jni::JNIEnv, _: jni::objects::JObject) -> crate::utils::Result<jni::sys::jobject> {
+                    fn $get(&self, env: jni::JNIEnv, _: jni::objects::JObject) -> jni_tools::JNIResult<jni::sys::jobject> {
                         use jni_tools::Handle;
 
                         let res = self.$m_get();
@@ -514,7 +514,7 @@ macro_rules! get_set_wand {
                         Ok(n_obj.into_inner())
                     }
 
-                    fn $set(&mut self, env: jni::JNIEnv, _: jni::objects::JObject, wand: jni::objects::JObject) -> crate::utils::Result<()>{
+                    fn $set(&mut self, env: jni::JNIEnv, _: jni::objects::JObject, wand: jni::objects::JObject) -> jni_tools::JNIResult<()>{
                         use jni_tools::Handle;
                         let r_obj = env.get_handle::<crate::$ty>(wand)?;
                         let arg =  &r_obj.instance;
@@ -536,7 +536,7 @@ macro_rules! magick_enum_int_conversion {
         impl EnumIntConversion for magick_rust::$name {
             type Output = magick_rust::$name;
 
-            fn try_from_int(v: i32) -> crate::utils::Result<magick_rust::$name> {
+            fn try_from_int(v: i32) -> jni_tools::JNIResult<magick_rust::$name> {
                 match v {
                     $(x if x == magick_rust::$name::$vname as i32 => Ok(magick_rust::$name::$vname),)*
                     _ => crate::utils::runtime_exception(concat!(stringify!($name), " failed enum to int conversion")),
@@ -585,7 +585,7 @@ macro_rules! simple_call {
             #[jni_tools::jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/" $wand "Exception")]
             impl $wand {
                 $(
-                    fn $get(&self) -> crate::utils::Result<()> {
+                    fn $get(&self) -> jni_tools::JNIResult<()> {
                         Ok(self.$m_get()?)
                     }
                 )*

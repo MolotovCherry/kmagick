@@ -1,12 +1,15 @@
 use std::sync::atomic::{AtomicU64, Ordering};
-use lazy_static::lazy_static;
 use std::sync::Mutex;
-use jni::objects::GlobalRef;
-use jni::JNIEnv;
-use jni_tools::Handle;
+
 use fxhash::FxHashMap;
+use jni::JNIEnv;
+use jni::objects::GlobalRef;
+use lazy_static::lazy_static;
+
+use jni_tools::Handle;
+
 use crate::{
-    PixelWand, MagickWand, DrawingWand
+    DrawingWand, MagickWand, PixelWand
 };
 
 lazy_static! {
@@ -25,7 +28,7 @@ macro_rules! TakeObj {
     }}
 }
 
-pub fn clear(env: JNIEnv) -> crate::utils::Result<()> {
+pub fn clear(env: JNIEnv) -> crate::Result<()> {
     let pixel_cache = &mut *PIXELWAND_CACHE.lock()?;
     let magick_cache = &mut *MAGICKWAND_CACHE.lock()?;
     let drawing_cache = &mut *DRAWINGWAND_CACHE.lock()?;
@@ -47,7 +50,7 @@ pub fn clear(env: JNIEnv) -> crate::utils::Result<()> {
 // for an entire u64's worth, it is guaranteed to not have any collisions
 // the id will wraparound after that
 // TODO: doubt that'll ever be a problem, but if it is, make an issue report so it can be redesigned
-pub fn insert(cache: &Mutex<FxHashMap<u64, GlobalRef>>, value: GlobalRef, name: &str) -> crate::utils::Result<u64> {
+pub fn insert(cache: &Mutex<FxHashMap<u64, GlobalRef>>, value: GlobalRef, name: &str) -> crate::Result<u64> {
     static ID_COUNT: AtomicU64 = AtomicU64::new(0);
 
     let cache = &mut *cache.lock().expect("Poisoned lock");

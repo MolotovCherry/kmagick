@@ -14,6 +14,7 @@ pub mod macros;
 pub use jni_macros::*;
 
 pub type Result<T> = std::result::Result<T, Box<dyn Error>>;
+pub type JNIResult<T> = std::result::Result<T, Box<dyn Error>>;
 
 
 #[allow(non_snake_case)]
