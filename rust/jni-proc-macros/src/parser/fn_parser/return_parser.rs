@@ -1,3 +1,5 @@
+#![allow(unused_assignments)]
+
 use std::collections::HashSet;
 use proc_macro2::Ident;
 use syn::{PathArguments, ReturnType};
@@ -16,7 +18,7 @@ pub(super) fn parse_return(ret: &ReturnType, impl_name: Option<Ident>, attrs: &H
 
     let is_impl = impl_name.is_some();
     let impl_ident = if is_impl {
-        Some(impl_name.unwrap())
+        Some(impl_name.clone().unwrap().clone())
     } else {
         None
     };
@@ -25,10 +27,12 @@ pub(super) fn parse_return(ret: &ReturnType, impl_name: Option<Ident>, attrs: &H
     let is_jnew = attrs.contains("jnew");
     let is_jdestroy = attrs.contains("jdestroy");
 
+
     // The only valid return types for jnew are Self and ident_name
+    let impl_name = impl_name.unwrap().to_string();
     if is_impl && is_jnew {
         allowed_ret = vec![
-            &*impl_name.unwrap().to_string(),
+            &*impl_name,
             "Self",
             "JNIResult"
         ];

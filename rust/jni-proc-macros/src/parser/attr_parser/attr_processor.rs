@@ -4,7 +4,7 @@ use quote::quote;
 use syn::{AttributeArgs, Lit, LitStr, Meta, NestedMeta};
 use syn::spanned::Spanned;
 
-pub(super) fn process_attrs(values: &mut HashMap<Ident, LitStr>, jtarget_ts: &mut TokenStream, attrs: &AttributeArgs) -> syn::Result<()> {
+pub(super) fn process_attrs(values: &mut HashMap<Ident, LitStr>, jtarget_ts: &mut TokenStream, attrs: &AttributeArgs, attr_name: &Ident) -> syn::Result<()> {
     for attr in attrs {
         let value;
         let name;
@@ -24,7 +24,7 @@ pub(super) fn process_attrs(values: &mut HashMap<Ident, LitStr>, jtarget_ts: &mu
 
                     // for jtarget, not(target_os="foo")
                     Meta::List(l) => {
-                        if name == "jtarget" {
+                        if attr_name == "jtarget" {
                             // not() is in the path segments
                             if l.path.segments.len() == 1 {
                                 let i = &l.path.segments.first().unwrap().ident;
@@ -36,8 +36,6 @@ pub(super) fn process_attrs(values: &mut HashMap<Ident, LitStr>, jtarget_ts: &mu
                                     match l.nested.first().unwrap() {
                                         NestedMeta::Meta(m) => {
                                             match m {
-                                                _ => return Err(syn::Error::new(l.span(), r#"Only not(target_os="foo") is supported"#)),
-
                                                 Meta::NameValue(n) => {
                                                     if n.path.segments.len() == 1 {
                                                         name = n.path.segments.first().unwrap().ident.clone();
@@ -48,7 +46,9 @@ pub(super) fn process_attrs(values: &mut HashMap<Ident, LitStr>, jtarget_ts: &mu
                                                     } else {
                                                         return Err(syn::Error::new(l.span(), r#"Only not(target_os="foo") is supported"#))
                                                     }
-                                                }
+                                                },
+
+                                                _ => return Err(syn::Error::new(l.span(), r#"Only not(target_os="foo") is supported"#)),
                                             }
                                         }
 

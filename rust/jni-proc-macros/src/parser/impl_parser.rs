@@ -22,8 +22,9 @@ impl ToTokens for ParsedImpl {
 }
 
 impl ParsedImpl {
-    pub fn parse(input: proc_macro::TokenStream, attrs: proc_macro::TokenStream) -> syn::Result<Self> {
-        let item_impl = syn::parse::<ItemImpl>(input)?;
+    pub fn parse(input: &proc_macro::TokenStream, attrs: &proc_macro::TokenStream) -> syn::Result<Self> {
+        let item_impl = syn::parse::<ItemImpl>(input.clone())?;
+        let impl_clone = item_impl.clone();
 
         // extract impl name
         let name = match *item_impl.self_ty.clone() {
@@ -63,11 +64,7 @@ impl ParsedImpl {
             name,
             attrs,
             functions,
-            item_impl
+            item_impl: impl_clone
         })
-    }
-
-    pub fn has_attr(&self, name: &str) -> bool {
-        self.attrs.contains(name)
     }
 }

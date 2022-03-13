@@ -25,10 +25,11 @@ pub struct ParsedFn {
     pub attrs: HashSet<ParsedAttr>,
     /// these args are from the actual fn. we must adhere to sending these exact one's over
     /// (argname, argname_span)
-    pub fn_args: Vec<(TokenStream, Span)>,
+    pub fn_args: Vec<TokenStream>,
     /// these args are what we must use to generate the binding function's header
     /// (argname, type)
-    pub binding_fn_args: Vec<(TokenStream, TokenStream)>,
+    pub binding_fn_args: TokenStream,
+    pub calling_fn_args: TokenStream,
     pub self_is_mut: bool,
     pub has_self: bool,
     pub is_impl_fn: bool,
@@ -36,7 +37,6 @@ pub struct ParsedFn {
     /// return type is a result type or not?
     pub is_result: bool,
     pub is_returning: bool,
-    result_type: String,
     pub null_ret_type: TokenStream,
     method: MethodType,
     /// the raw returntype of the function
@@ -59,7 +59,7 @@ impl ParsedFn {
         let item_fn = syn::parse::<ItemFn>(input.clone())?;
         Self::parse(
             &item_fn,
-            MethodType::ItemFn(item_fn),
+            MethodType::ItemFn(item_fn.clone()),
             None,
             attrs
         )
@@ -68,7 +68,7 @@ impl ParsedFn {
     pub fn parse_impl_fn(input: ImplItemMethod, impl_name: Ident, attrs: &proc_macro::TokenStream) -> syn::Result<Option<Self>> {
         Self::parse(
             &input,
-            MethodType::ImplItemMethod(input),
+            MethodType::ImplItemMethod(input.clone()),
             Some(impl_name),
             attrs
         )
@@ -122,13 +122,13 @@ impl ParsedFn {
         //
         // process args
         //
-        let (fn_args, has_self, self_is_mut) = fn_arg_parser(item_fn.sig().inputs.into_iter().collect())?;
+        let (fn_args, has_self, self_is_mut) = fn_arg_parser(item_fn.sig().inputs.clone().into_iter().collect())?;
 
         //
         // validate input types are correct
         //
         validate_types(
-            fn_args.iter().map(|(_, (ty, _))| ty.clone()).collect(),
+            fn_args.iter().map(|(_, ty)| ty).collect(),
             item_fn.is_impl(),
             is_static.is_some()
         )?;
@@ -139,7 +139,7 @@ impl ParsedFn {
         // the first ones MUST be env and jniobject/jclass (validated above))
 
         // (name, type)
-        let mut binding_fn_args: Vec<(TokenStream, TokenStream)> = fn_args.iter().map(|((name, _), (ty, _))| (name.clone(), ty.clone())).collect();
+        let mut binding_fn_args: Vec<(TokenStream, TokenStream)> = fn_args.clone();
         match fn_args.len() {
             // nothing, huh?
             0 => {
@@ -157,6 +157,9 @@ impl ParsedFn {
             _ => ()
         }
 
+        // final procesing for the args
+        let binding_fn_args = Self::get_binding_args(binding_fn_args);
+        let calling_fn_args = Self::get_calling_args(fn_args.iter().map(|f| &f.0).collect());
 
         //
         // Return type processing
@@ -174,7 +177,7 @@ impl ParsedFn {
         // generate the official java binding name
         // TODO: unfortunately, this naming will not always hold true in jni, as it sometimes names things differently
         // there's potential for this to cause subtle bugs with jni methods seemingly "missing"
-        // some == impl, None = regular fn
+        //    cls can be on eit
         let clss = if main_attr.contains("cls") {
             // get it from the cls attribute
             main_attr.get_s("cls").unwrap()
@@ -190,13 +193,13 @@ impl ParsedFn {
             java_binding_fn_name,
             vis,
             attrs,
-            fn_args: fn_args.iter().map(|a| (a.0.0.clone(), a.0.1)).collect(),
+            fn_args: fn_args.iter().map(|f| f.0.clone()).collect(),
             binding_fn_args,
+            calling_fn_args,
             self_is_mut,
             has_self,
             is_impl_fn: item_fn.is_impl(),
             is_empty,
-            result_type,
             is_result,
             is_returning,
             null_ret_type,
@@ -205,7 +208,7 @@ impl ParsedFn {
         }))
     }
 
-    pub fn call_attr<F>(&self, name: &str, f: F)
+    pub fn call_attr<F>(&self, name: &str, mut f: F)
         where F: FnMut(&ParsedAttr)
     {
         if self.attrs.contains(name) {
@@ -215,13 +218,13 @@ impl ParsedFn {
 
     /// get the args for the generated jni binding function
     /// to fill the function header with
-    pub fn get_binding_args(&self) -> TokenStream {
+    fn get_binding_args(binding_fn_args: Vec<(TokenStream, TokenStream)>) -> TokenStream {
         let mut tk = TokenStream::new();
 
-        for (name, ty) in self.binding_fn_args {
+        for (name, ty) in binding_fn_args {
             tk.extend(
                 quote![
-                    #name: ty,
+                    #name: #ty,
                 ]
             );
         }
@@ -231,10 +234,10 @@ impl ParsedFn {
 
     /// get the args to call the internal function with
     /// these args may not always line up with the binding args
-    pub fn get_calling_args(&self) -> TokenStream {
+    fn get_calling_args(fn_args: Vec<&TokenStream>) -> TokenStream {
         let mut tk = TokenStream::new();
 
-        for (name, _) in self.fn_args {
+        for name in fn_args {
             tk.extend(
                 quote![
                     #name,
@@ -243,68 +246,6 @@ impl ParsedFn {
         }
 
         tk
-    }
-
-    pub fn is_empty_fn(&self) -> bool {
-        self.is_empty
-    }
-
-    pub fn is_impl_fn(&self) -> bool {
-        self.is_impl_fn
-    }
-
-    /// check if self is &self mut
-    pub fn is_mut(&self) -> bool {
-        self.self_is_mut
-    }
-
-    pub fn has_self(&self) -> bool {
-        self.has_self
-    }
-
-    /// check if function is static
-    pub fn is_static(&self) -> bool {
-        self.attrs.contains("jstatic")
-    }
-
-    /// check if function is ignore
-    pub fn is_ignore(&self) -> bool {
-        self.attrs.contains("jignore")
-    }
-
-    /// check if function is destroy
-    pub fn is_destroy(&self) -> bool {
-        self.attrs.contains("jdestroy")
-    }
-
-    /// check if function is new
-    pub fn is_new(&self) -> bool {
-        self.attrs.contains("jnew")
-    }
-
-    /// check if function is take
-    pub fn is_take(&self) -> bool {
-        self.attrs.contains("jtake")
-    }
-
-    /// check if function is set
-    pub fn is_set(&self) -> bool {
-        self.attrs.contains("jset")
-    }
-
-    /// check if function is get
-    pub fn is_get(&self) -> bool {
-        self.attrs.contains("jget")
-    }
-
-    /// check if function is target
-    pub fn is_target(&self) -> bool {
-        self.attrs.contains("jtarget")
-    }
-
-    /// check if function is name
-    pub fn is_name(&self) -> bool {
-        self.attrs.contains("jname")
     }
 
     fn get_null_ret_type(ret_type: &str, is_returning: bool) -> TokenStream {

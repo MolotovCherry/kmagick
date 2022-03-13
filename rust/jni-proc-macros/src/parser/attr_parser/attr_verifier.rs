@@ -25,6 +25,14 @@ pub(super) fn attr_verifier(attrs: AttributeArgs, values: &HashMap<Ident, LitStr
             vec!["name"],
             vec!["name"]
         ),
+        "jget" | "jtake" => (
+            vec!["from"],
+            vec!["from"]
+        ),
+        "jset" => (
+            vec!["to"],
+            vec!["to"]
+        ),
         _ => (vec![], vec![])
     };
 
@@ -47,9 +55,9 @@ pub(super) fn attr_verifier(attrs: AttributeArgs, values: &HashMap<Ident, LitStr
         }
 
         // make sure all required args exist
-        let string_vec = values.keys().map(|f| &*f.to_string()).collect::<Vec<_>>();
+        let string_vec = values.keys().map(|f| f.to_string()).collect::<Vec<_>>();
         for req in allowed_args.1 {
-            if !string_vec.contains(&req) {
+            if !string_vec.contains(&String::from(req)) {
                 return Err(syn::Error::new(proc_macro2::Span::mixed_site(), format!("Key {req} required")))
             }
         }

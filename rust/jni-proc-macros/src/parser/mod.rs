@@ -37,7 +37,7 @@ impl GenericFn for ImplItemMethod {
     }
 
     fn output(&self) -> &ReturnType {
-        self.output()
+        &self.sig.output
     }
 
     fn is_impl(&self) -> bool {
@@ -63,7 +63,7 @@ impl GenericFn for ItemFn {
     }
 
     fn output(&self) -> &ReturnType {
-        self.output()
+        &self.sig.output
     }
 
     fn is_impl(&self) -> bool {

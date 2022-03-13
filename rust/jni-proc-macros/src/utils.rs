@@ -1,6 +1,5 @@
-use proc_macro2::{Span, TokenTree};
-use syn::{Attribute, LitStr};
-
+use proc_macro2::Span;
+use syn::LitStr;
 
 pub fn fix_class_path(cls: &LitStr, slashes: bool) -> LitStr {
     // if not slashes, then underscores
@@ -12,65 +11,4 @@ pub fn fix_class_path(cls: &LitStr, slashes: bool) -> LitStr {
     };
 
     LitStr::new(&res, Span::mixed_site())
-}
-
-pub fn get_set_take_attrs(attributes: &Vec<Attribute>) -> (Option<String>, Option<String>, Option<String>) {
-    let mut jget_option = None;
-    let mut jget = false;
-    let mut jset_option = None;
-    let mut jset = false;
-    let mut jtake_option = None;
-    let mut jtake = false;
-    for attr in attributes {
-        if attr.path.segments.len() == 0 {
-            continue;
-        }
-
-        let last = attr.path.segments.last().unwrap();
-        if last.ident.to_string() == "jget" {
-            jget = true;
-        } else if last.ident.to_string() == "jset" {
-            jset = true;
-        } else if last.ident.to_string() == "jtake" {
-            jtake = true;
-        }
-
-        let mut passed = false;
-        for token in attr.tokens.clone() {
-            if let TokenTree::Group(g) = token {
-                for t in g.stream() {
-                    if let TokenTree::Ident(i) = &t {
-                        if i.to_string() == "from" && (jget || jtake) {
-                            passed = true;
-                        } else if i.to_string() == "to" && jset {
-                            passed = true;
-                        }
-                    }
-
-                    if passed {
-                        if let TokenTree::Literal(l) = &t {
-                            let value = Some(l.to_string().replace("\"", ""));
-
-                            if jget {
-                                jget_option = value;
-                                break;
-                            } else if jset {
-                                jset_option = value;
-                                break;
-                            } else if jtake {
-                                jtake_option = value;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        jget = false;
-        jset = false;
-        jtake = false;
-    }
-
-    (jget_option, jset_option, jtake_option)
 }

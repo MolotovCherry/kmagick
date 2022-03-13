@@ -24,16 +24,17 @@ pub fn jmethod_internal(attr: TokenStream, item: TokenStream) -> TokenStream {
     });
 
     // cls is required
-    let java_fn = item_fn.java_binding_fn_name;
+    let java_fn = &item_fn.java_binding_fn_name;
     // default if not specified is java lang runtime exception
-    let exc = attrs.get("exc").unwrap_or(&LitStr::new("java/lang/RuntimeException", Span::mixed_site()));
+    let exc_ = LitStr::new("java/lang/RuntimeException", Span::mixed_site());
+    let exc = attrs.get("exc").unwrap_or(&exc_);
 
     let fn_name_str = item_fn.orig_name.to_string();
-    let fn_name = item_fn.orig_name;
+    let fn_name = &item_fn.orig_name;
 
-    let caller_args = item_fn.get_calling_args();
-    let binding_args = item_fn.get_binding_args();
-    let java_return = item_fn.ret_type;
+    let caller_args = &item_fn.calling_fn_args;
+    let binding_args = &item_fn.binding_fn_args;
+    let java_return = &item_fn.ret_type;
 
     let res_binding = if item_fn.is_result {
         quote! {
@@ -53,11 +54,10 @@ pub fn jmethod_internal(attr: TokenStream, item: TokenStream) -> TokenStream {
         quote! { ; }
     };
 
-    let null_mut = if item_fn.is_returning {
-        item_fn.null_ret_type
-    } else {
-        proc_macro2::TokenStream::new()
-    };
+    let mut null_mut = proc_macro2::TokenStream::new();
+    if item_fn.is_returning {
+        null_mut.extend(item_fn.null_ret_type.clone());
+    }
 
     let v_or_underscore = if item_fn.is_returning {
         quote! { v }

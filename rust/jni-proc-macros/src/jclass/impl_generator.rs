@@ -1,31 +1,64 @@
 use proc_macro2::TokenStream;
-use quote::quote;
+use quote::{quote, ToTokens};
 use syn::LitStr;
 use crate::parser::ParsedImpl;
-use crate::utils::get_set_take_attrs;
 
 
 pub(super) fn generate_impl_functions(
-    item_impl: &ParsedImpl,
+    item_impl: ParsedImpl,
     exc: LitStr
 ) -> syn::Result<Vec<TokenStream>> {
     let mut funcs: Vec<TokenStream> = vec![];
 
     for _fn in item_impl.functions {
-        let fn_name = _fn.orig_name;
-        let binding_name = _fn.bind_name;
-        let empty_fn = _fn.is_empty;
-
         let mut target = TokenStream::new();
         _fn.call_attr("jtarget", |f| {
             target.extend(f.to_cfg_tokens());
         });
 
+        // jget set take
+        let mut get = TokenStream::new();
+        if _fn.attrs.contains("jget") {
+            _fn.call_attr("jget", |f| {
+                let tk = f.get("from").unwrap().value().to_token_stream();
+                let tk = syn::parse2::<TokenStream>(tk).unwrap();
+                get.extend(tk);
+            });
+        } else {
+            get.extend(quote! { obj });
+        }
+
+        let mut take = TokenStream::new();
+        if _fn.attrs.contains("jtake") {
+            _fn.call_attr("jtake", |f| {
+                let tk = f.get("from").unwrap().value().to_token_stream();
+                let tk = syn::parse2::<TokenStream>(tk).unwrap();
+                take.extend(tk);
+            });
+        } else {
+            take.extend(quote! { obj });
+        }
+
+        let mut set = TokenStream::new();
+        if _fn.attrs.contains("jset") {
+            _fn.call_attr("jset", |f| {
+                let tk = f.get("to").unwrap().value().to_token_stream();
+                let tk = syn::parse2::<TokenStream>(tk).unwrap();
+                set.extend(tk);
+            });
+        } else {
+            set.extend(quote! { obj });
+        }
+
+        let call_args = _fn.calling_fn_args;
+        let binding_args = _fn.binding_fn_args;
+        let fn_name = _fn.orig_name;
+        let impl_name = _fn.bind_name;
+        let empty_fn = _fn.is_empty;
+        let attrs = _fn.attrs;
         let ret_type = _fn.ret_type;
         let is_result = _fn.is_result;
         let fn_is_mut = _fn.self_is_mut;
-        let call_args = _fn.get_calling_args();
-        let binding_args = _fn.get_binding_args();
         let is_returning = _fn.is_returning;
         let java_name = _fn.java_binding_fn_name;
 
@@ -33,28 +66,6 @@ pub(super) fn generate_impl_functions(
 
         let diag = format!("{}::{}()", impl_name_str, fn_name);
 
-
-
-
-        let get_set_take = get_set_take_attrs(&m.attrs);
-        let set_varname = if get_set_take.1.is_some() {
-            get_set_take.1.unwrap().parse::<TokenStream>()?
-        } else {
-            quote! { obj }
-        };
-
-        let get_varname = if get_set_take.0.is_some() {
-            get_set_take.0.unwrap().parse::<TokenStream>()?
-        } else {
-            quote! { obj }
-        };
-
-        let take_varname = if get_set_take.2.is_some() {
-            get_set_take.2.unwrap().parse::<TokenStream>()?
-        } else {
-            quote! { obj }
-        };
-        
         //
         // special changing syntax
         //
@@ -117,11 +128,10 @@ pub(super) fn generate_impl_functions(
 
         // special case for new fn
         let stream: TokenStream;
-        if attrs.contains(&"jnew".to_string()) {
-
+        if attrs.contains("jnew") {
             let mat_res = if is_result {
                 quote! {
-                    let r_mat = #impl_name::#fn_name(#fn_call_args);
+                    let r_mat = #impl_name::#fn_name(#call_args);
                     let r_obj = match r_mat {
                         Ok(v) => v,
                         Err(e) => {
@@ -135,19 +145,19 @@ pub(super) fn generate_impl_functions(
                 }
             } else {
                 quote! {
-                    let r_obj = #impl_name::#fn_name(#fn_call_args);
+                    let r_obj = #impl_name::#fn_name(#call_args);
                 }
             };
 
             stream = quote! {
                 #target
                 #[no_mangle]
-                pub extern "system" fn #java_name(env: jni::JNIEnv #inputs) {
+                pub extern "system" fn #java_name(#binding_args) {
                     use jni_tools::Handle;
 
                     let p_res = std::panic::catch_unwind(|| {
                         #mat_res
-                        let res = env.set_handle(#set_varname, r_obj);
+                        let res = env.set_handle(#set, r_obj);
 
                         match res {
                             Ok(_) => (),
@@ -170,14 +180,14 @@ pub(super) fn generate_impl_functions(
                     }
                 }
             };
-        } else if attrs.contains(&"jstatic".to_string()) {
+        } else if attrs.contains("jstatic") {
 
             stream = quote! {
                 #target
                 #[no_mangle]
-                pub extern "system" fn #java_name(env: jni::JNIEnv #inputs) #ret_type {
+                pub extern "system" fn #java_name(#binding_args) #ret_type {
                     let p_res = std::panic::catch_unwind(|| {
-                        #res_binding #impl_name::#fn_name(#fn_call_args)#res_semicolon
+                        #res_binding #impl_name::#fn_name(#call_args)#res_semicolon
 
                         #match_res
                     });
@@ -195,7 +205,7 @@ pub(super) fn generate_impl_functions(
                 }
             };
 
-        } else if attrs.contains(&"jdestroy".to_string()) {
+        } else if attrs.contains("jdestroy") {
 
             let mut_kwrd = if fn_is_mut {
                 quote! { mut }
@@ -207,7 +217,7 @@ pub(super) fn generate_impl_functions(
                 TokenStream::new()
             } else {
                 quote! {
-                    r_obj.#fn_name(#fn_call_args);
+                    r_obj.#fn_name(#call_args);
                 }
             };
 
@@ -228,11 +238,11 @@ pub(super) fn generate_impl_functions(
             stream = quote! {
                 #target
                 #[no_mangle]
-                pub extern "system" fn #java_name(env: jni::JNIEnv #inputs) {
+                pub extern "system" fn #java_name(#binding_args) {
                     use jni_tools::Handle;
 
                     let p_res = std::panic::catch_unwind(|| {
-                        let res = env.clear_handle::<#impl_name>(#take_varname);
+                        let res = env.clear_handle::<#impl_name>(#take);
 
                         #fn_call_res_binding match res {
                             Ok(v) => {
@@ -281,11 +291,11 @@ pub(super) fn generate_impl_functions(
             stream = quote! {
                 #target
                 #[no_mangle]
-                pub extern "system" fn #java_name(env: jni::JNIEnv #inputs) #ret_type {
+                pub extern "system" fn #java_name(#binding_args) #ret_type {
                     use jni_tools::Handle;
 
                     let p_res = std::panic::catch_unwind(|| {
-                        let res = env.get_handle::<#impl_name>(#get_varname);
+                        let res = env.get_handle::<#impl_name>(#get);
 
                         let #mut_kwrd r_obj = match res {
                             Ok(v) => v,
@@ -299,7 +309,7 @@ pub(super) fn generate_impl_functions(
                             }
                         };
 
-                        #res_binding r_obj.#fn_name(#fn_call_args)#res_semicolon
+                        #res_binding r_obj.#fn_name(#call_args)#res_semicolon
 
                         #match_res
                     });

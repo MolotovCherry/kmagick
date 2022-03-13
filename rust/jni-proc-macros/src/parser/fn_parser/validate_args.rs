@@ -1,6 +1,6 @@
 use proc_macro2::TokenStream;
 
-pub(super) fn validate_types(ty: Vec<TokenStream>, is_impl: bool, is_static: bool) -> syn::Result<()> {
+pub(super) fn validate_types(ty: Vec<&TokenStream>, is_impl: bool, is_static: bool) -> syn::Result<()> {
     let allowed_types_second_param = &[
         "jobject", "jclass"
     ];

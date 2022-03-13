@@ -12,6 +12,7 @@ use crate::parser::attr_parser::attr_verifier::attr_verifier;
 
 pub struct ParsedAttr {
     pub name: Ident,
+    name_s: String,
     pub values: HashMap<Ident, LitStr>,
     jtarget_ts: TokenStream
 }
@@ -58,7 +59,7 @@ impl Hash for ParsedAttr {
 // e.g. hashset.contains("jname")
 impl Borrow<str> for ParsedAttr {
     fn borrow(&self) -> &str {
-        &self.name.to_string()
+        &self.name_s
     }
 }
 
@@ -88,7 +89,7 @@ impl ParsedAttr {
 
         if self.jtarget_ts.is_empty() {
             // normal attrs as usual
-            for (key, val) in self.values {
+            for (key, val) in &self.values {
                 inner.extend(
                     quote! {
                         #key = #val,
@@ -124,23 +125,6 @@ impl ParsedAttr {
         Some(self.get(name)?.value())
     }
 
-    /// check if attr is a certain one, if so, run closure with value
-    pub fn check_run<F: FnMut(&LitStr)>(&self, name: &str, f: F) {
-        if self.name == name {
-            f(self.get(name).unwrap());
-        }
-    }
-
-    /// get entire entry
-    pub fn get_entry(&self, name: &str) -> Option<(&Ident, &LitStr)> {
-        let ident = self.values.keys().find(|k| *k == name)?;
-        self.values.get_key_value(ident)
-    }
-
-    pub fn name(&self) -> String {
-        self.name.to_string()
-    }
-
     pub(crate) fn parse_attribute(name: &Ident, attrs: &Attribute) -> syn::Result<Self> {
         // sometimes a #[name] may include parens #[name()] or #[name(value="target")].
         // That is to say, the tokenstream is () or (value="target").
@@ -166,7 +150,7 @@ impl ParsedAttr {
         //
         let mut values = HashMap::new();
         let mut jtarget_ts = TokenStream::new();
-        process_attrs(&mut values, &mut jtarget_ts, &attrs)?;
+        process_attrs(&mut values, &mut jtarget_ts, &attrs, &name)?;
 
         //
         // validate correct arguments were passed to attr
@@ -175,6 +159,7 @@ impl ParsedAttr {
 
         Ok(Self {
             name: name.clone(),
+            name_s: name.to_string(),
             values,
             jtarget_ts
         })
