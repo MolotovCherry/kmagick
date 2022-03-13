@@ -45,7 +45,7 @@ pub(super) fn fn_arg_parser(inputs: Vec<FnArg>) -> syn::Result<(Vec<(TokenStream
 
                 match *t.ty {
                     Type::Path(p) => {
-                        ty = p.path.segments.to_token_stream();
+                        ty = p.path.segments.last().unwrap().to_token_stream();
                     }
 
                     t => return Err(syn::Error::new(t.span(), "Invalid arg type"))

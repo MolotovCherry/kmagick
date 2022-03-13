@@ -2,7 +2,7 @@ use proc_macro2::TokenStream;
 
 pub(super) fn validate_types(ty: Vec<&TokenStream>, is_impl: bool, is_static: bool) -> syn::Result<()> {
     let allowed_types_second_param = &[
-        "jobject", "jclass"
+        "jobject", "jclass", "JObject", "JClass"
     ];
     let allowed_types = &[
         "jobject", "jclass", "jthrowable", "jstring", "jarray", "jbooleanArray",
@@ -19,9 +19,11 @@ pub(super) fn validate_types(ty: Vec<&TokenStream>, is_impl: bool, is_static: bo
         let ty = ty.to_string();
         let ty_l = ty.to_lowercase();
 
-        if i == 1 && ty != "JNIEnv" {
-            return Err(syn::Error::new_spanned(ty, "Param must be JNIEnv"));
-        } else if i == 2 {
+        if i == 0 {
+            if ty != "JNIEnv" {
+                return Err(syn::Error::new_spanned(ty, "Param must be JNIEnv"));
+            }
+        } else if i == 1 {
             if !allowed_types_second_param.contains(&&*ty) {
                 return Err(syn::Error::new_spanned(ty, "Param must be JObject or JClass (non-impl fn's only)"));
             }

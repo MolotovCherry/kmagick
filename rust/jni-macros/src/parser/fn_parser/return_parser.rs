@@ -66,9 +66,9 @@ pub(super) fn parse_return(ret: &ReturnType, impl_name: Option<Ident>, attrs: &H
                     // basic sanity validation
                     if !allowed_ret.contains(&&*inner_ty.unwrap().to_string()) {
                         return if is_impl {
-                            Err(syn::Error::new_spanned(inner_ty, "Return type must be a JNIResult<Self> type, `Self` type, or empty"))
+                            Err(syn::Error::new_spanned(inner_ty.unwrap(), "Return type must be a JNIResult<Self> type, `Self` type, or empty"))
                         } else {
-                            Err(syn::Error::new_spanned(inner_ty, "Return type must be a JNIResult<> type, primitive j type (jni::sys::*), or empty"))
+                            Err(syn::Error::new_spanned(inner_ty.unwrap(), "Return type must be a JNIResult<> type, primitive j type (jni::sys::*), or empty"))
                         }
                     }
 
@@ -125,8 +125,9 @@ pub(super) fn parse_return(ret: &ReturnType, impl_name: Option<Ident>, attrs: &H
                                             if t.elems.len() == 0 {
                                                 is_result = true;
                                                 inner_ty = None;
+                                            } else {
+                                                return Err(syn::Error::new_spanned(_ok_res, "Must be an empty ok () type"))
                                             }
-                                            return Err(syn::Error::new_spanned(_ok_res, "Must be an empty ok () type"))
                                         }
 
                                         //
@@ -188,8 +189,9 @@ pub(super) fn parse_return(ret: &ReturnType, impl_name: Option<Ident>, attrs: &H
                         is_return = false;
                         is_result = false;
                         raw_return = ReturnType::Default;
+                    } else {
+                        return Err(syn::Error::new_spanned(ty, "Must be an empty ok () type"))
                     }
-                    return Err(syn::Error::new_spanned(ty, "Must be an empty ok () type"))
                 }
 
                 //

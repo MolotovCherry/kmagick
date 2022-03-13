@@ -24,7 +24,7 @@ pub(super) fn process_attrs(values: &mut HashMap<Ident, LitStr>, jtarget_ts: &mu
 
                     // for jtarget, not(target_os="foo")
                     Meta::List(l) => {
-                        if attr_name == "jtarget" {
+                        if attr_name == "jtarget" || attr_name == "cfg" {
                             // not() is in the path segments
                             if l.path.segments.len() == 1 {
                                 let i = &l.path.segments.first().unwrap().ident;

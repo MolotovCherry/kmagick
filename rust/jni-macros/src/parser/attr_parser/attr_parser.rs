@@ -131,8 +131,16 @@ impl ParsedAttr {
         // This only happens with other attributes, not the main attributes passed directly into the proc macro fn.
         // the thing is, for the input to AttributeArgs to process, it needs the inner `value="target"`,
         // and parens cause failure, so let's strip the parens from the tokenstream if it exists
-        let attrs = attrs.parse_args::<TokenStream>().unwrap();
-        Self::parse(name, &attrs.into())
+
+        // stream will be empty if there's no args
+        let res_stream = if !attrs.tokens.is_empty() {
+            attrs.parse_args::<TokenStream>().unwrap()
+        } else {
+            // empty attrs after all
+            TokenStream::new()
+        };
+
+        Self::parse(name, &res_stream.into())
     }
 
     pub fn parse(name: &Ident, attrs: &proc_macro::TokenStream) -> syn::Result<Self> {

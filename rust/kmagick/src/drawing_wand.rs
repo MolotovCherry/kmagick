@@ -5,7 +5,7 @@ wand_wrapper!(DrawingWand);
 
 #[jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/DrawingWandException")]
 impl DrawingWand {
-    fn drawAnnotation(&mut self, env: JNIEnv, _: JObject, x: jdouble, y: jdouble, text: JString) -> super::utils::Result<()> {
+    fn drawAnnotation(&mut self, env: JNIEnv, _: JObject, x: jdouble, y: jdouble, text: JString) -> jni_tools::JNIResult<()> {
         let text =  &*env.get_jstring(text)?;
         Ok(self.draw_annotation(x, y, text)?)
     }

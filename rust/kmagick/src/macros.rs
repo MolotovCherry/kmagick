@@ -55,7 +55,7 @@ macro_rules! wand_wrapper {
                 }
 
                 #[jni_tools::jnew]
-                fn clone(env: jni::JNIEnv, obj: jni::objects::JObject, wand: jni::objects::JObject) -> super::utils::Result<Self> {
+                fn clone(env: jni::JNIEnv, obj: jni::objects::JObject, wand: jni::objects::JObject) -> jni_tools::JNIResult<Self> {
                     use jni_tools::Handle;
 
                     let c_wand = env.get_handle::<$wand>(wand)?;
@@ -69,7 +69,7 @@ macro_rules! wand_wrapper {
                     }
                 }
 
-                fn clearException(&mut self) -> std::result::Result<(), &'static str> {
+                fn clearException(&mut self) ->jni_tools::JNIResult<()> {
                     Ok(self.clear_exception()?)
                 }
 
@@ -82,7 +82,7 @@ macro_rules! wand_wrapper {
                 fn getException(
                     &self,
                     env: jni::JNIEnv
-                ) -> super::utils::Result<jni::sys::jobject>
+                ) -> jni_tools::JNIResult<jni::sys::jobject>
                 {
                     let exc_res = self.get_exception()?;
 
