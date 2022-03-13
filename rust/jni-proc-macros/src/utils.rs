@@ -1,6 +1,6 @@
-use proc_macro2::{TokenStream, TokenTree};
+use proc_macro2::{Span, TokenStream, TokenTree};
 use quote::{format_ident, ToTokens};
-use syn::Attribute;
+use syn::{Attribute, LitStr};
 
 
 pub fn java_fn_name(class: &str, fn_name: &str) -> TokenStream {
@@ -10,13 +10,16 @@ pub fn java_fn_name(class: &str, fn_name: &str) -> TokenStream {
     format_ident!("Java_{}_{}", class, fn_name).to_token_stream()
 }
 
-pub fn fix_class_path(class: &String, slashes: bool) -> String {
+pub fn fix_class_path(cls: &LitStr, slashes: bool) -> LitStr {
     // if not slashes, then underscores
-    if !slashes {
-        class.replace("/", "_").replace(".", "_")
+    let cls = cls.value();
+    let res = if slashes {
+        cls.replace(".", "/").replace("_", "/")
     } else {
-        class.replace(".", "/").replace("_", "/")
-    }
+        cls.replace("/", "_").replace(".", "_")
+    };
+
+    LitStr::new(&res, Span::mixed_site())
 }
 
 pub fn get_set_take_attrs(attributes: &Vec<Attribute>) -> (Option<String>, Option<String>, Option<String>) {

@@ -27,7 +27,7 @@ pub struct ParsedFn {
     pub self_is_mut: bool,
     pub has_self: bool,
     pub is_impl_fn: bool,
-    pub is_empty_fn: bool,
+    pub is_empty: bool,
     /// return type is a result type or not?
     pub is_result: bool,
     pub is_returning: bool,
@@ -151,7 +151,7 @@ impl ParsedFn {
 
         let vis = item_fn.vis().clone();
 
-        let is_empty_fn = item_fn.block().stmts.is_empty();
+        let is_empty = item_fn.block().stmts.is_empty();
 
         Ok(Some(Self {
             name,
@@ -162,7 +162,7 @@ impl ParsedFn {
             self_is_mut,
             has_self,
             is_impl_fn: item_fn.is_impl(),
-            is_empty_fn,
+            is_empty,
             result_type,
             is_result,
             is_returning,
@@ -213,7 +213,7 @@ impl ParsedFn {
     }
 
     pub fn is_empty_fn(&self) -> bool {
-        self.is_empty_fn
+        self.is_empty
     }
 
     pub fn is_impl_fn(&self) -> bool {
