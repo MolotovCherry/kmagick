@@ -1,14 +1,6 @@
-use proc_macro2::{Span, TokenStream, TokenTree};
-use quote::{format_ident, ToTokens};
+use proc_macro2::{Span, TokenTree};
 use syn::{Attribute, LitStr};
 
-
-pub fn java_fn_name(class: &str, fn_name: &str) -> TokenStream {
-    let class = class.replace("/", "_").replace(".", "_").replace("\"", "");
-    let fn_name = fn_name.to_string().replace("\"", "");
-
-    format_ident!("Java_{}_{}", class, fn_name).to_token_stream()
-}
 
 pub fn fix_class_path(cls: &LitStr, slashes: bool) -> LitStr {
     // if not slashes, then underscores

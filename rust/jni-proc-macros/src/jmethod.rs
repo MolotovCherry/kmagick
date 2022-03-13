@@ -2,13 +2,13 @@ use proc_macro::TokenStream;
 use proc_macro2::Span;
 use quote::quote;
 use syn::LitStr;
-use crate::utils;
 use crate::parser::{
     ParsedFn, ParsedAttr
 };
 
+
 pub fn jmethod_internal(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let item_fn = match compile_err!(ParsedFn::parse_fn(&item)) {
+    let item_fn = match compile_err!(ParsedFn::parse_fn(&item, &attr)) {
         // jignore was annotated on function - so no-op it
         None => return item,
         // normal function we want to keep
@@ -24,7 +24,7 @@ pub fn jmethod_internal(attr: TokenStream, item: TokenStream) -> TokenStream {
     });
 
     // cls is required
-    let java_fn = utils::java_fn_name(&attrs.get("cls").unwrap().value(), &item_fn.bind_name.to_string());
+    let java_fn = item_fn.java_binding_fn_name;
     // default if not specified is java lang runtime exception
     let exc = attrs.get("exc").unwrap_or(&LitStr::new("java/lang/RuntimeException", Span::mixed_site()));
 

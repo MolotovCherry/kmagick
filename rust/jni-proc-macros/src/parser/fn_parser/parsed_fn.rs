@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 use proc_macro2::{Ident, Span, TokenStream};
-use quote::{quote, ToTokens};
+use quote::{format_ident, quote, ToTokens};
 use syn::{ImplItemMethod, ItemFn, ReturnType, Visibility};
 use crate::parser::{AttrGet, GenericFn, ParsedAttr};
 use crate::parser::fn_parser::fn_parser::fn_arg_parser;
@@ -19,6 +19,8 @@ pub struct ParsedFn {
     pub bind_name: Ident,
     /// original function call name
     pub orig_name: Ident,
+    // binding jni call name
+    pub java_binding_fn_name: TokenStream,
     pub vis: Visibility,
     pub attrs: HashSet<ParsedAttr>,
     /// these args are from the actual fn. we must adhere to sending these exact one's over
@@ -53,25 +55,27 @@ impl ToTokens for ParsedFn {
 
 impl ParsedFn {
     /// returns None if annotated with jignore, it's a no-op
-    pub fn parse_fn(input: &proc_macro::TokenStream) -> syn::Result<Option<Self>> {
+    pub fn parse_fn(input: &proc_macro::TokenStream, attrs: &proc_macro::TokenStream) -> syn::Result<Option<Self>> {
         let item_fn = syn::parse::<ItemFn>(input.clone())?;
         Self::parse(
             &item_fn,
             MethodType::ItemFn(item_fn),
-            None
+            None,
+            attrs
         )
     }
 
-    pub fn parse_impl_fn(input: ImplItemMethod, impl_name: Ident) -> syn::Result<Option<Self>> {
+    pub fn parse_impl_fn(input: ImplItemMethod, impl_name: Ident, attrs: &proc_macro::TokenStream) -> syn::Result<Option<Self>> {
         Self::parse(
             &input,
             MethodType::ImplItemMethod(input),
-            Some(impl_name)
+            Some(impl_name),
+            attrs
         )
     }
 
     /// returns None if annotated with jignore, it's a no-op
-    fn parse<T: GenericFn>(item_fn: &T, method: MethodType, impl_name: Option<Ident>) -> syn::Result<Option<Self>> {
+    fn parse<T: GenericFn>(item_fn: &T, method: MethodType, impl_name: Option<Ident>, main_attr: &proc_macro::TokenStream) -> syn::Result<Option<Self>> {
         let mut attrs: HashSet<ParsedAttr> = HashSet::new();
         for attr in item_fn.attrs() {
             attrs.insert(
@@ -98,6 +102,13 @@ impl ParsedFn {
                 )
             );
         }
+
+        let attr_ty = if impl_name.is_some() {
+            Ident::new("jclass", Span::mixed_site())
+        } else {
+            Ident::new("jmethod", Span::mixed_site())
+        };
+        let main_attr = ParsedAttr::parse(&attr_ty, main_attr)?;
 
         // use normal name if jname is missing
         if let None = bind_name {
@@ -152,7 +163,7 @@ impl ParsedFn {
         //
         let (result_type, is_result, is_returning, raw_return) = parse_return(item_fn.output(), impl_name, &attrs)?;
         let result_type = result_type.unwrap_or("".to_string());
-        let null_ret_type = Self::get_null_ret_type(&result_type);
+        let null_ret_type = Self::get_null_ret_type(&result_type, is_returning);
         //  End return type processing
         //
 
@@ -160,9 +171,23 @@ impl ParsedFn {
 
         let is_empty = item_fn.block().stmts.is_empty();
 
+        // generate the official java binding name
+        // TODO: unfortunately, this naming will not always hold true in jni, as it sometimes names things differently
+        // there's potential for this to cause subtle bugs with jni methods seemingly "missing"
+        // some == impl, None = regular fn
+        let clss = if main_attr.contains("cls") {
+            // get it from the cls attribute
+            main_attr.get_s("cls").unwrap()
+        } else {
+            main_attr.get_s("pkg").unwrap()
+        };
+        let class = clss.replace("/", "_").replace(".", "_").replace("\"", "");
+        let java_binding_fn_name = format_ident!("Java_{}_{}", class, bind_name).to_token_stream();
+
         Ok(Some(Self {
             bind_name,
             orig_name,
+            java_binding_fn_name,
             vis,
             attrs,
             fn_args: fn_args.iter().map(|a| (a.0.0.clone(), a.0.1)).collect(),
@@ -282,30 +307,32 @@ impl ParsedFn {
         self.attrs.contains("jname")
     }
 
-    fn get_null_ret_type(ret_type: &str) -> TokenStream {
+    fn get_null_ret_type(ret_type: &str, is_returning: bool) -> TokenStream {
         let mut tks = TokenStream::new();
 
-        let res_type = ret_type.to_token_stream();
-        match ret_type {
-            // object types
-            "jobject" | "jclass" | "jthrowable" | "jstring" | "jarray" |
-            "jbooleanArray" | "jbyteArray" | "jcharArray" | "jshortArray" |
-            "jintArray" | "jlongArray" | "jfloatArray" | "jdoubleArray" |
-            "jobjectArray" | "jweak" | "jfieldID" | "jmethodID" => {
-                tks.extend(quote! { std::ptr::null_mut() })
-            },
+        if is_returning {
+            let res_type = ret_type.to_token_stream();
+            match ret_type {
+                // object types
+                "jobject" | "jclass" | "jthrowable" | "jstring" | "jarray" |
+                "jbooleanArray" | "jbyteArray" | "jcharArray" | "jshortArray" |
+                "jintArray" | "jlongArray" | "jfloatArray" | "jdoubleArray" |
+                "jobjectArray" | "jweak" | "jfieldID" | "jmethodID" => {
+                    tks.extend(quote! { std::ptr::null_mut() })
+                },
 
-            // numeric types
-            "jint" | "jlong" | "jbyte" | "jboolean" | "jchar" | "jshort" |
-            "jsize" => {
-                tks.extend(quote! { 0 as jni::sys::#res_type })
-            },
+                // numeric types
+                "jint" | "jlong" | "jbyte" | "jboolean" | "jchar" | "jshort" |
+                "jsize" => {
+                    tks.extend(quote! { 0 as jni::sys::#res_type })
+                },
 
-            "jfloat" | "jdouble" => {
-                tks.extend(quote! { 0.0 as jni::sys::#res_type })
-            },
+                "jfloat" | "jdouble" => {
+                    tks.extend(quote! { 0.0 as jni::sys::#res_type })
+                },
 
-            _ => ()
+                _ => ()
+            }
         }
 
         tks

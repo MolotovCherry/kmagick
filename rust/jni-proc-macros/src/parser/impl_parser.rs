@@ -1,5 +1,6 @@
 use std::collections::HashSet;
-use proc_macro2::Ident;
+use proc_macro2::{Ident, TokenStream};
+use quote::ToTokens;
 use syn::{ImplItem, ItemImpl, Type};
 use syn::spanned::Spanned;
 use super::{
@@ -10,15 +11,22 @@ use super::{
 pub struct ParsedImpl {
     pub name: Ident,
     pub attrs: HashSet<ParsedAttr>,
-    pub functions: Vec<ParsedFn>
+    pub functions: Vec<ParsedFn>,
+    item_impl: ItemImpl
+}
+
+impl ToTokens for ParsedImpl {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.extend(self.item_impl.to_token_stream());
+    }
 }
 
 impl ParsedImpl {
-    pub fn parse(input: proc_macro::TokenStream) -> syn::Result<Self> {
+    pub fn parse(input: proc_macro::TokenStream, attrs: proc_macro::TokenStream) -> syn::Result<Self> {
         let item_impl = syn::parse::<ItemImpl>(input)?;
 
         // extract impl name
-        let name = match *item_impl.self_ty {
+        let name = match *item_impl.self_ty.clone() {
             Type::Path(p) => {
                 p.path.segments.last().unwrap().ident.clone()
             }
@@ -27,11 +35,11 @@ impl ParsedImpl {
         };
 
         let mut functions = vec![];
-        for impl_item in item_impl.items {
+        for impl_item in &item_impl.items {
             match impl_item {
                 ImplItem::Method(m) => {
                     // only insert if Some. If it's None, it was annotated with jignore
-                    if let Some(v) = ParsedFn::parse_impl_fn(m)? {
+                    if let Some(v) = ParsedFn::parse_impl_fn(m.clone(), name.clone(), &attrs)? {
                         functions.push(v);
                     }
                 }
@@ -54,7 +62,8 @@ impl ParsedImpl {
         Ok(Self{
             name,
             attrs,
-            functions
+            functions,
+            item_impl
         })
     }
 

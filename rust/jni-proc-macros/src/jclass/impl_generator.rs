@@ -1,68 +1,40 @@
 use proc_macro2::TokenStream;
-use syn::{ImplItem, LitStr, ReturnType};
+use quote::quote;
+use syn::LitStr;
 use crate::parser::ParsedImpl;
 use crate::utils::get_set_take_attrs;
 
 
-pub fn generate_impl_functions(
+pub(super) fn generate_impl_functions(
     item_impl: &ParsedImpl,
-    cls: LitStr,
     exc: LitStr
 ) -> syn::Result<Vec<TokenStream>> {
     let mut funcs: Vec<TokenStream> = vec![];
 
     for _fn in item_impl.functions {
-        let fn_name = &_fn.name;
+        let fn_name = _fn.orig_name;
+        let binding_name = _fn.bind_name;
         let empty_fn = _fn.is_empty;
 
-        let binding_name = get_rename_attr(&m.sig.ident, &m.attrs)?;
+        let mut target = TokenStream::new();
+        _fn.call_attr("jtarget", |f| {
+            target.extend(f.to_cfg_tokens());
+        });
 
-        let target = get_cfg_target(&m.attrs);
+        let ret_type = _fn.ret_type;
+        let is_result = _fn.is_result;
+        let fn_is_mut = _fn.self_is_mut;
+        let call_args = _fn.get_calling_args();
+        let binding_args = _fn.get_binding_args();
+        let is_returning = _fn.is_returning;
+        let java_name = _fn.java_binding_fn_name;
 
-        let ret_type = &returns[i].0;
-        let is_result = returns[i].2;
-
-        let attrs = top_attrs(&m.attrs);
-
-        let fn_inputs = impl_fn_args(&m.sig.inputs)?;
-        let fn_is_mut = impl_is_fn_mut(&m.sig.inputs);
-
-        let fn_call_args = impl_fn_fill_args(&m.sig.inputs, &fn_inputs)?;
-
-        let inputs = match &second_types[i] {
-            Some(v) => {
-                let mut tk = quote!{
-                    , obj: #v
-                };
-
-                let res = fn_inputs.iter().map(|(v1, v2)| { quote! { , #v1: #v2 } }).collect::<Vec<TokenStream>>();
-
-                tk.extend(res);
-
-                tk
-            }
-
-            None => {
-                quote! {
-                    , obj: jni::objects::JObject
-                }
-            }
-        };
-
-        let ns = namespace.0;
-        let is_pkg = namespace.1;
-        let impl_name = namespace.2;
-        let impl_name_str = impl_name.to_string();
+        let impl_name_str = item_impl.name.to_string();
 
         let diag = format!("{}::{}()", impl_name_str, fn_name);
 
-        let is_returning = _fn.is_returning;
 
-        let class = if is_pkg {
-            format!("{}_{}", ns, impl_name)
-        } else {
-            ns.to_owned()
-        };
+
 
         let get_set_take = get_set_take_attrs(&m.attrs);
         let set_varname = if get_set_take.1.is_some() {
@@ -82,29 +54,19 @@ pub fn generate_impl_functions(
         } else {
             quote! { obj }
         };
-
-        let java_name = class_to_ident(&class, &binding_name);
-
+        
         //
         // special changing syntax
         //
-        let null_ret = if is_returning {
-            get_null_return_obj(&returns[i].1)
-        } else {
-            TokenStream::new()
-        };
+        let null_ret = _fn.null_ret_type;
 
-
-        //
-        //
-
-        let v_or_underscore = if is_returning {
+        let v_or_underscore = if _fn.is_returning {
             quote! { v }
         } else {
             quote! { _ }
         };
 
-        let v_or_unit = if is_returning {
+        let v_or_unit = if _fn.is_returning {
             quote! { v }
         } else {
             quote! { () }

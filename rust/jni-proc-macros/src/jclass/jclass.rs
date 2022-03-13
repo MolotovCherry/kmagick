@@ -1,6 +1,7 @@
 use proc_macro::TokenStream;
 
 use proc_macro2::Span;
+use quote::ToTokens;
 use syn::LitStr;
 
 use crate::parser::{
@@ -10,7 +11,7 @@ use crate::utils;
 
 
 pub fn jclass_internal(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let item_impl = compile_err!(ParsedImpl::parse(item));
+    let item_impl = compile_err!(ParsedImpl::parse(item, attr));
     let attrs = compile_err!(ParsedAttr::parse(&item_impl.name, &attr));
 
     // Use either one, not both
@@ -22,27 +23,6 @@ pub fn jclass_internal(attr: TokenStream, item: TokenStream) -> TokenStream {
         return syn::Error::new(Span::mixed_site(), "Must specify either pkg or cls attributes").to_compile_error().into();
     }
 
-    if let Some(v) = pkg {
-        pkg = Some(
-            &utils::fix_class_path(&v, false)
-        );
-    }
-    if let Some(v) = cls {
-        cls = Some(
-            &utils::fix_class_path(&v, false)
-        );
-    }
-
-    // create cls name out of pkg or cls
-    let cls = if let Some(v) = pkg {
-        LitStr::new(
-            &*format!("{}_{}", v.value(), item_impl.name),
-            Span::mixed_site()
-        )
-    } else {
-        cls.unwrap().clone()
-    };
-
     // runtime exception if not specified
     let exc = match attrs.get("exc") {
         Some(v) => utils::fix_class_path(&*v, true),
@@ -50,7 +30,7 @@ pub fn jclass_internal(attr: TokenStream, item: TokenStream) -> TokenStream {
     };
 
     let funcs = compile_err!(
-        crate::jclass::impl_generator::generate_impl_functions(&item_impl, cls, exc)
+        super::impl_generator::generate_impl_functions(&item_impl, exc)
     );
 
     let mut stream = item_impl.to_token_stream();
