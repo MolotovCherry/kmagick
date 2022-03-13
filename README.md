@@ -39,7 +39,7 @@ If there is a low-level error/crash, this library will catch it and throw a java
 
 If there is a panic (a `crash` in Rust terms), please submit an issue along with reproducible steps so I can fix it. Unfortunately due to limitations the message might be a little cryptic, but provide as much info as you can (along with reproducible steps).
 
-I (currently?) have no control if the C code segfaults your project. Sorry. If there is one, that's an ImageMagick bug and you should report it to them instead.
+I have no control if the C code segfaults your project. Sorry. If there is one, that's likely an ImageMagick bug and you should report it to them. However, make sure to report it here too just in case it's a bug in kmagick.
 
 ## API and Examples
 First of all, check out the official [ImageMagick](https://imagemagick.org/script/magick-wand.php) function reference. If you have any confusion/questions, it'll be answered there. Also, the sources jar contains comments for every function which should be good enough in most cases.
