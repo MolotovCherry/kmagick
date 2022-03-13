@@ -9,12 +9,19 @@ mod jclass;
 
 
 /// wrap a function for jni
+/// Usage: #[jmethod(cls="some/java/cls", exc="some/exception/Cls")]
+/// exc is not required (runtime exception will be used instead)
+/// cls is required
 #[proc_macro_attribute]
 pub fn jmethod(attr: TokenStream, item: TokenStream) -> TokenStream {
     jmethod::jmethod_internal(attr, item).into()
 }
 
 /// wrap an entire impl for jni, including all functions inside
+/// Usage: #[jclass(pkg="some/java/pkg", exc="some/exception/Cls")]
+/// pkg or cls is required, exc is not required (runtime exception will be used instead)
+/// pkg will use the name of the impl as the class name
+/// cls will override that with a custom cls name
 #[proc_macro_attribute]
 pub fn jclass(attr: TokenStream, item: TokenStream) -> TokenStream {
     jclass::jclass_internal(attr, item).into()

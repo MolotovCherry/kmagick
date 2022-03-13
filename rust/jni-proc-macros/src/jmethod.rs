@@ -1,5 +1,7 @@
 use proc_macro::TokenStream;
+use proc_macro2::Span;
 use quote::quote;
+use syn::LitStr;
 use crate::utils;
 use crate::parser::{
     ParsedFn, ParsedAttr
@@ -21,9 +23,10 @@ pub fn jmethod_internal(attr: TokenStream, item: TokenStream) -> TokenStream {
         target.extend(f.to_cfg_tokens());
     });
 
-    // this is already verified, so unwrap is ok
+    // cls is required
     let java_fn = utils::java_fn_name(&attrs.get("cls").unwrap().value(), &item_fn.name());
-    let exc = attrs.get("exc").unwrap();
+    // default if not specified is java lang runtime exception
+    let exc = attrs.get("exc").unwrap_or(&LitStr::new("java/lang/RuntimeException", Span::mixed_site()));
 
     let fn_name_str = item_fn.name();
     let fn_name = item_fn.name;

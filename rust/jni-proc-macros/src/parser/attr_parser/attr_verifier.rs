@@ -11,11 +11,11 @@ pub(super) fn attr_verifier(attrs: AttributeArgs, values: &HashMap<Ident, LitStr
     let allowed_args = match name {
         "jmethod" => (
             vec!["cls", "exc"],
-            vec!["cls", "exc"]
+            vec!["cls"]
         ),
         "jclass" => (
-            vec!["pkg", "exc"],
-            vec!["pkg", "exc"]
+            vec!["pkg", "cls", "exc"],
+            vec![]
         ),
         "jtarget" => (
             vec!["target_os"],
@@ -30,7 +30,7 @@ pub(super) fn attr_verifier(attrs: AttributeArgs, values: &HashMap<Ident, LitStr
 
     if !allowed_args.0.is_empty() {
         if attrs.is_empty() {
-            return Err(syn::Error::new(proc_macro2::Span::mixed_site(), format!("Attributes are required")))
+            return Err(syn::Error::new(proc_macro2::Span::mixed_site(), format!("Attributes are required; valid options are: {}", allowed_args.0.join(", "))))
         }
 
         // validate all keys to make sure they're allowed
