@@ -28,6 +28,28 @@ fun main() {
         // get bytes of image, then read it back in
         val blob = wand.writeImageBlob("png")
         wand.readImageBlob(blob)
+        
+       // ALWAYS make sure to handle your exceptions! Something may always go wrong
+        try {
+            // this will obviously fail
+            wand.readImage("oops!")
+        } catch (e: MagickWandException) {
+            // handle it here
+            val exc = wand.getException()
+            println("Got a MagickWandException: ${e.message}")
+            println("Extra exception details: ${exc.exceptionType}: ${exc.message}")
+        }
+        
+        // But what if the library itself panics? (this is what we call a crash)
+        // then a RuntimeException will be thrown instead
+        // A RuntimeException can theoretically occur on ANY library function call
+        // however the chances of that actually happening are very low
+        try {
+            // pretend that the following fn exists and causes a panic, so throws a RuntimeException
+            // wand.panic()
+        } catch (e: RuntimeException) {
+            println("Something bad happened: ${e.message}")
+        }
 
         wand.writeImage("D:/out.png")
     }
