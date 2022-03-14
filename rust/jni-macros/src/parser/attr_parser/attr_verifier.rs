@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use proc_macro2::Ident;
 use syn::{AttributeArgs, LitStr};
-use syn::spanned::Spanned;
 
 pub(super) fn attr_verifier(attrs: AttributeArgs, values: &HashMap<Ident, LitStr>, name: &str) -> syn::Result<()> {
     //
@@ -43,7 +42,7 @@ pub(super) fn attr_verifier(attrs: AttributeArgs, values: &HashMap<Ident, LitStr
             if !allowed_args.0.contains(&ks) {
                 return Err(
                     syn::Error::new(
-                        ks.span(),
+                        key.span(),
                         format!("Invalid key; valid options are: {}", allowed_args.0.join(", "))
                     )
                 )

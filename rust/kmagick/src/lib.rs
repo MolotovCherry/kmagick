@@ -89,7 +89,7 @@ fn init_logger() -> Result<()> {
 
 struct Magick;
 
-#[jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad.kmagick/MagickException")]
+#[jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/MagickException")]
 impl Magick {
     #[jstatic]
     fn nativeInit() -> jni_tools::JNIResult<()> {

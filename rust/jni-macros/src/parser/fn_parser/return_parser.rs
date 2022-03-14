@@ -75,7 +75,7 @@ pub(super) fn parse_return(ret: &ReturnType, impl_name: &Option<Ident>, attrs: &
 
                     // basic sanity validation
                     if !allowed_ret.contains(&&*inner_ty.unwrap().to_string()) {
-                        return if is_impl {
+                        return if is_impl && is_jnew {
                             Err(syn::Error::new_spanned(inner_ty.unwrap(), "Return type must be a JNIResult<Self> type, `Self` type, or empty"))
                         } else {
                             Err(syn::Error::new_spanned(inner_ty.unwrap(), "Return type must be a JNIResult<> type, primitive j type (jni::sys::*), or empty"))
@@ -147,7 +147,7 @@ pub(super) fn parse_return(ret: &ReturnType, impl_name: &Option<Ident>, attrs: &
                                                 // throw away return type as we won't use it
                                                 raw_return = ReturnType::Default;
                                             } else {
-                                                return Err(syn::Error::new_spanned(_ok_res, "Must be an empty ok () type"))
+                                                return Err(syn::Error::new_spanned(_ok_res, "Return type must be primitive j type (jni::sys::*) or ()"))
                                             }
                                         }
 
@@ -159,7 +159,7 @@ pub(super) fn parse_return(ret: &ReturnType, impl_name: &Option<Ident>, attrs: &
                                                 return Err(syn::Error::new_spanned(_ok_res, "Return type must be a Self type"));
                                             }
 
-                                            return Err(syn::Error::new_spanned(_ok_res, "Return type in brackets must be primitive j type (jni::sys::*) or ()"))
+                                            return Err(syn::Error::new_spanned(_ok_res, "Return type must be primitive j type (jni::sys::*) or ()"))
                                         }
                                     }
                                 }
