@@ -79,17 +79,17 @@ pub fn jmethod(attr: TokenStream, item: TokenStream) -> TokenStream {
 ///             If your fn takes these 2 or less parameters, you can omit the variable entirely.
 ///
 ///       For example, these are all valid signatures:
-///         - fn foo(env: JNIEnv, obj: JObject, ...) {}
-///         - fn foo(_: JNIEnv, obj: JObject, ...) {}
-///         - fn foo(env: JNIEnv, _: JObject, ...) {}
-///         - fn foo(_: JNIEnv, _: JObject, ...) {}
-///         - fn foo(env: JNIEnv, obj: JObject) {}
-///         - fn foo(_: JNIEnv, obj: JObject) {}
-///         - fn foo(env: JNIEnv, _: JObject) {}
-///         - fn foo(_: JNIEnv, _: JObject) {}
-///         - fn foo(env: JNIEnv) {}
-///         - fn foo(_: JNIEnv) {}
-///         - fn foo() {}
+///         - fn foo(&self, env: JNIEnv, obj: JObject, ...) {}
+///         - fn foo(&self, _: JNIEnv, obj: JObject, ...) {}
+///         - fn foo(&self, env: JNIEnv, _: JObject, ...) {}
+///         - fn foo(&self, _: JNIEnv, _: JObject, ...) {}
+///         - fn foo(&self, env: JNIEnv, obj: JObject) {}
+///         - fn foo(&self, _: JNIEnv, obj: JObject) {}
+///         - fn foo(&self, env: JNIEnv, _: JObject) {}
+///         - fn foo(&self, _: JNIEnv, _: JObject) {}
+///         - fn foo(&self, env: JNIEnv) {}
+///         - fn foo(&self, _: JNIEnv) {}
+///         - fn foo(&self) {}
 ///
 ///       Allowed fn argument types:
 ///         - jobject, jclass, jthrowable, jstring, jarray, jbooleanArray,
