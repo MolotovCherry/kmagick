@@ -161,7 +161,7 @@ pub(super) fn generate_impl_functions(
 
                     match p_res {
                         Ok(_) => (),
-                        Err(e) => {
+                        Err(_) => {
                             let msg = &format!("`{}` panicked", #diag);
                             log::error!("{}", msg);
                             #env.throw_new("java/lang/RuntimeException", msg).ok();
@@ -183,7 +183,7 @@ pub(super) fn generate_impl_functions(
 
                     match p_res {
                         Ok(#v_or_underscore) => #v_or_unit,
-                        Err(e) => {
+                        Err(_) => {
                             let msg = &format!("`{}` panicked", #diag);
                             log::error!("{}", msg);
                             #env.throw_new("java/lang/RuntimeException", msg).ok();
@@ -260,7 +260,7 @@ pub(super) fn generate_impl_functions(
 
                     match p_res {
                         Ok(_) => (),
-                        Err(e) => {
+                        Err(_) => {
                             let msg = &format!("`{}` panicked", #diag);
                             log::error!("{}", msg);
                             #env.throw_new("java/lang/RuntimeException", msg).ok();
@@ -305,10 +305,10 @@ pub(super) fn generate_impl_functions(
 
                     match p_res {
                         Ok(#v_or_underscore) => #v_or_unit,
-                        Err(e) => {
+                        Err(_) => {
                             let msg = &format!("`{}` panicked", #diag);
                             log::error!("{}", msg);
-                            env.throw_new("java/lang/RuntimeException", msg).ok();
+                            #env.throw_new("java/lang/RuntimeException", msg).ok();
 
                             #null_ret
                         }

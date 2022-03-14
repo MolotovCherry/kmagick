@@ -2,7 +2,6 @@ use std::collections::HashSet;
 use proc_macro2::{Ident, TokenStream};
 use quote::{quote, ToTokens};
 use syn::{PathArguments, ReturnType};
-use syn::spanned::Spanned;
 use super::super::ParsedAttr;
 
 /// Ok result is (return_ident, is_result, is_return, ReturnType)
@@ -49,6 +48,7 @@ pub(super) fn parse_return(ret: &ReturnType, impl_name: &Option<Ident>, attrs: &
     #[allow(unused_assignments)]
     let mut raw_return = ReturnType::Default;
 
+    #[allow(unused_assignments)]
     match &ret {
         ReturnType::Type(_, ty) => {
             let ty = &**ty;

@@ -134,7 +134,11 @@ impl ParsedAttr {
 
         // stream will be empty if there's no args
         let res_stream = if !attrs.tokens.is_empty() {
-            attrs.parse_args::<TokenStream>().unwrap()
+            match attrs.parse_args::<TokenStream>() {
+                Ok(v) => v,
+                // seems the doc comments make a #[doc] that's causing this to fail
+                Err(_) => TokenStream::new()
+            }
         } else {
             // empty attrs after all
             TokenStream::new()
