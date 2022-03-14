@@ -17,11 +17,11 @@ pub fn jclass_internal(attr: TokenStream, item: TokenStream) -> TokenStream {
     let mut stream = item_impl.to_token_stream();
 
     // Use either one, not both
-    let pkg = attrs.get("pkg");
-    let cls = attrs.get("cls");
-    if pkg.is_some() && cls.is_some() {
+    let pkg = attrs.get("pkg").is_some();
+    let cls = attrs.get("cls").is_some();
+    if pkg && cls {
         return syn::Error::new(Span::mixed_site(), "Can't use both pkg and cls attributes at same time").to_compile_error().into();
-    } else if pkg.is_none() && cls.is_none() {
+    } else if !pkg && !cls {
         return syn::Error::new(Span::mixed_site(), "Must specify either pkg or cls attributes").to_compile_error().into();
     }
 

@@ -1,7 +1,9 @@
 use std::collections::HashSet;
+
 use proc_macro2::{Ident, TokenStream};
 use quote::{quote, ToTokens};
 use syn::{PathArguments, ReturnType};
+
 use super::super::ParsedAttr;
 
 /// Ok result is (return_ident, is_result, is_return, ReturnType)
@@ -137,9 +139,12 @@ pub(super) fn parse_return(ret: &ReturnType, impl_name: &Option<Ident>, attrs: &
                                             // this is an empty () ok type
                                             // so just return no return type then
                                             if t.elems.len() == 0 {
-                                                is_result = false;
+                                                // but we still need to handle this result
+                                                is_result = true;
+                                                // but it returns nothing, so don't handle values
                                                 is_return = false;
                                                 inner_ty = None;
+                                                // throw away return type as we won't use it
                                                 raw_return = ReturnType::Default;
                                             } else {
                                                 return Err(syn::Error::new_spanned(_ok_res, "Must be an empty ok () type"))
