@@ -35,14 +35,16 @@ Debug messages can be found in Android logcat under the id `MAGICK`. Make sure y
 ## Behavior
 As this is a low level library, crashes are not impossible. I've made every effort to make that impossible however.
 
-If there is a low-level error/crash, this library will catch it and throw a java runtime exception instead of fatally crashing the JVM (which is what would normally happen if it was C!). Additionally, nearly all the functions in here, if they encounter a problem, will throw a related exception type (e.g. `PixelWandException`, `MagickWandException`, etc) along with a helpful human readable message. You should probably be careful to check for these just in case something makes your code fail.
+If there is a low-level error/crash, this library will catch it and throw a java runtime exception instead of fatally crashing the JVM (which is what would normally happen if it was C!). Additionally, nearly all the functions in here, if they encounter a problem, will throw a related exception type (e.g. `PixelWandException`, `MagickWandException`, etc) along with a helpful human readable message. <ins>**You should always check for these just in case something makes your code fail**</ins>.
 
-If there is a panic (a `crash` in Rust terms), please submit an issue along with reproducible steps so I can fix it. Unfortunately due to limitations the message might be a little cryptic, but provide as much info as you can (along with reproducible steps).
+If there is a `panic` (a `crash` in Rust terms), please submit an issue along with reproducible steps so I can fix it. Unfortunately due to limitations the message might be a little cryptic, but provide as much info as you can (along with reproducible steps).
 
-I have no control if the C code segfaults your project. Sorry. If there is one, that's likely an ImageMagick bug and you should report it to them. However, make sure to report it here too just in case it's a bug in kmagick.
+I have no control if the C code segfaults your project. Sorry. If there is one, that could be an ImageMagick bug and you should report it to them. However, make sure to report it here too just in case it's a bug in kmagick.
 
 ## API and Examples
 First of all, check out the official [ImageMagick](https://imagemagick.org/script/magick-wand.php) function reference. If you have any confusion/questions, it'll be answered there. Also, the sources jar contains comments for every function which should be good enough in most cases.
+
+<ins>Note</ins>: The majority of API functions throw exceptions if they fail. The ones used are `java/lang/RuntimeException` and a related `com/cherryleafroad/kmagick/*Exception` (check the function for which exception it may return). It is strongly recommended handle all exceptions if you don't want your code to crash! I realize this is Kotlin and exceptions aren't fun to handle, but because this is a low level library, many things can go wrong! Please see the Exception section below to find out how to get Exception details so you can know why it's happening to you.
 
 There's an example under the `example` directory as well.
 ```kotlin
