@@ -36,6 +36,7 @@ pub fn jmethod_internal(attr: TokenStream, item: TokenStream) -> TokenStream {
     let caller_args = &item_fn.calling_fn_args;
     let binding_args = &item_fn.binding_fn_args;
     let java_return = &item_fn.ret_type;
+    let env = &item_fn.env_name;
 
     let res_binding = if item_fn.is_result {
         quote! {
@@ -80,7 +81,7 @@ pub fn jmethod_internal(attr: TokenStream, item: TokenStream) -> TokenStream {
                 Err(e) => {
                     let msg = format!("`{}` threw an exception : {}", #fn_name_str, e);
                     log::error!("{}", msg);
-                    env.throw_new(#exc, msg).ok();
+                    #env.throw_new(#exc, msg).ok();
 
                     #null_mut
                 }
@@ -104,10 +105,10 @@ pub fn jmethod_internal(attr: TokenStream, item: TokenStream) -> TokenStream {
 
             match p_res {
                 Ok(#v_or_underscore) => #v_or_unit,
-                Err(e) => {
+                Err(_) => {
                     let msg = &format!("`{}()` panicked", #fn_name_str);
                     log::error!("{}", msg);
-                    env.throw_new("java/lang/RuntimeException", msg).ok();
+                    #env.throw_new("java/lang/RuntimeException", msg).ok();
 
                     #null_mut
                 }
