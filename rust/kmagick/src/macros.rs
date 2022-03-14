@@ -258,13 +258,11 @@ macro_rules! get_set_enum {
                     }
 
                     #[cfg(not(target_os="android"))]
-                    #[jni_tools::jtarget(not(target_os="android"))]
                     fn $set(&mut self, _: jni::JNIEnv, _: jni::objects::JObject, arg: jni::sys::jint) {
                         self.$m_set(arg);
                     }
 
                     #[cfg(target_os="android")]
-                    #[jni_tools::jtarget(target_os="android")]
                     fn $set(&mut self, _: jni::JNIEnv, _: jni::objects::JObject, arg: jni::sys::jint) -> jni_tools::JNIResult<()> {
                         use std::convert::TryFrom;
                         let arg = u32::try_from(arg)?;

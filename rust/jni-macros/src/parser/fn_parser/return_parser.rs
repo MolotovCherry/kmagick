@@ -63,7 +63,9 @@ pub(super) fn parse_return(ret: &ReturnType, impl_name: &Option<Ident>, attrs: &
                     inner_ty = Some(&segment.ident);
                     full_ty = v.path.segments.to_token_stream();
                     is_return = true;
-                    raw_return = ReturnType::Type(syn::Token![->](ty.span()), Box::new(ty.clone()));
+                    raw_return = syn::parse2::<ReturnType>(
+                        quote![-> #ty]
+                    )?;
 
                     if is_jdestroy {
                         return Err(syn::Error::new_spanned(v, "Destroy method cannot have return type"))
@@ -107,7 +109,13 @@ pub(super) fn parse_return(ret: &ReturnType, impl_name: &Option<Ident>, attrs: &
                                         //
                                         syn::Type::Path(i_v) => {
                                             inner_ty = Some(&i_v.path.segments.last().unwrap().ident);
+                                            let typ = &i_v.path.segments.to_token_stream();
                                             is_result = true;
+
+                                            // update the return to strip the Result<type> to type
+                                            raw_return = syn::parse2::<ReturnType>(
+                                                quote![-> #typ]
+                                            )?;
 
                                             if is_jnew {
                                                 if !allowed_ret.contains(&&*inner_ty.unwrap().to_string()) {
@@ -129,8 +137,10 @@ pub(super) fn parse_return(ret: &ReturnType, impl_name: &Option<Ident>, attrs: &
                                             // this is an empty () ok type
                                             // so just return no return type then
                                             if t.elems.len() == 0 {
-                                                is_result = true;
+                                                is_result = false;
+                                                is_return = false;
                                                 inner_ty = None;
+                                                raw_return = ReturnType::Default;
                                             } else {
                                                 return Err(syn::Error::new_spanned(_ok_res, "Must be an empty ok () type"))
                                             }
@@ -169,7 +179,8 @@ pub(super) fn parse_return(ret: &ReturnType, impl_name: &Option<Ident>, attrs: &
                         //
                         PathArguments::None => {
                             // leave inner_ty at default
-                            is_result = true;
+                            is_result = false;
+                            is_return = true;
                             raw_return = syn::parse2::<ReturnType>(
                                 quote![-> #full_ty]
                             )?;

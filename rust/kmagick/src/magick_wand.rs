@@ -4,7 +4,7 @@ use std::convert::TryFrom;
 
 use jni::{JNIEnv, objects::{JObject, JString, JValue}, sys::{jboolean, jbyteArray, jdouble, jdoubleArray, jint, jlong, jobject, jobjectArray, jstring}};
 
-use jni_tools::{Handle, jclass, jname, jtarget, Utils};
+use jni_tools::{Handle, jclass, jname, Utils};
 
 use crate::{
     DrawingWand,
@@ -372,7 +372,6 @@ impl MagickWand {
     }
 
     #[cfg(not(target_os="android"))]
-    #[jtarget(not(target_os="android"))]
     fn resampleImage(
         &self,
         _: JNIEnv,
@@ -385,7 +384,6 @@ impl MagickWand {
     }
 
     #[cfg(target_os="android")]
-    #[jtarget(target_os="android")]
     fn resampleImage(
         &self,
         _: JNIEnv,

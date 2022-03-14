@@ -63,15 +63,6 @@ pub fn jnew(_: TokenStream, item: TokenStream) -> TokenStream {
     item
 }
 
-// allow a function to be conditionally compiled in the resulting generated output
-// uses same format as #[cfg(target_os)]
-// note: you still are required to use #[cfg(target_os)] on the original impl function
-#[proc_macro_attribute]
-pub fn jtarget(_: TokenStream, item: TokenStream) -> TokenStream {
-    // this is a no-op, just here for marker purposes
-    item
-}
-
 // Change the object that's gotten when using a regular instance function
 #[proc_macro_attribute]
 pub fn jget(_: TokenStream, item: TokenStream) -> TokenStream {

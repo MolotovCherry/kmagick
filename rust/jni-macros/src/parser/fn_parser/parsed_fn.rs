@@ -216,12 +216,13 @@ impl ParsedFn {
         }))
     }
 
-    pub fn call_attr<F>(&self, name: &str, mut f: F)
-        where F: FnMut(&ParsedAttr)
+    pub fn get_attr(&self, name: &str) -> Option<&ParsedAttr>
     {
         if self.attrs.contains(name) {
-            f(self.attrs.get(name).unwrap());
+            return Some(self.attrs.get(name).unwrap());
         }
+
+        None
     }
 
     /// get the args for the generated jni binding function
@@ -267,17 +268,23 @@ impl ParsedFn {
                 "jbooleanArray" | "jbyteArray" | "jcharArray" | "jshortArray" |
                 "jintArray" | "jlongArray" | "jfloatArray" | "jdoubleArray" |
                 "jobjectArray" | "jweak" | "jfieldID" | "jmethodID" => {
-                    tks.extend(quote! { std::ptr::null_mut() })
+                    tks.extend(
+                        quote! { std::ptr::null_mut() }
+                    )
                 },
 
                 // numeric types
                 "jint" | "jlong" | "jbyte" | "jboolean" | "jchar" | "jshort" |
                 "jsize" => {
-                    tks.extend(quote! { 0 as jni::sys::#ret_ident })
+                    tks.extend(
+                        quote! { 0 as jni::sys::#ret_ident }
+                    )
                 },
 
                 "jfloat" | "jdouble" => {
-                    tks.extend(quote! { 0.0 as jni::sys::#ret_ident })
+                    tks.extend(
+                        quote! { 0.0 as jni::sys::#ret_ident }
+                    )
                 },
 
                 _ => ()

@@ -1,6 +1,6 @@
 use proc_macro::TokenStream;
 use proc_macro2::Span;
-use quote::quote;
+use quote::{quote, ToTokens};
 use syn::LitStr;
 use crate::parser::{
     ParsedFn, ParsedAttr
@@ -18,10 +18,11 @@ pub fn jmethod_internal(attr: TokenStream, item: TokenStream) -> TokenStream {
     let attrs = compile_err!(ParsedAttr::parse(&item_fn.bind_name, &attr));
 
     // if jtarget tag exists, make a matching #[cfg()] tokenstream for later
-    let mut target = proc_macro2::TokenStream::new();
-    item_fn.call_attr("jtarget", |f| {
-        target.extend(f.to_cfg_tokens());
-    });
+    let cfg = if item_fn.attrs.contains("cfg") {
+        item_fn.get_attr("cfg").unwrap().to_token_stream()
+    } else {
+        proc_macro2::TokenStream::new()
+    };
 
     // cls is required
     let java_fn = &item_fn.java_binding_fn_name;
@@ -92,7 +93,7 @@ pub fn jmethod_internal(attr: TokenStream, item: TokenStream) -> TokenStream {
     let new_tokens = quote! {
         #item_fn
 
-        #target
+        #cfg
         #[no_mangle]
         pub extern "system" fn #java_fn(#binding_args) #java_return {
             let p_res = std::panic::catch_unwind(|| {

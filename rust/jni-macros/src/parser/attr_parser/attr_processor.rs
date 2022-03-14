@@ -1,10 +1,11 @@
 use std::collections::HashMap;
+
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 use syn::{AttributeArgs, Lit, LitStr, Meta, NestedMeta};
 use syn::spanned::Spanned;
 
-pub(super) fn process_attrs(values: &mut HashMap<Ident, LitStr>, jtarget_ts: &mut TokenStream, attrs: &AttributeArgs, attr_name: &Ident) -> syn::Result<()> {
+pub(super) fn process_attrs(values: &mut HashMap<Ident, LitStr>, cfg_ts: &mut TokenStream, attrs: &AttributeArgs, attr_name: &Ident) -> syn::Result<()> {
     for attr in attrs {
         let value;
         let name;
@@ -20,11 +21,17 @@ pub(super) fn process_attrs(values: &mut HashMap<Ident, LitStr>, jtarget_ts: &mu
                             Lit::Str(s) => value = s.clone(),
                             n => return Err(syn::Error::new(n.span(), "Value must be a string"))
                         }
+
+                        if attr_name == "cfg" {
+                            cfg_ts.extend(quote! {
+                                target_os=#value
+                            });
+                        }
                     }
 
                     // for jtarget, not(target_os="foo")
                     Meta::List(l) => {
-                        if attr_name == "jtarget" || attr_name == "cfg" {
+                        if attr_name == "cfg" {
                             // not() is in the path segments
                             if l.path.segments.len() == 1 {
                                 let i = &l.path.segments.first().unwrap().ident;
@@ -58,7 +65,7 @@ pub(super) fn process_attrs(values: &mut HashMap<Ident, LitStr>, jtarget_ts: &mu
                                     return Err(syn::Error::new(l.span(), r#"Only not(target_os="foo") is supported"#))
                                 }
 
-                                jtarget_ts.extend(quote! {
+                                cfg_ts.extend(quote! {
                                     not(target_os=#value)
                                 });
                             } else {

@@ -14,7 +14,7 @@ pub struct ParsedAttr {
     pub name: Ident,
     name_s: String,
     pub values: HashMap<Ident, LitStr>,
-    jtarget_ts: TokenStream
+    cfg_ts: TokenStream
 }
 
 // convert the whole attribute into a token stream
@@ -87,7 +87,7 @@ impl ParsedAttr {
     fn get_inner(&self) -> TokenStream {
         let mut inner = TokenStream::new();
 
-        if self.jtarget_ts.is_empty() {
+        if self.cfg_ts.is_empty() {
             // normal attrs as usual
             for (key, val) in &self.values {
                 inner.extend(
@@ -98,7 +98,7 @@ impl ParsedAttr {
             }
         } else {
             // special: not(target_os="foo") ; only for jtarget
-            inner.extend(self.jtarget_ts.clone());
+            inner.extend(self.cfg_ts.clone());
         }
 
         inner
@@ -157,8 +157,8 @@ impl ParsedAttr {
         // Process attrs
         //
         let mut values = HashMap::new();
-        let mut jtarget_ts = TokenStream::new();
-        process_attrs(&mut values, &mut jtarget_ts, &attrs, &name)?;
+        let mut cfg_ts = TokenStream::new();
+        process_attrs(&mut values, &mut cfg_ts, &attrs, &name)?;
 
         //
         // validate correct arguments were passed to attr
@@ -169,23 +169,7 @@ impl ParsedAttr {
             name: name.clone(),
             name_s: name.to_string(),
             values,
-            jtarget_ts
+            cfg_ts
         })
-    }
-
-    // if attr is jtarget, will convert it into cfg block tokens
-    pub fn to_cfg_tokens(&self) -> TokenStream {
-        let mut ts = TokenStream::new();
-
-        if self.name == "jtarget" {
-            let inner = &self.jtarget_ts;
-            ts.extend(
-                quote! {
-                    #[cfg(#inner)]
-                }
-            );
-        }
-
-        ts
     }
 }

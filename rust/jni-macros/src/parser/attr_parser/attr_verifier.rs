@@ -17,10 +17,6 @@ pub(super) fn attr_verifier(attrs: AttributeArgs, values: &HashMap<Ident, LitStr
             vec!["pkg", "cls", "exc"],
             vec![]
         ),
-        "jtarget" => (
-            vec!["target_os"],
-            vec!["target_os"]
-        ),
         "jname" => (
             vec!["name"],
             vec!["name"]

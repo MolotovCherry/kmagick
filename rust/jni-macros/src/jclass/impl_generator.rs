@@ -1,4 +1,4 @@
-use proc_macro2::TokenStream;
+use proc_macro2::{Ident, TokenStream, Span};
 use quote::{quote, ToTokens};
 use syn::LitStr;
 
@@ -13,35 +13,33 @@ pub(super) fn generate_impl_functions(
     let impl_name = item_impl.name;
 
     for _fn in item_impl.functions {
-        let mut target = TokenStream::new();
-        _fn.call_attr("jtarget", |f| {
-            target.extend(f.to_cfg_tokens());
-        });
+        let cfg = if _fn.attrs.contains("cfg") {
+            _fn.get_attr("cfg").unwrap().to_token_stream()
+        } else {
+            TokenStream::new()
+        };
 
         // jget set take
-        let mut get = _fn.obj_name.clone();
-        if _fn.attrs.contains("jget") {
-            _fn.call_attr("jget", |f| {
-                let tk = f.get("from").unwrap().value().to_token_stream();
-                get = tk;
-            });
-        }
+        let get = if _fn.attrs.contains("jget") {
+            let lit = _fn.get_attr("cfg").unwrap().get_s("from").unwrap();
+            Ident::new(&*lit, Span::mixed_site()).to_token_stream()
+        } else {
+            _fn.obj_name.clone()
+        };
 
-        let mut take = _fn.obj_name.clone();
-        if _fn.attrs.contains("jtake") {
-            _fn.call_attr("jtake", |f| {
-                let tk = f.get("from").unwrap().value().to_token_stream();
-                take = tk;
-            });
-        }
+        let take = if _fn.attrs.contains("jtake") {
+            let lit = _fn.get_attr("cfg").unwrap().get_s("from").unwrap();
+            Ident::new(&*lit, Span::mixed_site()).to_token_stream()
+        } else {
+            _fn.obj_name.clone()
+        };
 
-        let mut set = _fn.obj_name.clone();
-        if _fn.attrs.contains("jset") {
-            _fn.call_attr("jset", |f| {
-                let tk = f.get("to").unwrap().value().to_token_stream();
-                set = tk;
-            });
-        }
+        let set = if _fn.attrs.contains("jset") {
+            let lit = _fn.get_attr("cfg").unwrap().get_s("to").unwrap();
+            Ident::new(&*lit, Span::mixed_site()).to_token_stream()
+        } else {
+            _fn.obj_name.clone()
+        };
 
         let call_args = _fn.calling_fn_args;
         let binding_args = _fn.binding_fn_args;
@@ -141,7 +139,7 @@ pub(super) fn generate_impl_functions(
             };
 
             stream = quote! {
-                #target
+                #cfg
                 #[no_mangle]
                 pub extern "system" fn #java_name(#binding_args) {
                     use jni_tools::Handle;
@@ -174,7 +172,7 @@ pub(super) fn generate_impl_functions(
         } else if attrs.contains("jstatic") {
 
             stream = quote! {
-                #target
+                #cfg
                 #[no_mangle]
                 pub extern "system" fn #java_name(#binding_args) #ret_type {
                     let p_res = std::panic::catch_unwind(|| {
@@ -227,7 +225,7 @@ pub(super) fn generate_impl_functions(
             };
 
             stream = quote! {
-                #target
+                #cfg
                 #[no_mangle]
                 pub extern "system" fn #java_name(#binding_args) {
                     use jni_tools::Handle;
@@ -280,7 +278,7 @@ pub(super) fn generate_impl_functions(
             };
 
             stream = quote! {
-                #target
+                #cfg
                 #[no_mangle]
                 pub extern "system" fn #java_name(#binding_args) #ret_type {
                     use jni_tools::Handle;
