@@ -120,6 +120,17 @@ impl ParsedAttr {
         self.values.get(ident)
     }
 
+    /// get as ident
+    pub fn get_i(&self, name: &str) -> Option<Ident> {
+        let i = self.get(name)?;
+        Some(
+            Ident::new(
+                &*i.value(),
+                i.span()
+            )
+        )
+    }
+    
     /// get the underlying key, except as a String
     pub fn get_s(&self, name: &str) -> Option<String> {
         Some(self.get(name)?.value())

@@ -10,7 +10,7 @@ pub(super) fn attr_verifier(attrs: AttributeArgs, values: &HashMap<Ident, LitStr
     //
     let allowed_args = match name {
         "jmethod" => (
-            vec!["cls", "exc"],
+            vec!["cls", "exc", "name"],
             vec!["cls"]
         ),
         "jclass" => (

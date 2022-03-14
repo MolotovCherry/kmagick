@@ -1,3 +1,5 @@
+#![allow(unused_assignments)]
+
 use std::collections::HashSet;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote, ToTokens};
@@ -113,6 +115,13 @@ impl ParsedFn {
         let main_attr = ParsedAttr::parse(&attr_ty, main_attr)?;
 
         // use normal name if jname is missing
+        if let None = bind_name {
+            // this is okay because attributes verified this can only exist as Some for jmethod
+            // otherwise it'll be None (overwritten next)
+            bind_name = main_attr.get_i("name");
+        }
+
+        // otherwise the name is the same
         if let None = bind_name {
             bind_name = Some(item_fn.sig().ident.clone());
         }

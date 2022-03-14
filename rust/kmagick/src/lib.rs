@@ -1,5 +1,21 @@
 #![allow(non_snake_case)]
-#![allow(dead_code)]
+
+use std::sync::Once;
+
+use jni::JNIEnv;
+use jni::objects::{JObject, JString};
+use jni::sys::{jboolean, jint, jobjectArray, jsize};
+use log::LevelFilter;
+
+// make available at crate level for macros
+pub use drawing_wand::DrawingWand;
+use jni_tools::{
+    jclass, jignore, jname,
+    jstatic, setup_panic, Utils
+};
+pub use magick_wand::MagickWand;
+pub use pixel_wand::PixelWand;
+use utils::Result;
 
 #[macro_use]
 mod macros;
@@ -10,24 +26,6 @@ mod utils;
 mod cache;
 mod errors;
 
-// make available at crate level for macros
-pub use drawing_wand::DrawingWand;
-pub use magick_wand::MagickWand;
-pub use pixel_wand::PixelWand;
-
-use jni_tools::{
-    Utils, setup_panic, jclass,
-    jignore, jname, jstatic
-};
-use utils::Result;
-use jni::{
-    JNIEnv
-};
-use jni::sys::{jint, jobjectArray, jsize, jboolean};
-use jni::objects::{JObject, JString};
-
-use log::LevelFilter;
-
 cfg_if::cfg_if! {
     if #[cfg(target_os="android")] {
         use android_logger::Config;
@@ -36,9 +34,6 @@ cfg_if::cfg_if! {
         use simplelog::*;
     }
 }
-
-use std::sync::Once;
-
 
 static INIT: Once = Once::new();
 

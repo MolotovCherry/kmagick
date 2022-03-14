@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use proc_macro2::{Ident, TokenStream};
+use proc_macro2::{Ident, Span, TokenStream};
 use quote::{quote, ToTokens};
 use syn::{PathArguments, ReturnType};
 
@@ -29,7 +29,7 @@ pub(super) fn parse_return(ret: &ReturnType, impl_name: &Option<Ident>, attrs: &
 
 
     // The only valid return types for jnew are Self and ident_name
-    let impl_name = impl_name.clone().unwrap().to_string();
+    let impl_name = impl_name.clone().unwrap_or(Ident::new("_", Span::mixed_site())).to_string();
     if is_impl && is_jnew {
         allowed_ret = vec![
             &*impl_name,
