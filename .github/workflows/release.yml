@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      
+
       - name: Make matrix
         id: generate
         run: python .github-deps/generate-matrix.py rust/rust-toolchain.toml
@@ -116,7 +116,7 @@ jobs:
           $inno = Resolve-Path -Path innoextract-*-windows.zip
           Expand-Archive -Path $inno -DestinationPath inno/
           inno/innoextract.exe ImageMagick.exe
-    
+
       - name: Cache LLVM and Clang
         id: cache-llvm
         uses: actions/cache@v2
@@ -172,7 +172,7 @@ jobs:
         working-directory: kmagick-rs/rust
         run: |
           Compress-Archive -Path target/${{ matrix.target }}/release/${{ matrix.output }} -DestinationPath kmagick-${{ matrix.target }}.zip
-          
+
       - name: Update release artifacts
         uses: xresloader/upload-to-github-release@v1
         env:
@@ -197,7 +197,7 @@ jobs:
         with:
           token: ${{ github.token }}
           latest: true
-    
+
       - name: Checkout KMagick
         uses: actions/checkout@v2
         with:
@@ -205,13 +205,13 @@ jobs:
 
       - name: Compile Jar
         run: |
-          ./gradlew jar
-          ./gradlew sourcesJar
+          ./gradlew kmagick:jar
+          ./gradlew kmagick:sourcesJar
 
       - name: Rename artifacts
         run: |
-          Move-Item -Path build/libs/kmagick-*-sources.jar -Destination ./kmagick-sources.jar
-          Move-Item -Path build/libs/kmagick*.jar -Destination ./kmagick.jar
+          Move-Item -Path kmagick/build/libs/kmagick-*-sources.jar -Destination ./kmagick-sources.jar
+          Move-Item -Path kmagick/build/libs/kmagick*.jar -Destination ./kmagick.jar
 
       - name: Update release artifacts
         uses: xresloader/upload-to-github-release@v1

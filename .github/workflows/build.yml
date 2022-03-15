@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      
+
       - name: Make matrix
         id: generate
         run: |
@@ -107,7 +107,7 @@ jobs:
           $inno = Resolve-Path -Path innoextract-*-windows.zip
           Expand-Archive -Path $inno -DestinationPath inno/
           inno/innoextract.exe ImageMagick.exe
-    
+
       - name: Cache LLVM and Clang
         id: cache-llvm
         uses: actions/cache@v2
@@ -178,10 +178,10 @@ jobs:
       - name: Compile Jar
         working-directory: kmagick-rs
         run: |
-          ./gradlew build
+          ./gradlew kmagick:build
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           name: build-kmagick
-          path: kmagick-rs/build/libs/kmagick*.jar
+          path: kmagick-rs/kmagick/build/libs/kmagick*.jar

@@ -1,22 +1,12 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
-plugins {
-    kotlin("jvm") version "1.6.10"
+apply {
+    plugin("org.jetbrains.kotlin.jvm")
 }
 
 group = "com.example"
 version = ""
 
-repositories {
-    mavenCentral()
-}
-
-tasks.withType<KotlinCompile>() {
-    kotlinOptions.jvmTarget = "11"
-}
-
 dependencies {
-    implementation("org.objenesis:objenesis:3.2")
+    implementation(project(":kmagick"))
 }
 
 val jar by tasks.getting(Jar::class) {
