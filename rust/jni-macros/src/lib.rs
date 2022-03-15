@@ -73,7 +73,7 @@ mod jclass;
 ///
 #[proc_macro_attribute]
 pub fn jmethod(attr: TokenStream, item: TokenStream) -> TokenStream {
-    jmethod::jmethod_internal(attr, item).into()
+    jmethod::jmethod_internal(attr, item)
 }
 
 ///
@@ -141,7 +141,7 @@ pub fn jmethod(attr: TokenStream, item: TokenStream) -> TokenStream {
 ///
 #[proc_macro_attribute]
 pub fn jclass(attr: TokenStream, item: TokenStream) -> TokenStream {
-    jclass::jclass_internal(attr, item).into()
+    jclass::jclass_internal(attr, item)
 }
 
 /// Change the fn name of the generated binding that java sees.
