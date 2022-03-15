@@ -21,7 +21,8 @@ A full example of the below setup can be found [here](https://github.com/cherryl
 2. Add this line to your dependencies: `implementation fileTree(dir: 'libs', include: ['*.jar'])`
 3. Place the jars in the `app/libs` folder.
 4. Place the [Android ImageMagick shared library](https://github.com/cherryleafroad/Android-ImageMagick7/releases) `so` files in your `app/src/main/jniLibs` folder along with the Android `kmagick.so` library.
-5. Either [download](http://objenesis.org/download.html) objenesis jar and place it in the libs folder, OR add this line to your dependencies: `implementation 'org.objenesis:objenesis:3.2'`
+5. Either [download](http://objenesis.org/download.html) objenesis jar and place it in the libs folder, OR add this line to your dependencies:  
+`implementation 'org.objenesis:objenesis:3.2'`
 
 Debug messages can be found in Android logcat under the id `MAGICK`. Make sure you first set the appropriate `LogLevel` to see them.
 
@@ -34,6 +35,8 @@ Debug messages can be found in Android logcat under the id `MAGICK`. Make sure y
 2. Install Windows ImageMagick (dll version) and make sure the program files folder is in your `PATH`.
 3. Setup your project to use the jar as normal.
 4. Make sure `kmagick.dll` is in your path as well.
+5. Either [download](http://objenesis.org/download.html) objenesis jar and place it along with your other jars, OR add this line (or similar depending on your build system) to your dependencies:  
+`implementation 'org.objenesis:objenesis:3.2'`
 
 ## Behavior
 As this is a low level library, crashes are not impossible. I've made every effort to make that impossible however.
