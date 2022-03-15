@@ -22,7 +22,7 @@ The build script has several flags you can use.
 - Download the [latest Android-Imagemagick shared lib release](https://github.com/cherryleafroad/Android-ImageMagick7/releases)
 - Make a `jniLibs` folder in the Android-Imagemagick repo root
 - Place the shared libs in the `jniLibs` folder (structure should look like `Android-Imagemagick/jniLibs/arm64-v8a/*.so`)
-- Download and install the [Android ndk](https://developer.android.com/ndk/downloads) version r22b (newer version has a bug which breaks building)
+- Download and install the [Android ndk](https://developer.android.com/ndk/downloads) version r22b (newer version has a bug which breaks building; See [here](https://github.com/rust-lang/rust/pull/85806))
 - Create env vars for Android NDK: (note, this is not a script, only pseudocode)
 ```
 $ndkRoot = "path/to/android-ndk-r22b"
