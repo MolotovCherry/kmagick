@@ -14,7 +14,7 @@ Please answer the following questions for yourself before submitting an issue.
 - [ ] I am running the latest version
 - [ ] I checked the documentation and examples and found no answer
 - [ ] I checked that it wasn't user error; it was not an ordinary exception that I could've found out and fixed by running `wand.getException()`
-- [ ] I checked that this isn't an [https://github.com/ImageMagick/ImageMagick](https://github.com/ImageMagick/ImageMagick) bug itself, and is an actual problem with the bindings
+- [ ] I checked that this isn't an [ImageMagick](https://github.com/ImageMagick/ImageMagick) bug itself, and is an actual problem with the bindings
 - [ ] I checked to make sure that this issue has not already been filed
 - [ ] I'm reporting the issue to the correct repository
 
