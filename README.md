@@ -102,6 +102,10 @@ You can cross reference the [`ExceptionType`](/src/main/kotlin/com/cherryleafroa
 
 For more examples and information on usage, please browse the API in your IDE or check ImageMagick's website.
 
+## Reporting issues
+If you encountered a problem, please first check if you can find out what it is by running `getException()` and checking the details.  
+If this doesn't help and it's a real bug, then please check your `logcat` for your device and include the error log in the issue you make.
+
 ## Missing an API Function?
 
 They're actually not that hard to add! If you need one that's missing, go check out the [rust imagemagick bindings crate](https://github.com/nlfiedler/magick-rust) and consider making an issue or sending them a PR. It'll make its way downstream to me and I can add it here.
