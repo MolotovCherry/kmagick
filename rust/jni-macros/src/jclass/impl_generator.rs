@@ -91,7 +91,7 @@ pub(super) fn generate_impl_functions(
                         let msg = format!("`{}` threw an exception : {}", #diag, e.to_string());
                         log::error!("{}", msg);
                         log::debug!("Error details: {:?}", e);
-                        #env.throw_new(#exc, msg).ok();
+                        let _ = #env.throw_new(#exc, msg);
 
                         #null_ret
                     }
@@ -127,7 +127,7 @@ pub(super) fn generate_impl_functions(
                             let msg = format!("Failed to create new obj for `{}` : {}", #diag, e.to_string());
                             log::error!("{}", msg);
                             log::debug!("Error details: {:?}", e);
-                            #env.throw_new(#exc, msg).ok();
+                            let _ = #env.throw_new(#exc, msg);
                             return;
                         }
                     };
@@ -154,7 +154,7 @@ pub(super) fn generate_impl_functions(
                                 let msg = format!("Failed to set handle for `{}` : {}", #diag, e.to_string());
                                 log::error!("{}", msg);
                                 log::debug!("Error details: {:?}", e);
-                                #env.throw_new(#exc, msg).ok();
+                                let _ = #env.throw_new(#exc, msg);
                             }
                         }
                     });
@@ -164,7 +164,7 @@ pub(super) fn generate_impl_functions(
                         Err(_) => {
                             let msg = &format!("`{}` panicked", #diag);
                             log::error!("{}", msg);
-                            #env.throw_new("java/lang/RuntimeException", msg).ok();
+                            let _ = #env.throw_new("java/lang/RuntimeException", msg);
                         }
                     }
                 }
@@ -186,7 +186,7 @@ pub(super) fn generate_impl_functions(
                         Err(_) => {
                             let msg = &format!("`{}` panicked", #diag);
                             log::error!("{}", msg);
-                            #env.throw_new("java/lang/RuntimeException", msg).ok();
+                            let _ = #env.throw_new("java/lang/RuntimeException", msg);
 
                             #null_ret
                         }
@@ -250,7 +250,7 @@ pub(super) fn generate_impl_functions(
                                 let msg = format!("Failed to clear handle for `{}` : {}", #diag, e.to_string());
                                 log::error!("{}", msg);
                                 log::debug!("Error details: {:?}", e);
-                                #env.throw_new(#exc, msg).ok();
+                                let _ = #env.throw_new(#exc, msg);
                                 return;
                             }
                         }#fn_call_sem
@@ -263,7 +263,7 @@ pub(super) fn generate_impl_functions(
                         Err(_) => {
                             let msg = &format!("`{}` panicked", #diag);
                             log::error!("{}", msg);
-                            #env.throw_new("java/lang/RuntimeException", msg).ok();
+                            let _ = #env.throw_new("java/lang/RuntimeException", msg);
                         }
                     }
                 }
@@ -292,7 +292,7 @@ pub(super) fn generate_impl_functions(
                                 let msg = format!("Failed to get handle for `{}` : {}", #diag, e.to_string());
                                 log::error!("{}", msg);
                                 log::debug!("Error details: {:?}", e);
-                                #env.throw_new(#exc, msg).ok();
+                                let _ = #env.throw_new(#exc, msg);
 
                                 return #null_ret;
                             }
@@ -308,7 +308,7 @@ pub(super) fn generate_impl_functions(
                         Err(_) => {
                             let msg = &format!("`{}` panicked", #diag);
                             log::error!("{}", msg);
-                            #env.throw_new("java/lang/RuntimeException", msg).ok();
+                            let _ = #env.throw_new("java/lang/RuntimeException", msg);
 
                             #null_ret
                         }

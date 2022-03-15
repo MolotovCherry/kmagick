@@ -11,7 +11,7 @@ use log::LevelFilter;
 pub use drawing_wand::DrawingWand;
 use jni_tools::{
     jclass, jignore, jname,
-    jstatic, setup_panic, Utils
+    jstatic, setup_panic, Utils, JNIResult
 };
 pub use magick_wand::MagickWand;
 pub use pixel_wand::PixelWand;
@@ -92,7 +92,7 @@ struct Magick;
 #[jclass(pkg="com/cherryleafroad/kmagick", exc="com/cherryleafroad/kmagick/MagickException")]
 impl Magick {
     #[jstatic]
-    fn nativeInit() -> jni_tools::JNIResult<()> {
+    fn nativeInit() -> JNIResult<()> {
         init()?;
 
         magick_rust::magick_wand_genesis();
@@ -103,7 +103,7 @@ impl Magick {
     }
 
     #[jstatic]
-    fn magickQueryFonts(env: JNIEnv, _: JObject, pattern: JString) -> jni_tools::JNIResult<jobjectArray> {
+    fn magickQueryFonts(env: JNIEnv, _: JObject, pattern: JString) -> JNIResult<jobjectArray> {
         let pat: String = env.get_jstring(pattern)?;
 
         let fonts = magick_rust::magick_query_fonts(&*pat)?;
@@ -118,7 +118,7 @@ impl Magick {
     }
 
     #[jstatic]
-    fn terminate(env: JNIEnv) -> jni_tools::JNIResult<()> {
+    fn terminate(env: JNIEnv) -> JNIResult<()> {
         // Before terminating, clear cache and take all handles / drop mem, since all internal
         // references will become invalid afterwards. Last thing we need are UB and segfaults
         log::debug!("Magick::terminate(): Clearing all wands");
