@@ -103,5 +103,7 @@ They're actually not that hard to add! If you need one that's missing, go check 
 ## Contributions
 Contributions are welcome! If you have an improvement, please send a PR or make an issue about it and I'll see what we can do. 😉 If you know Rust, contributions are even more welcome, especially to the [ImageMagick Rust bindings crate](https://github.com/nlfiedler/magick-rust) (because it'll make the functions available downstream for me).
 
+If you want to contribute Rust code to this project, check out the [rust folder](https://github.com/cherryleafroad/kmagick/tree/main/rust) which has directions on how to compile it locally.
+
 ## Rust devs - a note for you all
 In the `Rust` directory, the two crates `jni-macros` and `jni-tools` offers some FULLY working macros which generate JNI bindings for Rust functions. Of course, it's only Kotlin compatible (no Java; although you _could_ edit the handle fn's to fix that). You can even use regular impl's which KEEP STATE between calls as if it was a real class instance! The `jni-tools` crate offers the visible public API for it. There's also docs on it to explain its usage, however, if you want to fully know how to use it, you should take a look at my Rust and Kotlin code as the prime example.
