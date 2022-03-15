@@ -15,10 +15,13 @@ All downloads are in the [releases section](https://github.com/cherryleafroad/km
 ## Setup
 
 ### Android
-1. Grab the jar and sources jar and put it in your project.
+A full example of the below setup can be found [here](https://github.com/cherryleafroad/kmagick/tree/main/example/android-setup)
+
+1. Grab the jar and sources jar.
 2. Add this line to your dependencies: `implementation fileTree(dir: 'libs', include: ['*.jar'])`
 3. Place the jars in the `app/libs` folder.
 4. Place the [Android ImageMagick shared library](https://github.com/cherryleafroad/Android-ImageMagick7/releases) `so` files in your `app/src/main/jniLibs` folder along with the Android `kmagick.so` library.
+5. Either [download](http://objenesis.org/download.html) objenesis jar and place it in the libs folder, OR add this line to your dependencies: `implementation 'org.objenesis:objenesis:3.2'`
 
 Debug messages can be found in Android logcat under the id `MAGICK`. Make sure you first set the appropriate `LogLevel` to see them.
 
