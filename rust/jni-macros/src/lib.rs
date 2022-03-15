@@ -8,6 +8,7 @@ mod jmethod;
 mod jclass;
 
 
+///
 /// Wrap a function to use in jni.
 ///
 ///     Usage: #[jmethod(cls="some/java/cls", exc="some/exception/ExcCls")]
@@ -57,17 +58,25 @@ mod jclass;
 ///                                      types inside of this, including ()
 ///             () - ZST can be used inside JNIResult (can also be used outside, but why would you?)
 ///
+///       Safety:
+///         A wrapper is generated which uses `panic::catch_unwind` to keep it from unwinding beyond
+///         ffi boundaries. Any panics will get caught and generate a nice exception in java instead of
+///         crashing everything. Additionally, it also handles a result from the user function and throws
+///         a java exception if the result failed. It is very unlikely for this to not catch something and
+///         actually crash jvm. However, this will not catch abort panics, only unwind panics.
 ///
 /// * `cls` - the Kotlin class this method belongs to. This is required.
 /// * `exc` - exception to use if fn returns a JNIResult and it fails. This is optional.
 ///           If missing, `java/lang/RuntimeException` will be used.
 /// * `name` - rename the function to this name on the JNI side. This is optional.
 ///            If missing, the fn name will be used.
+///
 #[proc_macro_attribute]
 pub fn jmethod(attr: TokenStream, item: TokenStream) -> TokenStream {
     jmethod::jmethod_internal(attr, item).into()
 }
 
+///
 /// Wrap an entire impl's fn's for jni.
 ///
 ///     Usage: #[jclass(pkg="some/java/pkg", exc="some/exception/Cls")]
@@ -117,12 +126,19 @@ pub fn jmethod(attr: TokenStream, item: TokenStream) -> TokenStream {
 ///                                      types inside of this, including ()
 ///             () - ZST can be used inside JNIResult (can also be used outside, but why would you?)
 ///
+///       Safety:
+///         A wrapper is generated which uses `panic::catch_unwind` to keep it from unwinding beyond
+///         ffi boundaries. Any panics will get caught and generate a nice exception in java instead of
+///         crashing everything. Additionally, it also handles a result from the user function and throws
+///         a java exception if the result failed. It is very unlikely for this to not catch something and
+///         actually crash jvm. However, this will not catch abort panics, only unwind panics.
 ///
 /// * `cls` - the Kotlin class this method belongs to. Either this or `pkg` are required.
 /// * `pkg` - the Kotlin pkg these fn's belong to. Either this or `cls` are required.
 ///           the class name used will be the same as the impl's name.
 /// * `exc` - exception to use if fn returns a JNIResult and it fails. This is optional.
 ///           If missing, `java/lang/RuntimeException` will be used.
+///
 #[proc_macro_attribute]
 pub fn jclass(attr: TokenStream, item: TokenStream) -> TokenStream {
     jclass::jclass_internal(attr, item).into()
