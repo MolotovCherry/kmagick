@@ -44,7 +44,7 @@ I have no control if the C code segfaults your project. Sorry. If there is one, 
 ## API and Examples
 First of all, check out the official [ImageMagick](https://imagemagick.org/script/magick-wand.php) function reference. If you have any confusion/questions, it'll be answered there. Also, the sources jar contains comments for every function which should be good enough in most cases.
 
-<ins>Note</ins>: The majority of API functions throw exceptions if they fail. The ones used are `java/lang/RuntimeException` and a related `com/cherryleafroad/kmagick/*Exception` (check the function for which exception it may return). It is strongly recommended handle all exceptions if you don't want your code to crash! I realize this is Kotlin and exceptions aren't fun to handle, but because this is a low level library, many things can go wrong! Please see the Exception section below to find out how to get Exception details so you can know why it's happening to you.
+<ins>Note</ins>: The majority of API functions throw exceptions if they fail. The ones used are `java/lang/RuntimeException` and a related `com/cherryleafroad/kmagick/*Exception` (check the function for which exception it may return). It is strongly recommended you handle all exceptions if you don't want your program/app to crash! I realize this is Kotlin and exceptions aren't fun to handle, but because this is a low level library, many things can go wrong! Please see the Exception section below to find out how to get Exception details so you can know why it's happening to you.
 
 There's an [example](/example/src/main/kotlin/com/example/cli/Main.kt) under the `example` directory as well.
 ```kotlin
