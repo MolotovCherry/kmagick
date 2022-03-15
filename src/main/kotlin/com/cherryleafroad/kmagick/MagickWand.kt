@@ -590,7 +590,7 @@ class MagickWand : Closeable {
         magickResizeImage(width, height, filter.id)
     }
     @Throws(MagickWandException::class)
-    external fun magickResizeImage(width: Long, height: Long, filter: Int)
+    private external fun magickResizeImage(width: Long, height: Long, filter: Int)
 
     /**
      * Extract a region of the image. The [width] and [height] is used as the size
