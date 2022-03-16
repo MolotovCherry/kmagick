@@ -23,7 +23,7 @@ macro_rules! TakeObj {
         for wand in $cache.values() {
             // clear handle and let object drop to prevent invalid references to an already deleted obj
             let wand = $env.take_handle::<$wand>(wand.as_obj())?;
-            log::debug!("Destroyed {} id {}", stringify!($wand), wand.id);
+            log::trace!("Destroyed {} id {}", stringify!($wand), wand.id);
         }
     }}
 }
@@ -58,7 +58,7 @@ pub fn insert(cache: &Mutex<FxHashMap<u64, GlobalRef>>, value: GlobalRef, name: 
 
     cache.insert(id, value);
 
-    log::debug!("Inserted {name} id {id}");
+    log::trace!("Inserted {name} id {id}");
 
     Ok(id)
 }
@@ -67,11 +67,11 @@ pub fn insert(cache: &Mutex<FxHashMap<u64, GlobalRef>>, value: GlobalRef, name: 
 pub fn remove(cache: &Mutex<FxHashMap<u64, GlobalRef>>, id: u64, name: &str) {
     let cache = &mut *cache.lock().expect("Poisoned lock");
     if let Some(_) = cache.remove(&id) {
-        log::debug!("Destroyed {name} id {id}");
+        log::trace!("Destroyed {name} id {id}");
     } else {
         // it's concievable a race condition can occurr where another thread might try to remove
         // from the cache when another thread terminated it, thereby causing this to be already gone
-        log::debug!("{name} id {id} already removed from cache");
+        log::trace!("{name} id {id} already removed from cache");
     }
 
 }
