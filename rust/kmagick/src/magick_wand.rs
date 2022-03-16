@@ -97,7 +97,7 @@ impl MagickWand {
         let (distortion, r_diffImage) = self.compare_images(&reference.instance, metric);
 
         let mut diffImage = None;
-        if diffImage.is_some() {
+        if r_diffImage.is_some() {
             let wand = r_diffImage.unwrap();
             diffImage = Some(new_from_wand!(env, wand, MagickWand));
         }
@@ -105,11 +105,7 @@ impl MagickWand {
         let cls = env.find_class("com/cherryleafroad/kmagick/Comparison")?;
         let j_distortion = JValue::Double(distortion);
         let j_diffImage = JValue::Object(
-            if diffImage.is_some() {
-                diffImage.unwrap()
-            } else {
-                JObject::null()
-            }
+            diffImage.unwrap_or(JObject::null())
         );
         let mid = env.get_method_id(cls, "<init>", "(DLcom/cherryleafroad/kmagick/MagickWand;)V")?;
 
