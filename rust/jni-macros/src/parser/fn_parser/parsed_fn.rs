@@ -96,9 +96,11 @@ impl ParsedFn {
         let mut bind_name = None;
         if attrs.contains("jignore") {
             return Ok(None)
-        } else if attrs.contains("jstatic") {
+        }
+        if attrs.contains("jstatic") {
             is_static = Some(true);
-        } else if attrs.contains("jname") {
+        }
+        if attrs.contains("jname") {
             bind_name = Some(
                 Ident::new(
                     &*attrs.get_attr_key_s("jname", "name").unwrap(),
