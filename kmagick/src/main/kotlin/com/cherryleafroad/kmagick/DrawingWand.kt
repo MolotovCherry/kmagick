@@ -1,6 +1,5 @@
 package com.cherryleafroad.kmagick
 
-import org.objenesis.ObjenesisStd
 import java.io.Closeable
 
 class DrawingWandException(message: String) : MagickException(message)
@@ -26,9 +25,7 @@ class DrawingWand : Closeable {
          * Internal use ONLY. Creates instance without calling constructor
          */
         fun newInstance(): DrawingWand {
-            val objenesis = ObjenesisStd()
-            val instantiator = objenesis.getInstantiatorOf(DrawingWand::class.java)
-            return instantiator.newInstance()
+            return drawingWandInstantiator.newInstance()
         }
     }
 

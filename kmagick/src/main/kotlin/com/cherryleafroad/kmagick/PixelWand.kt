@@ -1,6 +1,5 @@
 package com.cherryleafroad.kmagick
 
-import org.objenesis.ObjenesisStd
 import java.io.Closeable
 
 typealias Quantum = Float
@@ -28,9 +27,7 @@ class PixelWand : Closeable {
          * Internal use ONLY. Creates instance without calling constructor
          */
         fun newInstance(): PixelWand {
-            val objenesis = ObjenesisStd()
-            val instantiator = objenesis.getInstantiatorOf(PixelWand::class.java)
-            return instantiator.newInstance()
+            return pixelWandInstantiator.newInstance()
         }
     }
 
