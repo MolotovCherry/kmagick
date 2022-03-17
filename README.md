@@ -53,7 +53,10 @@ First of all, check out the official [ImageMagick](https://imagemagick.org/scrip
 <ins>Note</ins>: The majority of API functions throw exceptions if they fail. The ones used are `java/lang/RuntimeException` and a related `com/cherryleafroad/kmagick/*Exception` (check the function for which exception it may return). It is strongly recommended you handle all exceptions if you don't want your program/app to crash! I realize this is Kotlin and exceptions aren't fun to handle, but because this is a low level library, many things can go wrong! Please see the Exception section below to find out how to get Exception details so you can know why it's happening to you.
 
 There's an [example](/example/src/main/kotlin/com/example/cli/Main.kt) under the `example` directory as well.  
-You can use the included `run-example.bat` to build and run the example. Remember that you need `kmagick.dll` in your `PATH` (or same cwd)
+The example shows all the different kmagick features to be aware of (which aren't all covered below).
+
+You can use the included `run-example.bat` to build and run the example (note: default example is a tutorial and won't run without editing first).  
+Remember that you need `kmagick.dll` in your `PATH` (or same cwd) for it to work
 ```kotlin
 // Basic usage
 
@@ -71,24 +74,31 @@ Magick.initialize().use {
 Magick.terminate()
 
 Magick.initialize().use {
-  val a = PixelWand()
-  a.color = "blue"
-  
-  val b = MagickWand()
-  b.newImage(100, 200, a)
-  
-  // if you so desire, you can also destroy your wand in advance
-  // just don't attempt to use it afterwards.
-  // java might not guarantee the destructor will be called on finalize(),
-  // so you might have to call this yourself to keep memory sane
-  a.destroy()
-  
-  // wands also can use the `use` blocks if needed
-  // just remember it'll be destroyed at the end of the block!
-  b.use {
-    it.readImage("/some/path/file.png")
-  }
-}
+    val a = PixelWand()
+    a.color = "blue"
+    
+    val b = MagickWand()
+    b.newImage(100, 200, a)
+    
+    // if you so desire, you can also destroy your wand in advance
+    // just don't attempt to use it afterwards.
+    // java might not guarantee the destructor will be called on finalize(),
+    // so you might have to call this yourself to keep memory sane
+    a.destroy()
+    
+    // wands also can use the `use` blocks if needed
+    // just remember it'll be destroyed at the end of the block!
+    b.use {
+        it.readImage("/some/path/file.png")
+    }
+    
+    // Any wand method may throw an exception, so make sure to handle them
+    try {
+        b.getImageHistogram()
+    } catch (e: MagickWandException) {
+        println("exception: ${e.message}")
+    }
+} // all wands auto destroyed here due to `Magick.terminate()`
 ```
 
 ### Exceptions

@@ -68,4 +68,32 @@ object Magick : Closeable {
      * Checks whether the magick system was initialized
      */
     external fun isInitialized(): Boolean
+
+    /**
+     * Destroys all wands (same thing that happens when you call `terminate()`)
+     * WARNING: DO NOT use the destroyed wands after. They are invalidated after that.
+     */
+    external fun destroyWands()
+
+    /**
+     * Destroys all wands with certain types that match ID's
+     * WARNING: DO NOT use the destroyed wands after. They are invalidated after that.
+     */
+    @OptIn(ExperimentalUnsignedTypes::class)
+    @JvmName("destroyWandIds")
+    internal external fun destroyWandIds(ids: ULongArray, wandType: Int)
+
+    /**
+     * Destroys all wands of a certain type
+     * WARNING: DO NOT use the destroyed wands after. They are invalidated after that.
+     */
+    @JvmName("destroyWandType")
+    internal external fun destroyWandType(wandType: Int)
+
+    /**
+     * Destroys a wand with a specific ID
+     * WARNING: DO NOT use the destroyed wand after. It is invalidated after that.
+     */
+    @JvmName("destroyWandId")
+    internal external fun destroyWandId(id: ULong, wandType: Int)
 }

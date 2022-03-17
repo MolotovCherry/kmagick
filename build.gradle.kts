@@ -44,4 +44,8 @@ subprojects {
             //archives(javadocJar)
         }
     }
+
+    tasks.withType(KotlinCompile::class).all {
+        kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
+    }
 }

@@ -1,6 +1,7 @@
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Mutex;
 
+use enumn::N;
 use fxhash::FxHashMap;
 use jni::JNIEnv;
 use jni::objects::GlobalRef;
@@ -11,6 +12,7 @@ use jni_tools::Handle;
 use crate::{
     DrawingWand, MagickWand, PixelWand
 };
+use crate::utils::WandId;
 
 lazy_static! {
     pub static ref PIXELWAND_CACHE: Mutex<FxHashMap<u64, GlobalRef>> = Mutex::new(FxHashMap::default());
@@ -18,12 +20,30 @@ lazy_static! {
     pub static ref MAGICKWAND_CACHE: Mutex<FxHashMap<u64, GlobalRef>> = Mutex::new(FxHashMap::default());
 }
 
-macro_rules! TakeObj {
+#[derive(N)]
+pub enum CacheType {
+    PixelWand,
+    DrawingWand,
+    MagickWand
+}
+
+macro_rules! TakeObjs {
     ($env:ident, $wand:ident, $cache:ident) => {{
         for wand in $cache.values() {
             // clear handle and let object drop to prevent invalid references to an already deleted obj
             let wand = $env.take_handle::<$wand>(wand.as_obj())?;
-            log::trace!("Destroyed {} id {}", stringify!($wand), wand.id);
+            log::trace!("Destroyed {} id {}", stringify!($wand), wand.id());
+        }
+    }}
+}
+
+macro_rules! TakeObj {
+    ($env:ident, $wand:ident, $cache:ident, $id:ident) => {{
+        // clear handle and let object drop to prevent invalid references to an already deleted obj
+        let wand = $cache.get(&$id);
+        if let Some(w) = wand {
+            let w = $env.take_handle::<$wand>(w.as_obj()).unwrap();
+            log::trace!("Destroyed {} id {}", stringify!($wand), w.id());
         }
     }}
 }
@@ -34,9 +54,9 @@ pub fn clear(env: JNIEnv) -> crate::Result<()> {
     let drawing_cache = &mut *DRAWINGWAND_CACHE.lock()?;
 
     // first we need to take all the objects out
-    TakeObj!(env, PixelWand, pixel_cache);
-    TakeObj!(env, DrawingWand, drawing_cache);
-    TakeObj!(env, MagickWand, magick_cache);
+    TakeObjs!(env, PixelWand, pixel_cache);
+    TakeObjs!(env, DrawingWand, drawing_cache);
+    TakeObjs!(env, MagickWand, magick_cache);
 
     // now clear out all instances
     pixel_cache.clear();
@@ -63,15 +83,35 @@ pub fn insert(cache: &Mutex<FxHashMap<u64, GlobalRef>>, value: GlobalRef, name: 
     Ok(id)
 }
 
-// Remove entry from the cache
-pub fn remove(cache: &Mutex<FxHashMap<u64, GlobalRef>>, id: u64, name: &str) {
-    let cache = &mut *cache.lock().expect("Poisoned lock");
-    if let Some(_) = cache.remove(&id) {
-        log::trace!("Destroyed {name} id {id}");
-    } else {
-        // it's concievable a race condition can occurr where another thread might try to remove
-        // from the cache when another thread terminated it, thereby causing this to be already gone
-        log::trace!("{name} id {id} already removed from cache");
+pub fn destroy_type<W>(env: JNIEnv, cache: &'static Mutex<FxHashMap<u64, GlobalRef>>) -> crate::Result<()>
+    where W: Send + WandId + 'static
+{
+    let cache = &mut *cache.lock()?;
+
+    TakeObjs!(env, W, cache);
+
+    cache.clear();
+    Ok(())
+}
+
+pub fn destroy_ids<W>(env: JNIEnv, cache: &'static Mutex<FxHashMap<u64, GlobalRef>>, ids: &[u64]) -> crate::Result<()>
+    where W: Send + WandId + 'static
+{
+    let cache = &mut *cache.lock()?;
+
+    for id in ids {
+        TakeObj!(env, W, cache, id);
+        let _ =  cache.remove(id);
     }
 
+    Ok(())
+}
+
+// Remove entry from the cache
+pub fn remove<W>(env: JNIEnv, cache: &'static Mutex<FxHashMap<u64, GlobalRef>>, id: u64)
+    where W: Send + WandId + 'static
+{
+    let cache = &mut *cache.lock().expect("Poisoned lock");
+    TakeObj!(env, W, cache, id);
+    let _ = cache.remove(&id);
 }

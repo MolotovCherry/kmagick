@@ -3,15 +3,16 @@
 use std::sync::Once;
 
 use jni::JNIEnv;
-use jni::objects::{JObject, JString};
-use jni::sys::{jboolean, jint, jobjectArray, jsize};
+use jni::objects::{JObject, JString, ReleaseMode};
+use jni::sys::{jboolean, jint, jlong, jlongArray, jobjectArray, jsize};
 use log::LevelFilter;
 
-// make available at crate level for macros
+use cache::CacheType;
 pub use drawing_wand::DrawingWand;
+// make available at crate level for macros
 use jni_tools::{
     jclass, jignore, jname,
-    jstatic, setup_panic, Utils, JNIResult
+    JNIResult, jstatic, setup_panic, Utils
 };
 pub use magick_wand::MagickWand;
 pub use pixel_wand::PixelWand;
@@ -152,6 +153,97 @@ impl Magick {
             true => 1 as jboolean,
             false => 0 as jboolean
         }
+    }
+
+    // destroy all caches
+    #[jstatic]
+    fn destroyWands(env: JNIEnv) -> JNIResult<()> {
+        // clear the entire wand cache manually
+        Ok(cache::clear(env)?)
+    }
+
+    // destroy all cache for a specific type
+    #[jstatic]
+    fn destroyWandType(env: JNIEnv, _: JObject, cache_type: jint) -> JNIResult<()> {
+        let cache_type = CacheType::n(cache_type).unwrap();
+
+        match cache_type {
+            CacheType::PixelWand => {
+                let cache = &*cache::PIXELWAND_CACHE;
+                cache::destroy_type::<PixelWand>(env, cache)?;
+            }
+
+            CacheType::DrawingWand => {
+                let cache = &*cache::DRAWINGWAND_CACHE;
+                cache::destroy_type::<DrawingWand>(env, cache)?;
+            }
+
+            CacheType::MagickWand => {
+                let cache = &*cache::MAGICKWAND_CACHE;
+                cache::destroy_type::<MagickWand>(env, cache)?;
+            }
+        };
+
+        Ok(())
+    }
+
+    // destroy a specific cache
+    #[jstatic]
+    fn destroyWandIds(env: JNIEnv, _: JObject, id_list: jlongArray, cache_type: jint) -> JNIResult<()> {
+        let id_list = env.get_long_array_elements(id_list, ReleaseMode::NoCopyBack)?;
+
+        let len = id_list.size()? as usize;
+        let slice = unsafe {
+            std::slice::from_raw_parts(id_list.as_ptr(), len)
+        };
+
+        // kotlin bytecode ULong is actually a J. Perfect! Translates 100% to u64
+        let slice = bytemuck::cast_slice::<jlong, u64>(slice);
+
+        let cache_type = CacheType::n(cache_type).unwrap();
+
+        match cache_type {
+            CacheType::PixelWand => {
+                let cache = &*cache::PIXELWAND_CACHE;
+                cache::destroy_ids::<PixelWand>(env, cache, slice)?;
+            }
+
+            CacheType::DrawingWand => {
+                let cache = &*cache::DRAWINGWAND_CACHE;
+                cache::destroy_ids::<DrawingWand>(env, cache, slice)?;
+            }
+
+            CacheType::MagickWand => {
+                let cache = &*cache::MAGICKWAND_CACHE;
+                cache::destroy_ids::<MagickWand>(env, cache, slice)?;
+            }
+        };
+
+        Ok(())
+    }
+
+    #[jstatic]
+    fn destroyWandId(env: JNIEnv, _: JObject, id: jlong, cache_type: jint) {
+        let id = bytemuck::cast::<jlong, u64>(id);
+
+        let cache_type = CacheType::n(cache_type).unwrap();
+
+        match cache_type {
+            CacheType::PixelWand => {
+                let cache = &*cache::PIXELWAND_CACHE;
+                cache::remove::<PixelWand>(env, cache, id);
+            }
+
+            CacheType::DrawingWand => {
+                let cache = &*cache::DRAWINGWAND_CACHE;
+                cache::remove::<DrawingWand>(env, cache, id);
+            }
+
+            CacheType::MagickWand => {
+                let cache = &*cache::MAGICKWAND_CACHE;
+                cache::remove::<MagickWand>(env, cache, id);
+            }
+        };
     }
 
     #[jignore]

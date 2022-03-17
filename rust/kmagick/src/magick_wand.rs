@@ -4,7 +4,7 @@ use std::convert::TryFrom;
 
 use jni::{JNIEnv, objects::{JObject, JString, JValue}, sys::{jboolean, jbyteArray, jdouble, jdoubleArray, jint, jlong, jobject, jobjectArray, jstring}};
 
-use jni_tools::{Handle, jclass, jname, Utils, JNIResult};
+use jni_tools::{Handle, jclass, jname, JNIResult, Utils};
 
 use crate::{
     DrawingWand,

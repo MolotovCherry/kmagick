@@ -9,6 +9,12 @@ macro_rules! wand_wrapper {
             pub id: u64
         }
 
+        impl crate::utils::WandId for $wand {
+            fn id(&self) -> u64 {
+                self.id
+            }
+        }
+
         unsafe impl Send for $wand {}
 
         impl std::ops::Deref for $wand {
@@ -32,6 +38,9 @@ macro_rules! wand_wrapper {
                 pub fn new(env: jni::JNIEnv, obj: jni::objects::JObject) -> jni_tools::JNIResult<Self> {
                     let cache = &*crate::cache::[<$wand:upper _CACHE>];
                     let id = crate::cache::insert(cache, env.new_global_ref(obj)?, stringify!($wand))?;
+
+                    let _id = bytemuck::cast::<u64, jni::sys::jlong>(id);
+                    env.set_field(obj, "_id", "J", jni::objects::JValue::from(_id))?;
 
                     let res = Self {
                         instance: magick_rust::$wand::new(),
@@ -117,11 +126,11 @@ macro_rules! wand_wrapper {
 
                 // Everything gets dropped on its own
                 #[jni_tools::jdestroy]
-                fn destroy(&self) {
+                fn destroy(&self, env: jni::JNIEnv) {
                     // item will automatically be taken and dropped
                     // but we need to also remove it from the cache
                     let cache = &*crate::cache::[<$wand:upper _CACHE>];
-                    crate::cache::remove(cache, self.id, stringify!($wand));
+                    crate::cache::remove::<$wand>(env, cache, self.id);
                 }
             }
         }

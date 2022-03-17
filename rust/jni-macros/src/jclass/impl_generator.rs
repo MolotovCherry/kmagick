@@ -1,4 +1,4 @@
-use proc_macro2::{Ident, TokenStream, Span};
+use proc_macro2::{Ident, Span, TokenStream};
 use quote::{quote, ToTokens};
 use syn::LitStr;
 
@@ -88,10 +88,8 @@ pub(super) fn generate_impl_functions(
                 match c_res {
                     Ok(#v_or_underscore) => #v_or_unit,
                     Err(e) => {
-                        let msg = format!("`{}` threw an exception : {}", #diag, e.to_string());
-                        log::error!("{}", msg);
-                        log::debug!("Error details: {:?}", e);
-                        let _ = #env.throw_new(#exc, msg);
+                        log::error!("`{}` threw an exception: {:?}", #diag, e);
+                        let _ = #env.throw_new(#exc, format!("`{}`: {}", #diag, e.to_string()));
 
                         #null_ret
                     }
@@ -124,9 +122,8 @@ pub(super) fn generate_impl_functions(
                     let r_obj = match r_mat {
                         Ok(v) => v,
                         Err(e) => {
-                            let msg = format!("Failed to create new obj for `{}` : {}", #diag, e.to_string());
+                            let msg = format!("Failed to create new obj for `{}`: {}", #diag, e.to_string());
                             log::error!("{}", msg);
-                            log::debug!("Error details: {:?}", e);
                             let _ = #env.throw_new(#exc, msg);
                             return;
                         }
@@ -151,9 +148,8 @@ pub(super) fn generate_impl_functions(
                         match res {
                             Ok(_) => (),
                             Err(e) => {
-                                let msg = format!("Failed to set handle for `{}` : {}", #diag, e.to_string());
+                                let msg = format!("Failed to set handle for `{}`: {}", #diag, e.to_string());
                                 log::error!("{}", msg);
-                                log::debug!("Error details: {:?}", e);
                                 let _ = #env.throw_new(#exc, msg);
                             }
                         }
@@ -161,8 +157,15 @@ pub(super) fn generate_impl_functions(
 
                     match p_res {
                         Ok(_) => (),
-                        Err(_) => {
-                            let msg = &format!("`{}` panicked", #diag);
+                        Err(e) => {
+                            let msg;
+                            let e = e.downcast_ref::<&'static str>();
+                            if let Some(r) = e {
+                                msg = format!("`{}` panicked: {}", #diag, r);
+                            } else {
+                                msg = format!("`{}` panicked", #diag);
+                            }
+
                             log::error!("{}", msg);
                             let _ = #env.throw_new("java/lang/RuntimeException", msg);
                         }
@@ -183,8 +186,15 @@ pub(super) fn generate_impl_functions(
 
                     match p_res {
                         Ok(#v_or_underscore) => #v_or_unit,
-                        Err(_) => {
-                            let msg = &format!("`{}` panicked", #diag);
+                        Err(e) => {
+                            let msg;
+                            let e = e.downcast_ref::<&'static str>();
+                            if let Some(r) = e {
+                                msg = format!("`{}` panicked: {}", #diag, r);
+                            } else {
+                                msg = format!("`{}` panicked", #diag);
+                            }
+
                             log::error!("{}", msg);
                             let _ = #env.throw_new("java/lang/RuntimeException", msg);
 
@@ -247,9 +257,8 @@ pub(super) fn generate_impl_functions(
                                 }
                             },
                             Err(e) => {
-                                let msg = format!("Failed to clear handle for `{}` : {}", #diag, e.to_string());
+                                let msg = format!("Failed to clear handle for `{}`: {}", #diag, e.to_string());
                                 log::error!("{}", msg);
-                                log::debug!("Error details: {:?}", e);
                                 let _ = #env.throw_new(#exc, msg);
                                 return;
                             }
@@ -260,8 +269,15 @@ pub(super) fn generate_impl_functions(
 
                     match p_res {
                         Ok(_) => (),
-                        Err(_) => {
-                            let msg = &format!("`{}` panicked", #diag);
+                        Err(e) => {
+                            let msg;
+                            let e = e.downcast_ref::<&'static str>();
+                            if let Some(r) = e {
+                                msg = format!("`{}` panicked: {}", #diag, r);
+                            } else {
+                                msg = format!("`{}` panicked", #diag);
+                            }
+
                             log::error!("{}", msg);
                             let _ = #env.throw_new("java/lang/RuntimeException", msg);
                         }
@@ -289,9 +305,8 @@ pub(super) fn generate_impl_functions(
                         let #mut_kwrd r_obj = match res {
                             Ok(v) => v,
                             Err(e) => {
-                                let msg = format!("Failed to get handle for `{}` : {}", #diag, e.to_string());
+                                let msg = format!("Failed to get handle for `{}`: {}", #diag, e.to_string());
                                 log::error!("{}", msg);
-                                log::debug!("Error details: {:?}", e);
                                 let _ = #env.throw_new(#exc, msg);
 
                                 return #null_ret;
@@ -305,8 +320,15 @@ pub(super) fn generate_impl_functions(
 
                     match p_res {
                         Ok(#v_or_underscore) => #v_or_unit,
-                        Err(_) => {
-                            let msg = &format!("`{}` panicked", #diag);
+                        Err(e) => {
+                            let msg;
+                            let e = e.downcast_ref::<&'static str>();
+                            if let Some(r) = e {
+                                msg = format!("`{}` panicked: {}", #diag, r);
+                            } else {
+                                msg = format!("`{}` panicked", #diag);
+                            }
+
                             log::error!("{}", msg);
                             let _ = #env.throw_new("java/lang/RuntimeException", msg);
 

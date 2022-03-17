@@ -17,12 +17,38 @@ class MagickWand : Closeable {
         clone(wand)
     }
 
-    internal companion object {
+    companion object {
         /**
          * Internal use ONLY. Creates instance without calling constructor
          */
-        fun newInstance(): MagickWand {
+        internal fun newInstance(): MagickWand {
             return magickWandInstantiator.newInstance()
+        }
+
+        /**
+         * Destroys all MagickWand's
+         * WARNING: DO NOT use the destroyed wands after. They are invalidated after that.
+         */
+        fun destroyWands() {
+            Magick.destroyWandType(WandType.MagickWand.id)
+        }
+
+        /**
+         * Destroys all MagickWand's that match ids
+         * WARNING: DO NOT use the destroyed wands after. They are invalidated after that.
+         */
+        @OptIn(ExperimentalUnsignedTypes::class)
+        fun destroyWandIds(ids: ULongArray) {
+            Magick.destroyWandIds(ids, WandType.MagickWand.id)
+        }
+
+        /**
+         * Destroys a MagickWand with a certain ID
+         * WARNING: DO NOT use the destroyed wand after. It is invalidated after that.
+         */
+        @OptIn(ExperimentalUnsignedTypes::class)
+        fun destroyWandId(id: ULong) {
+            Magick.destroyWandId(id, WandType.MagickWand.id)
         }
     }
 
@@ -31,11 +57,15 @@ class MagickWand : Closeable {
      */
     private var handle: Long? = null
 
+    val id: ULong
+        get() = _id.toULong()
+    private var _id: Long = 0
+
     /**
      * Check to see if this is initialized with the underlying C obj.
      * If it's not, then calling any functions will result in a null exception.
      *
-     * This object is _ALWAYS_ initialized, unless [destroy], [finalize], or [Magick.terminate] got called.
+     * This object is _ALWAYS_ initialized, unless a destroy method, or [Magick.terminate] got called.
      */
     val isInitialized: Boolean
         get() = handle != null
@@ -85,21 +115,10 @@ class MagickWand : Closeable {
     external fun getException(): NativeMagickException
 
     /**
-     * While this automatically gets called by the `finalize()` destructor,
-     * `finalize()` is not guaranteed to be called at all, nor called on time.
      * It's recommended to manually destroy all wands when finished.
+     * Otherwise the memory will stay around forever until `Magick.terminate()`
      */
     external fun destroy()
-
-    /**
-     * While this is here to automatically call the destructor, due to
-     * the way Kotlin/Java works, it's not guaranteed to be called at all,
-     * or called on time. It is not recommended relying on this to destroy
-     * the wand consistently/timely.
-     */
-    protected fun finalize() {
-        destroy()
-    }
 
     /**
      * This isn't meant to be called manually. You can call [destroy] instead. This does the

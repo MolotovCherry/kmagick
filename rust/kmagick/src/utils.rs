@@ -1,4 +1,5 @@
 use std::error::Error as StdError;
+
 use crate::errors::JNIError;
 
 pub type Result<T> = std::result::Result<T, Box<dyn StdError>>;
@@ -19,4 +20,8 @@ pub trait EnumIntConversion {
     type Output;
 
     fn try_from_int(val: i32) -> Result<Self::Output>;
+}
+
+pub trait WandId {
+    fn id(&self) -> u64;
 }

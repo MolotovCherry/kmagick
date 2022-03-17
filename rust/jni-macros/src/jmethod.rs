@@ -1,11 +1,12 @@
 use proc_macro::TokenStream;
+
 use proc_macro2::Span;
 use quote::{quote, ToTokens};
 use syn::LitStr;
-use crate::parser::{
-    ParsedFn, ParsedAttr
-};
 
+use crate::parser::{
+    ParsedAttr, ParsedFn
+};
 
 pub fn jmethod_internal(attr: TokenStream, item: TokenStream) -> TokenStream {
     let item_fn = match compile_err!(ParsedFn::parse_fn(&item, &attr)) {
@@ -79,9 +80,8 @@ pub fn jmethod_internal(attr: TokenStream, item: TokenStream) -> TokenStream {
             match c_res {
                 Ok(#v_or_underscore) => #v_or_unit,
                 Err(e) => {
-                    let msg = format!("`{}` threw an exception : {}", #fn_name_str, e);
-                    log::error!("{}", msg);
-                    #env.throw_new(#exc, msg).ok();
+                    log::error!("`{}` threw an exception: {:?}", #fn_name_str, e);
+                    let _ = #env.throw_new(#exc, "`{}`: {}", #fn_name_str, e.to_string());
 
                     #null_mut
                 }
@@ -105,8 +105,15 @@ pub fn jmethod_internal(attr: TokenStream, item: TokenStream) -> TokenStream {
 
             match p_res {
                 Ok(#v_or_underscore) => #v_or_unit,
-                Err(_) => {
-                    let msg = &format!("`{}()` panicked", #fn_name_str);
+                Err(e) => {
+                    let msg;
+                    let e = e.downcast_ref::<&'static str>();
+                    if let Some(r) = e {
+                        msg = format!("`{}()` panicked: {}", #fn_name_str, r);
+                    } else {
+                        msg = format!("`{}()` panicked", #fn_name_str);
+                    }
+
                     log::error!("{}", msg);
                     #env.throw_new("java/lang/RuntimeException", msg).ok();
 
