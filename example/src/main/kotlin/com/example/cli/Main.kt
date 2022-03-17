@@ -43,7 +43,7 @@ fun main() {
         try {
             // this will obviously fail
             wand.readImage("oops!")
-        // if you want to catch all of them, the base exception is MagickException
+            // if you want to catch all of them, the base exception is MagickException
         } catch (e: MagickWandException) {
             // handle it here
             // this method will get the native exception details from ImageMagick and
@@ -87,9 +87,19 @@ fun main() {
         // Every wand class also includes specific methods to destroy wands
         MagickWand.destroyWands() // destroy all magickwands (but leaving other types alone)
         val id = wand.id // get internal id of wand
-        MagickWand.destroyWandId(id) // destroy a specific wand by ID
+        MagickWand.destroyWandId(id) // destroy a specific wand by ID - it will not destroy any other kind of wand, even if the id matched
         // you can also batch destroy wands with a ULongArray
         MagickWand.destroyWandIds(ulongArrayOf(0u, 1u))
+
+        // of course, you can also destroy any type of wand by id as well
+        Magick.destroyWandId(0u)
+        // Or give more IDs
+        Magick.destroyWandIds(ulongArrayOf(0u, 1u))
+
+        // check to see if they're still valid wands
+        // if this property is true, then it is valid
+        // if it is false, then the wand was destroyed, and using it will result in an exception
+        println("Wand is valid? ${wand.isInitialized}")
 
         // This will raise an exception. Why?
         // One: the path doesn't exist

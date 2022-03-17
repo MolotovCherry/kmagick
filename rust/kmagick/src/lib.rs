@@ -189,7 +189,7 @@ impl Magick {
 
     // destroy a specific cache
     #[jstatic]
-    fn destroyWandIds(env: JNIEnv, _: JObject, id_list: jlongArray, cache_type: jint) -> JNIResult<()> {
+    fn destroyWandIdsType(env: JNIEnv, _: JObject, id_list: jlongArray, cache_type: jint) -> JNIResult<()> {
         let id_list = env.get_long_array_elements(id_list, ReleaseMode::NoCopyBack)?;
 
         let len = id_list.size()? as usize;
@@ -223,7 +223,7 @@ impl Magick {
     }
 
     #[jstatic]
-    fn destroyWandId(env: JNIEnv, _: JObject, id: jlong, cache_type: jint) {
+    fn destroyWandIdType(env: JNIEnv, _: JObject, id: jlong, cache_type: jint) {
         let id = bytemuck::cast::<jlong, u64>(id);
 
         let cache_type = CacheType::n(cache_type).unwrap();
@@ -244,6 +244,30 @@ impl Magick {
                 cache::remove::<MagickWand>(env, cache, id);
             }
         };
+    }
+
+    #[jstatic]
+    fn destroyWandId(env: JNIEnv, _: JObject, id: jlong) -> JNIResult<()> {
+        let id = bytemuck::cast::<jlong, u64>(id);
+        cache::clearById(env, &id)?;
+        Ok(())
+    }
+
+    #[jstatic]
+    fn destroyWandIds(env: JNIEnv, _: JObject, id_list: jlongArray) -> JNIResult<()> {
+        let id_list = env.get_long_array_elements(id_list, ReleaseMode::NoCopyBack)?;
+
+        let len = id_list.size()? as usize;
+        let slice = unsafe {
+            std::slice::from_raw_parts(id_list.as_ptr(), len)
+        };
+
+        // kotlin bytecode ULong is actually a J. Perfect! Translates 100% to u64
+        let slice = bytemuck::cast_slice::<jlong, u64>(slice);
+
+        cache::clearByIds(env, slice)?;
+
+        Ok(())
     }
 
     #[jignore]

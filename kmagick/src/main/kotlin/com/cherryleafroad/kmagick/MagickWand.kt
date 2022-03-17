@@ -39,16 +39,15 @@ class MagickWand : Closeable {
          */
         @OptIn(ExperimentalUnsignedTypes::class)
         fun destroyWandIds(ids: ULongArray) {
-            Magick.destroyWandIds(ids, WandType.MagickWand.id)
+            Magick.destroyWandIdsType(ids, WandType.MagickWand.id)
         }
 
         /**
          * Destroys a MagickWand with a certain ID
          * WARNING: DO NOT use the destroyed wand after. It is invalidated after that.
          */
-        @OptIn(ExperimentalUnsignedTypes::class)
         fun destroyWandId(id: ULong) {
-            Magick.destroyWandId(id, WandType.MagickWand.id)
+            Magick.destroyWandIdType(id, WandType.MagickWand.id)
         }
     }
 
@@ -57,9 +56,14 @@ class MagickWand : Closeable {
      */
     private var handle: Long? = null
 
+    /**
+     * The unique id of the wand.
+     * This id is guaranteed to be unique amongst ALL wands of ALL types
+     * (unless you overflow a ULong, then it'll wrap back around)
+     */
     val id: ULong
-        get() = _id.toULong()
-    private var _id: Long = 0
+        get() = _id
+    private var _id: ULong = 0u
 
     /**
      * Check to see if this is initialized with the underlying C obj.

@@ -80,8 +80,8 @@ object Magick : Closeable {
      * WARNING: DO NOT use the destroyed wands after. They are invalidated after that.
      */
     @OptIn(ExperimentalUnsignedTypes::class)
-    @JvmName("destroyWandIds")
-    internal external fun destroyWandIds(ids: ULongArray, wandType: Int)
+    @JvmName("destroyWandIdsType")
+    internal external fun destroyWandIdsType(ids: ULongArray, wandType: Int)
 
     /**
      * Destroys all wands of a certain type
@@ -94,6 +94,21 @@ object Magick : Closeable {
      * Destroys a wand with a specific ID
      * WARNING: DO NOT use the destroyed wand after. It is invalidated after that.
      */
+    @JvmName("destroyWandIdType")
+    internal external fun destroyWandIdType(id: ULong, wandType: Int)
+
+    /**
+     * Destroys any kind of wand with a specific ID
+     * WARNING: DO NOT use the destroyed wands after. They are invalidated after that.
+     */
     @JvmName("destroyWandId")
-    internal external fun destroyWandId(id: ULong, wandType: Int)
+    external fun destroyWandId(id: ULong)
+
+    /**
+     * Destroys any kind of wand whose id is contained in the array
+     * WARNING: DO NOT use the destroyed wands after. They are invalidated after that.
+     */
+    @JvmName("destroyWandIds")
+    @OptIn(ExperimentalUnsignedTypes::class)
+    external fun destroyWandIds(ids: ULongArray)
 }

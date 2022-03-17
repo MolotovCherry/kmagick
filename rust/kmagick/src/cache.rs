@@ -115,3 +115,38 @@ pub fn remove<W>(env: JNIEnv, cache: &'static Mutex<FxHashMap<u64, GlobalRef>>, 
     TakeObj!(env, W, cache, id);
     let _ = cache.remove(&id);
 }
+
+// clear id from ANY cache
+pub fn clearById(env: JNIEnv, id: &u64) -> crate::Result<()> {
+    let pixel_cache = &mut *PIXELWAND_CACHE.lock()?;
+    let magick_cache = &mut *MAGICKWAND_CACHE.lock()?;
+    let drawing_cache = &mut *DRAWINGWAND_CACHE.lock()?;
+
+    TakeObj!(env, PixelWand, pixel_cache, id);
+    TakeObj!(env, DrawingWand, drawing_cache, id);
+    TakeObj!(env, MagickWand, magick_cache, id);
+
+    let _ =  pixel_cache.remove(id);
+    let _ =  drawing_cache.remove(id);
+    let _ =  magick_cache.remove(id);
+
+    Ok(())
+}
+
+// clear Ids from ANY cache
+pub fn clearByIds(env: JNIEnv, ids: &[u64]) -> crate::Result<()> {
+    let pixel_cache = &mut *PIXELWAND_CACHE.lock()?;
+    let magick_cache = &mut *MAGICKWAND_CACHE.lock()?;
+    let drawing_cache = &mut *DRAWINGWAND_CACHE.lock()?;
+
+    for id in ids {
+        TakeObj!(env, PixelWand, pixel_cache, id);
+        TakeObj!(env, DrawingWand, drawing_cache, id);
+        TakeObj!(env, MagickWand, magick_cache, id);
+        let _ =  pixel_cache.remove(id);
+        let _ =  drawing_cache.remove(id);
+        let _ =  magick_cache.remove(id);
+    }
+
+    Ok(())
+}
