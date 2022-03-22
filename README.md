@@ -112,7 +112,7 @@ clearException()
 getExceptionType()
 getException()
 ```
-You can cross reference the [`ExceptionType`](/src/main/kotlin/com/cherryleafroad/kmagick/ExceptionType.kt) in the source code to see what exact error it was. `getException()` also returns [`NativeMagickException`](/src/main/kotlin/com/cherryleafroad/kmagick/NativeMagickException.kt) which will give you both an `ExceptionType` and a message explaining what happened.
+You can cross reference the [`ExceptionType`](https://cherryleafroad.github.io/kmagick/kmagick/com.cherryleafroad.kmagick/-exception-type/index.html) in the source code to see what exact error it was. `getException()` also returns [`NativeMagickException`](https://cherryleafroad.github.io/kmagick/kmagick/com.cherryleafroad.kmagick/-native-magick-exception/index.html) which will give you both an `ExceptionType` and a message explaining what happened.
 
 For more examples and information on usage, please browse the API in your IDE or check ImageMagick's website.
 
