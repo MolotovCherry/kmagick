@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.6.10"
+    id("org.jetbrains.dokka") version "1.6.10"
 }
 
 repositories {
@@ -11,6 +12,7 @@ repositories {
 subprojects {
     apply {
         plugin("org.jetbrains.kotlin.jvm")
+        plugin("org.jetbrains.dokka")
     }
 
     repositories {
