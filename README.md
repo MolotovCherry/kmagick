@@ -119,10 +119,10 @@ If this doesn't help and it's a real bug, then please check your `logcat` for yo
 
 ## Missing an API Function?
 
-They're actually not that hard to add! If you need one that's missing, go check out the [rust imagemagick bindings crate](https://github.com/nlfiedler/magick-rust) and consider making an issue or sending them a PR. It'll make its way downstream to me and I can add it here.
+We're using `magick-rust` for our bindings. So, if some API that you need is missing, please make a feature request or send a PR to [magick-rust](https://github.com/nlfiedler/magick-rust) and it'll make its way downstream to me.
 
 ## Contributions
-Contributions are welcome! If you have an improvement, please send a PR or make an issue about it and I'll see what we can do. 😉 If you know Rust, contributions are even more welcome, especially to the [ImageMagick Rust bindings crate](https://github.com/nlfiedler/magick-rust) (because it'll make the functions available downstream for me).
+Contributions are welcome! If you have an improvement, please send a PR or make an issue about it and I'll see what we can do. 😉 If you know Rust, contributions are even more welcome, especially to [magick-rust](https://github.com/nlfiedler/magick-rust) (because it'll make the functions available downstream for me).
 
 If you want to contribute Rust code to this project, check out the [rust folder](https://github.com/cherryleafroad/kmagick/tree/main/rust) which has directions on how to compile it locally.
 
