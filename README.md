@@ -38,6 +38,9 @@ Debug messages can be found in Android logcat under the id `MAGICK`. Make sure y
 5. Either [download](http://objenesis.org/download.html) objenesis jar and place it along with your other jars, OR add this line (or similar depending on your build system) to your dependencies:  
 `implementation 'org.objenesis:objenesis:3.2'`
 
+## Docs
+You can browse the latest docs [here](https://cherryleafroad.github.io/kmagick/kmagick/com.cherryleafroad.kmagick/index.html)
+
 ## Behavior
 As this is a low level library, crashes are not impossible. I've made every effort to make that impossible however.
 
