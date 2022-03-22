@@ -128,3 +128,10 @@ If you want to contribute Rust code to this project, check out the [rust folder]
 
 ## Rust devs - a note for you all
 In the `Rust` directory, the two crates `jni-macros` and `jni-tools` offers some FULLY working macros which generate JNI bindings for Rust functions. Of course, it's only Kotlin compatible (no Java; although you _could_ edit the handle fn's to fix that). You can even use regular impl's which KEEP STATE between calls as if it was a real class instance! The `jni-tools` crate offers the visible public API for it. There's also docs on it to explain its usage, however, if you want to fully know how to use it, you should take a look at my Rust and Kotlin code as the prime example.
+
+## 
+
+<p>
+  <div style="vertical-align: baseline;">This project is proudly supported by JetBrains OSS License</div>
+  <a href="https://jb.gg/OpenSourceSupport"><img src="https://github.com/cherryleafroad/kmagick/blob/main/readme_files/jb_beam.png" height="150px" width="150px"/></a>
+</p>
