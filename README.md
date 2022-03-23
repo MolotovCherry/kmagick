@@ -38,6 +38,9 @@ Debug messages can be found in Android logcat under the id `MAGICK`. Make sure y
 5. Either [download](http://objenesis.org/download.html) objenesis jar and place it along with your other jars, OR add this line (or similar depending on your build system) to your dependencies:  
 `implementation 'org.objenesis:objenesis:3.2'`
 
+## Docs
+You can browse the latest docs [here](https://cherryleafroad.github.io/kmagick/kmagick/com.cherryleafroad.kmagick/index.html)
+
 ## Behavior
 As this is a low level library, crashes are not impossible. I've made every effort to make that impossible however.
 
@@ -109,7 +112,7 @@ clearException()
 getExceptionType()
 getException()
 ```
-You can cross reference the [`ExceptionType`](/src/main/kotlin/com/cherryleafroad/kmagick/ExceptionType.kt) in the source code to see what exact error it was. `getException()` also returns [`NativeMagickException`](/src/main/kotlin/com/cherryleafroad/kmagick/NativeMagickException.kt) which will give you both an `ExceptionType` and a message explaining what happened.
+You can cross reference the [`ExceptionType`](https://cherryleafroad.github.io/kmagick/kmagick/com.cherryleafroad.kmagick/-exception-type/index.html) in the source code to see what exact error it was. `getException()` also returns [`NativeMagickException`](https://cherryleafroad.github.io/kmagick/kmagick/com.cherryleafroad.kmagick/-native-magick-exception/index.html) which will give you both an `ExceptionType` and a message explaining what happened.
 
 For more examples and information on usage, please browse the API in your IDE or check ImageMagick's website.
 
