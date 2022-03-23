@@ -1,7 +1,6 @@
 package com.cherryleafroad.kmagick
 
-@Suppress("unused")
-enum class AlphaChannelOption(val id: Int) {
+enum class AlphaChannelOption(internal val id: Int) {
     UndefinedAlphaChannel(0),
     ActivateAlphaChannel(1),
     AssociateAlphaChannel(2),

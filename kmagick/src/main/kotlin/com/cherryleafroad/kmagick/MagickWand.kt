@@ -2,9 +2,14 @@ package com.cherryleafroad.kmagick
 
 import java.io.Closeable
 
+/**
+ * The exception that all [MagickWand]'s throw if there's an error.
+ */
 class MagickWandException(message: String) : MagickException(message)
 
-@Suppress("unused")
+/**
+ * [MagickWand] API. Used to hold the images as well as operate on them.
+ */
 class MagickWand : Closeable {
     constructor() {
         new()
@@ -26,7 +31,8 @@ class MagickWand : Closeable {
         }
 
         /**
-         * Destroys all MagickWand's
+         * Destroys all [MagickWand]'s
+         *
          * WARNING: DO NOT use the destroyed wands after. They are invalidated after that.
          */
         fun destroyWands() {
@@ -34,7 +40,8 @@ class MagickWand : Closeable {
         }
 
         /**
-         * Destroys all MagickWand's that match ids
+         * Destroys all [MagickWand]'s that match ids.
+         *
          * WARNING: DO NOT use the destroyed wands after. They are invalidated after that.
          */
         @OptIn(ExperimentalUnsignedTypes::class)
@@ -43,7 +50,8 @@ class MagickWand : Closeable {
         }
 
         /**
-         * Destroys a MagickWand with a certain ID
+         * Destroys a [MagickWand] with a certain id.
+         *
          * WARNING: DO NOT use the destroyed wand after. It is invalidated after that.
          */
         fun destroyWandId(id: ULong) {
@@ -58,8 +66,11 @@ class MagickWand : Closeable {
 
     /**
      * The unique id of the wand.
+     *
+     * &nbsp;
+     *
      * This id is guaranteed to be unique amongst ALL wands of ALL types
-     * (unless you overflow a ULong, then it'll wrap back around)
+     * (unless you overflow a [ULong], then it'll wrap back around)
      */
     val id: ULong
         get() = _id
@@ -67,7 +78,12 @@ class MagickWand : Closeable {
 
     /**
      * Check to see if this is initialized with the underlying C obj.
-     * If it's not, then calling any functions will result in a null exception.
+     *
+     * &nbsp;
+     *
+     * If it's not, then calling any functions will result in a `null` exception.
+     *
+     * &nbsp;
      *
      * This object is _ALWAYS_ initialized, unless a destroy method, or [Magick.terminate] got called.
      */
@@ -120,7 +136,7 @@ class MagickWand : Closeable {
 
     /**
      * It's recommended to manually destroy all wands when finished.
-     * Otherwise the memory will stay around forever until `Magick.terminate()`
+     * Otherwise the memory will stay around forever until [Magick.terminate]
      */
     external fun destroy()
 
@@ -186,7 +202,7 @@ class MagickWand : Closeable {
     private external fun setResourceLimit(type: Int, limit: Long)
 
     /**
-     * Associates one or options with the wand (e.g. setOption("jpeg:perserve","yes")).
+     * Associates one or options with the wand (e.g. [setOption]`("jpeg:perserve","yes")`).
      *
      * @param key The option key.
      * @param value The option value.
@@ -197,7 +213,7 @@ class MagickWand : Closeable {
     /**
      * Annotates an image with text.
      *
-     * @param drawingWand The drawing wand to use for annotation.
+     * @param drawingWand The [DrawingWand] to use for annotation.
      * @param x X ordinate to left of text.
      * @param y Y ordinate to text baseline.
      * @param angle Rotate text relative to this angle.
@@ -208,10 +224,19 @@ class MagickWand : Closeable {
 
     /**
      * Adds a clone of the images from the second wand and inserts them into the first wand.
-     * Use `MagickSetLastIterator()`, to append new images into an existing wand, current image will be set to last image
+     *
+     * &nbsp;
+     *
+     * Use [setLastIterator], to append new images into an existing wand, current image will be set to last image
      * so later adds with also be appended to end of wand.
-     * Use `MagickSetFirstIterator()` to prepend new images into wand, any more images added will also be prepended before
+     *
+     * &nbsp;
+     *
+     * Use [setFirstIterator] to prepend new images into wand, any more images added will also be prepended before
      * other images in the wand. However, the order of a list of new images will not change.
+     *
+     * &nbsp;
+     *
      * Otherwise, the new images will be inserted just after the current image, and any later image will also be added
      * after this current image but before the previously added images. Caution is advised when multiple image adds are
      * inserted into the middle of the wand image list.
@@ -223,9 +248,9 @@ class MagickWand : Closeable {
 
     /**
      * Append the images in a wand from the current image onwards, creating a new wand with the single image result.
-     * This is affected by the gravity and background settings of the first image.
+     * This is affected by the [gravity] and background settings of the first image.
      *
-     * @param stack By default, images are stacked left-to-right. Set stack to true to stack them top-to-bottom.
+     * @param stack By default, images are stacked left-to-right. Set [stack] to true to stack them top-to-bottom.
      */
     @Throws(MagickWandException::class)
     external fun appendAll(stack: Boolean)
@@ -256,13 +281,13 @@ class MagickWand : Closeable {
     external fun readImage(path: String)
 
     /**
-     * Reads an image or image sequence from a [blob]. In all other respects it is like `readImage()`.
+     * Reads an image or image sequence from a blob. In all other respects it is like [readImage].
      */
     @Throws(MagickWandException::class)
     external fun readImageBlob(blob: ByteArray)
 
     /**
-     * Is the same as `readImage()` except the only valid information returned is the image width, height, size, and
+     * Is the same as [readImage] except the only valid information returned is the image width, height, size, and
      * format. It is designed to efficiently obtain this information from a file without reading the entire image
      * sequence into memory.
      *
@@ -272,14 +297,17 @@ class MagickWand : Closeable {
     external fun pingImage(path: String)
 
     /**
-     * Pings an image or image sequence from a [blob].
+     * Pings an image or image sequence from a blob.
      */
     @Throws(MagickWandException::class)
     external fun pingImageBlob(blob: ByteArray)
 
     /**
-     * Compares two images and returns pair (distortion, diffImage)
-     * diffImage is null if distortion == 0
+     * Compares two images and returns the distortion and diffImage
+     *
+     * &nbsp;
+     *
+     * diffImage is `null` if distortion == 0
      *
      * @param reference Reference wand.
      * @param metric The metric.
@@ -293,10 +321,10 @@ class MagickWand : Closeable {
     private external fun compareImages(reference: MagickWand, metric: Int): Comparison
 
     /**
-     * Compose another image onto self at (x,y) using composition_operator
+     * Compose another image onto self at ([x],[y]) using composition_operator
      *
      * @param sourceWand The source wand holding the image.
-     * @param compose Composite operator affects how the composite is applied to the image. The default is Over.
+     * @param compose Composite operator affects how the composite is applied to the image. The default is [CompositeOperator.OverCompositeOp].
      * @param clipToSelf Set to true to limit composition to area composed.
      * @param x The column offset of the composited image.
      * @param y The row offset of the composited image.
@@ -324,7 +352,7 @@ class MagickWand : Closeable {
      * Replaces colors in the image from a color lookup table.
      *
      * @param clutWand The clut image.
-     * @param method The pixel interpolation method.
+     * @param method The [PixelInterpolateMethod].
      */
     @Throws(MagickWandException::class)
     fun clutImage(clutWand: MagickWand, method: PixelInterpolateMethod) {
@@ -334,7 +362,7 @@ class MagickWand : Closeable {
     private external fun clutImage(clutWand: MagickWand, method: Int)
 
     /**
-     * replaces colors in the image from a Hald color lookup table. A Hald color lookup table is a 3-dimensional color
+     * Replaces colors in the image from a Hald color lookup table. A Hald color lookup table is a 3-dimensional color
      * cube mapped to 2 dimensions. Create it with the HALD coder. You can apply any color transformation to the Hald
      * image and then use this method to apply the transform to the image.
      *
@@ -352,9 +380,9 @@ class MagickWand : Closeable {
     external fun fx(expression: String)
 
     /**
-     * Sets the size of the magick wand. Set it before you read a raw image format such as RGB, GRAY, or CMYK.
+     * Sets the size of the [MagickWand]. Set it before you read a raw image format such as RGB, GRAY, or CMYK.
      *
-     * @param columns The width in pixels
+     * @param columns The width in pixels.
      * @param rows The rows in pixels.
      */
     @Throws(MagickWandException::class)
@@ -362,22 +390,28 @@ class MagickWand : Closeable {
 
     /**
      * Adjusts the levels of an image by scaling the colors falling between specified white and black points to the full
-     * available quantum range. The parameters provided represent the black, mid, and white points. The black point
+     * available quantum range.
+     *
+     * &nbsp;
+     *
+     * The parameters provided represent the black, mid, and white points. The black point
      * specifies the darkest color in the image. Colors darker than the black point are set to zero. Mid-point specifies
      * a gamma correction to apply to the image. White point specifies the lightest color in the image. Colors brighter
      * than the white point are set to the maximum quantum value.
      *
-     * Black and white points are multiplied with `QuantumRange` to decrease dependencies on the end user.
+     * &nbsp;
      *
-     * @param blackPoint
-     * @param gamma
-     * @param whitePoint
+     * Black and white points are multiplied with quantum range to decrease dependencies on the end user.
+     *
+     * @param blackPoint The level to map zero (black) to.
+     * @param gamma Gamma specifies a gamma correction to apply to the image.
+     * @param whitePoint The level to map QuantumRange (white) to.
      */
     @Throws(MagickWandException::class)
     external fun levelImage(blackPoint: Double, gamma: Double, whitePoint: Double)
 
     /**
-     * Extends the image as defined by the geometry, gravity, and wand background color. Set the (x,y) offset of the
+     * Extends the image as defined by the geometry, [gravity], and wand background color. Set the ([x],[y]) offset of the
      * geometry to move the original wand relative to the extended wand.
      *
      * @param width The region width.
@@ -389,11 +423,11 @@ class MagickWand : Closeable {
     external fun extentImage(width: Long, height: Long, x: Long, y: Long)
 
     /**
-     * Adds or removes an ICC, IPTC, or generic profile from an image. If the profile is NULL, it is removed from the
-     * image otherwise added. Use a name of '*' and a profile of NULL to remove all profiles from the image.
+     * Adds or removes an ICC, IPTC, or generic profile from an image. If the profile is `null`, it is removed from the
+     * image otherwise added. Use a name of '*' and a profile of `null` to remove all profiles from the image.
      *
      * @param name The name of the profile. '*' to select all
-     * @param profile The data to add/remove to the profile. NULL will remove the profile.
+     * @param profile The data to add/remove to the profile. `null` will remove the profile.
      */
     @Throws(MagickWandException::class)
     external fun profileImage(name: String, profile: ByteArray?)
@@ -417,8 +451,8 @@ class MagickWand : Closeable {
     external fun flopImage()
 
     /**
-     * Blurs an image. We convolve the image with a gaussian operator of the given radius and standard deviation (sigma).
-     * For reasonable results, the radius should be larger than sigma. Use a radius of 0 and `blurImage()` selects a
+     * Blurs an image. We convolve the image with a gaussian operator of the given [radius] and standard deviation ([sigma]).
+     * For reasonable results, the [radius] should be larger than [sigma]. Use a [radius] of 0 and [blurImage] selects a
      * suitable radius for you.
      *
      * @param radius The radius of the Gaussian, in pixels, not counting the center pixel.
@@ -428,8 +462,8 @@ class MagickWand : Closeable {
     external fun blurImage(radius: Double, sigma: Double)
 
     /**
-     * Blurs an image. We convolve the image with a Gaussian operator of the given radius and standard deviation (sigma).
-     * For reasonable results, the radius should be larger than sigma. Use a radius of 0 and `gaussianBlurImage()`
+     * Blurs an image. We convolve the image with a Gaussian operator of the given [radius] and standard deviation ([sigma]).
+     * For reasonable results, the [radius] should be larger than [sigma]. Use a [radius] of 0 and [gaussianBlurImage]
      * selects a suitable radius for you.
      *
      * @param radius The radius of the Gaussian, in pixels, not counting the center pixel.
@@ -449,9 +483,9 @@ class MagickWand : Closeable {
 
     /**
      * Rotate the currently selected image by the given number of degrees,
-     * filling any empty space with the background color of a given PixelWand.
+     * filling any empty space with the background color of a given [PixelWand].
      *
-     * @param background The background pixel wand.
+     * @param background The background [PixelWand].
      * @param degrees The number of degrees to rotate the image.
      */
     @Throws(MagickWandException::class)
@@ -461,8 +495,8 @@ class MagickWand : Closeable {
      * Trim the image removing the backround color from the edges.
      *
      * @param fuzz By default, target must match a particular pixel color exactly. However, in many cases two colors may
-     *             differ by a small amount. The fuzz member of image defines how much tolerance is acceptable to
-     *             consider two colors as the same. For example, set fuzz to 10 and the color red at intensities of 100
+     *             differ by a small amount. The [fuzz] member of image defines how much tolerance is acceptable to
+     *             consider two colors as the same. For example, set [fuzz] to 10 and the color red at intensities of 100
      *             and 102 respectively are now interpreted as the same color for the purposes of the floodfill.
      */
     @Throws(MagickWandException::class)
@@ -481,7 +515,7 @@ class MagickWand : Closeable {
     external fun getImageHeight(): Long
 
     /**
-     * Retrieve the page geometry (width, height, x offset, y offset) of the image.
+     * Retrieve the [PageGeometry] (width, height, x offset, y offset) of the image.
      */
     @Throws(MagickWandException::class)
     external fun getImagePage(): PageGeometry
@@ -510,7 +544,11 @@ class MagickWand : Closeable {
     external fun setImageProperty(name: String, value: String)
 
     /**
-     * Returns a `PixelWand` instance for the pixel specified by [x] and [y] offsets.
+     * Returns a [PixelWand] instance for the pixel specified by [x] and [y] offsets.
+     *
+     * &nbsp;
+     *
+     * @return A [PixelWand] containing the color if successful, `null` if it couldn't get the color.
      */
     @Throws(MagickWandException::class)
     external fun getImagePixelColor(x: Long, y: Long): PixelWand?
@@ -524,7 +562,7 @@ class MagickWand : Closeable {
     external fun setSamplingFactors(samplingFactors: DoubleArray)
 
     /**
-     * Returns the image histogram as a List of `PixelWand` instances for every unique color.
+     * Returns the image histogram as a List of [PixelWand] instances for every unique color.
      */
     @Throws(MagickWandException::class)
     external fun getImageHistogram(): Array<PixelWand>?
@@ -532,7 +570,7 @@ class MagickWand : Closeable {
     /**
      * Sharpens an image. We convolve the image with a Gaussian operator of the
      * given [radius] and standard deviation ([sigma]). For reasonable results, the
-     * [radius] should be larger than [sigma]. Use a [radius] of 0 and `sharpenImage()`
+     * [radius] should be larger than [sigma]. Use a [radius] of 0 and `sharpenImage`
      * selects a suitable [radius] for you.
      *
      * @param radius The radius of the Gaussian, in pixels, not counting the center pixel.
@@ -582,7 +620,7 @@ class MagickWand : Closeable {
     external fun sepiaToneImage(threshold: Double)
 
     /**
-     * Extracts pixel data from an image and returns it to you as a ByteArray.
+     * Extracts pixel data from an image and returns it to you as a [ByteArray].
      *
      * @param x Defines the x perimeter of a region of pixels you want to extract.
      * @param y Defines the y perimeter of a region of pixels you want to extract.
@@ -663,7 +701,7 @@ class MagickWand : Closeable {
      * Implodes the image towards the center by the specified percentage.
      *
      * @param amount The extent of the implosion.
-     * @param method THe pixel interpolation method.
+     * @param method The [PixelInterpolateMethod].
      */
     @Throws(MagickWandException::class)
     fun implode(amount: Double, method: PixelInterpolateMethod) {
@@ -733,7 +771,7 @@ class MagickWand : Closeable {
     private external fun magickSetFilename(filename: String)
 
     /**
-     * The font associated with the MagickWand.
+     * The font associated with the [MagickWand].
      */
     var font: String
         get() = magickGetFont()
@@ -744,7 +782,7 @@ class MagickWand : Closeable {
     private external fun magickSetFont(font: String)
 
     /**
-     * The format of the magick wand.
+     * The format of the [MagickWand].
      */
     var format: String
         get() = magickGetFormat()
@@ -833,7 +871,7 @@ class MagickWand : Closeable {
 
     /**
      * The image composite operator, useful for specifying how to composite the image thumbnail when using the
-     * `MagickMontageImage()` method.
+     * [montageImage] method.
      */
     var imageCompose: CompositeOperator
         get() = magickGetImageCompose()
@@ -921,7 +959,7 @@ class MagickWand : Closeable {
     private external fun magickSetImageFuzz(fuzz: Double)
 
     /**
-     *
+     * Gets the image gamma.
      */
     var imageGamma: Double
         get() = magickGetImageGamma()
@@ -1056,17 +1094,25 @@ class MagickWand : Closeable {
     /**
      * The position of the iterator in the image list.
      *
+     * &nbsp;
+     *
      * Also, you can set the iterator to the given position in the image list specified with the index parameter. A zero
      * index will set the first image as current, and so on. Negative indexes can be used to specify an image relative
      * to the end of the images in the wand, with -1 being the last image in the wand.
      *
+     * &nbsp;
+     *
      * If the index is invalid (range too large for number of images in wand) the function will return MagickFalse, but
      * no 'exception' will be raised, as it is not actually an error. In that case the current image will not change.
      *
-     * After using any images added to the wand using `addImage()` or `readImage()` will be added after the image
+     * &nbsp;
+     *
+     * After using any images added to the wand using [addImage] or [readImage] will be added after the image
      * indexed, regardless of if a zero (first image in list) or negative index (from end) is used.
      *
-     * Jumping to index 0 is similar to `resetIterator()` but differs in how `nextImage()` behaves afterward.
+     * &nbsp;
+     *
+     * Jumping to index 0 is similar to [resetIterator] but differs in how [nextImage] behaves afterward.
      */
     var iteratorIndex: Long
         get() = magickGetIteratorIndex()
@@ -1088,7 +1134,7 @@ class MagickWand : Closeable {
     private external fun magickSetOrientation(orientation: Int)
 
     /**
-     * The font pointsize associated with the MagickWand.
+     * The font pointsize associated with the [MagickWand].
      */
     var pointsize: Double
         get() = magickGetPointsize()
@@ -1099,7 +1145,7 @@ class MagickWand : Closeable {
     private external fun magickSetPointsize(pointsize: Double)
 
     /**
-     * The magick wand image type attribute.
+     * The [MagickWand] image type attribute.
      */
     var type: ImageType
         get() = magickGetType()
@@ -1110,7 +1156,7 @@ class MagickWand : Closeable {
     private external fun magickSetType(type: Int)
 
     /**
-     * Set the image colorspace, transforming (unlike `set_image_colorspace`) image data in the process.
+     * Set the image colorspace, transforming (unlike [imageColorspace]) image data in the process.
      */
     @Throws(MagickWandException::class)
     fun transformImageColorspace(colorspace: ColorspaceType) {

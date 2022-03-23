@@ -1,13 +1,11 @@
 $dokka.format:html-v1
 $dokka.linkExtension:html
 $dokka.location:com.cherryleafroad.kmagick////PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/index.html
-$dokka.location:com.cherryleafroad.kmagick//find/kotlin.Function1[TypeParam(bounds=[kotlin.Enum[^]]),TypeParam(bounds=[kotlin.Any?])]#TypeParam(bounds=[kotlin.Any?])/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/find.html
 $dokka.location:com.cherryleafroad.kmagick/AlignType.CenterAlign///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-align-type/-center-align/index.html
 $dokka.location:com.cherryleafroad.kmagick/AlignType.LeftAlign///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-align-type/-left-align/index.html
 $dokka.location:com.cherryleafroad.kmagick/AlignType.RightAlign///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-align-type/-right-align/index.html
 $dokka.location:com.cherryleafroad.kmagick/AlignType.UndefinedAlign///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-align-type/-undefined-align/index.html
 $dokka.location:com.cherryleafroad.kmagick/AlignType///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-align-type/index.html
-$dokka.location:com.cherryleafroad.kmagick/AlignType/id/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-align-type/id.html
 $dokka.location:com.cherryleafroad.kmagick/AlphaChannelOption.ActivateAlphaChannel///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-alpha-channel-option/-activate-alpha-channel/index.html
 $dokka.location:com.cherryleafroad.kmagick/AlphaChannelOption.AssociateAlphaChannel///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-alpha-channel-option/-associate-alpha-channel/index.html
 $dokka.location:com.cherryleafroad.kmagick/AlphaChannelOption.BackgroundAlphaChannel///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-alpha-channel-option/-background-alpha-channel/index.html
@@ -25,13 +23,11 @@ $dokka.location:com.cherryleafroad.kmagick/AlphaChannelOption.ShapeAlphaChannel/
 $dokka.location:com.cherryleafroad.kmagick/AlphaChannelOption.TransparentAlphaChannel///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-alpha-channel-option/-transparent-alpha-channel/index.html
 $dokka.location:com.cherryleafroad.kmagick/AlphaChannelOption.UndefinedAlphaChannel///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-alpha-channel-option/-undefined-alpha-channel/index.html
 $dokka.location:com.cherryleafroad.kmagick/AlphaChannelOption///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-alpha-channel-option/index.html
-$dokka.location:com.cherryleafroad.kmagick/AlphaChannelOption/id/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-alpha-channel-option/id.html
 $dokka.location:com.cherryleafroad.kmagick/ClipPathUnits.ObjectBoundingBox///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-clip-path-units/-object-bounding-box/index.html
 $dokka.location:com.cherryleafroad.kmagick/ClipPathUnits.UndefinedPathUnits///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-clip-path-units/-undefined-path-units/index.html
 $dokka.location:com.cherryleafroad.kmagick/ClipPathUnits.UserSpace///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-clip-path-units/-user-space/index.html
 $dokka.location:com.cherryleafroad.kmagick/ClipPathUnits.UserSpaceOnUse///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-clip-path-units/-user-space-on-use/index.html
 $dokka.location:com.cherryleafroad.kmagick/ClipPathUnits///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-clip-path-units/index.html
-$dokka.location:com.cherryleafroad.kmagick/ClipPathUnits/id/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-clip-path-units/id.html
 $dokka.location:com.cherryleafroad.kmagick/ColorspaceType.Adobe98Colorspace///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-colorspace-type/-adobe98-colorspace/index.html
 $dokka.location:com.cherryleafroad.kmagick/ColorspaceType.CMYColorspace///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-colorspace-type/-c-m-y-colorspace/index.html
 $dokka.location:com.cherryleafroad.kmagick/ColorspaceType.CMYKColorspace///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-colorspace-type/-c-m-y-k-colorspace/index.html
@@ -71,7 +67,6 @@ $dokka.location:com.cherryleafroad.kmagick/ColorspaceType.sRGBColorspace///Point
 $dokka.location:com.cherryleafroad.kmagick/ColorspaceType.scRGBColorspace///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-colorspace-type/sc-r-g-b-colorspace/index.html
 $dokka.location:com.cherryleafroad.kmagick/ColorspaceType.xyYColorspace///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-colorspace-type/xy-y-colorspace/index.html
 $dokka.location:com.cherryleafroad.kmagick/ColorspaceType///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-colorspace-type/index.html
-$dokka.location:com.cherryleafroad.kmagick/ColorspaceType/id/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-colorspace-type/id.html
 $dokka.location:com.cherryleafroad.kmagick/Comparison///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-comparison/index.html
 $dokka.location:com.cherryleafroad.kmagick/Comparison/Comparison/#kotlin.Double#com.cherryleafroad.kmagick.MagickWand?/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-comparison/-comparison.html
 $dokka.location:com.cherryleafroad.kmagick/Comparison/diffImage/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-comparison/diff-image.html
@@ -157,7 +152,6 @@ $dokka.location:com.cherryleafroad.kmagick/CompositeOperator.UndefinedCompositeO
 $dokka.location:com.cherryleafroad.kmagick/CompositeOperator.VividLightCompositeOp///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-composite-operator/-vivid-light-composite-op/index.html
 $dokka.location:com.cherryleafroad.kmagick/CompositeOperator.XorCompositeOp///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-composite-operator/-xor-composite-op/index.html
 $dokka.location:com.cherryleafroad.kmagick/CompositeOperator///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-composite-operator/index.html
-$dokka.location:com.cherryleafroad.kmagick/CompositeOperator/id/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-composite-operator/id.html
 $dokka.location:com.cherryleafroad.kmagick/CompressionType.B44ACompression///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-compression-type/-b44-a-compression/index.html
 $dokka.location:com.cherryleafroad.kmagick/CompressionType.B44Compression///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-compression-type/-b44-compression/index.html
 $dokka.location:com.cherryleafroad.kmagick/CompressionType.BC7Compression///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-compression-type/-b-c7-compression/index.html
@@ -186,32 +180,27 @@ $dokka.location:com.cherryleafroad.kmagick/CompressionType.ZipCompression///Poin
 $dokka.location:com.cherryleafroad.kmagick/CompressionType.ZipSCompression///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-compression-type/-zip-s-compression/index.html
 $dokka.location:com.cherryleafroad.kmagick/CompressionType.ZstdCompression///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-compression-type/-zstd-compression/index.html
 $dokka.location:com.cherryleafroad.kmagick/CompressionType///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-compression-type/index.html
-$dokka.location:com.cherryleafroad.kmagick/CompressionType/id/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-compression-type/id.html
 $dokka.location:com.cherryleafroad.kmagick/DecorationType.LineThroughDecoration///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-decoration-type/-line-through-decoration/index.html
 $dokka.location:com.cherryleafroad.kmagick/DecorationType.NoDecoration///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-decoration-type/-no-decoration/index.html
 $dokka.location:com.cherryleafroad.kmagick/DecorationType.OverlineDecoration///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-decoration-type/-overline-decoration/index.html
 $dokka.location:com.cherryleafroad.kmagick/DecorationType.UndefinedDecoration///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-decoration-type/-undefined-decoration/index.html
 $dokka.location:com.cherryleafroad.kmagick/DecorationType.UnderlineDecoration///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-decoration-type/-underline-decoration/index.html
 $dokka.location:com.cherryleafroad.kmagick/DecorationType///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-decoration-type/index.html
-$dokka.location:com.cherryleafroad.kmagick/DecorationType/id/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-decoration-type/id.html
 $dokka.location:com.cherryleafroad.kmagick/DirectionType.LeftToRightDirection///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-direction-type/-left-to-right-direction/index.html
 $dokka.location:com.cherryleafroad.kmagick/DirectionType.RightToLeftDirection///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-direction-type/-right-to-left-direction/index.html
 $dokka.location:com.cherryleafroad.kmagick/DirectionType.UndefinedDirection///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-direction-type/-undefined-direction/index.html
 $dokka.location:com.cherryleafroad.kmagick/DirectionType///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-direction-type/index.html
-$dokka.location:com.cherryleafroad.kmagick/DirectionType/id/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-direction-type/id.html
 $dokka.location:com.cherryleafroad.kmagick/DisposeType.BackgroundDispose///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-dispose-type/-background-dispose/index.html
 $dokka.location:com.cherryleafroad.kmagick/DisposeType.NoneDispose///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-dispose-type/-none-dispose/index.html
 $dokka.location:com.cherryleafroad.kmagick/DisposeType.PreviousDispose///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-dispose-type/-previous-dispose/index.html
 $dokka.location:com.cherryleafroad.kmagick/DisposeType.UndefinedDispose///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-dispose-type/-undefined-dispose/index.html
 $dokka.location:com.cherryleafroad.kmagick/DisposeType.UnrecognizedDispose///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-dispose-type/-unrecognized-dispose/index.html
 $dokka.location:com.cherryleafroad.kmagick/DisposeType///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-dispose-type/index.html
-$dokka.location:com.cherryleafroad.kmagick/DisposeType/id/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-dispose-type/id.html
 $dokka.location:com.cherryleafroad.kmagick/DitherMethod.FloydSteinbergDitherMethod///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-dither-method/-floyd-steinberg-dither-method/index.html
 $dokka.location:com.cherryleafroad.kmagick/DitherMethod.NoDitherMethod///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-dither-method/-no-dither-method/index.html
 $dokka.location:com.cherryleafroad.kmagick/DitherMethod.RiemersmaDitherMethod///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-dither-method/-riemersma-dither-method/index.html
 $dokka.location:com.cherryleafroad.kmagick/DitherMethod.UndefinedDitherMethod///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-dither-method/-undefined-dither-method/index.html
 $dokka.location:com.cherryleafroad.kmagick/DitherMethod///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-dither-method/index.html
-$dokka.location:com.cherryleafroad.kmagick/DitherMethod/id/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-dither-method/id.html
 $dokka.location:com.cherryleafroad.kmagick/DrawingWand.Companion///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-drawing-wand/-companion/index.html
 $dokka.location:com.cherryleafroad.kmagick/DrawingWand.Companion/destroyWandId/#kotlin.ULong/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-drawing-wand/-companion/destroy-wand-id.html
 $dokka.location:com.cherryleafroad.kmagick/DrawingWand.Companion/destroyWandIds/#kotlin.ULongArray/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-drawing-wand/-companion/destroy-wand-ids.html
@@ -268,7 +257,6 @@ $dokka.location:com.cherryleafroad.kmagick/EndianType.LSBEndian///PointingToDecl
 $dokka.location:com.cherryleafroad.kmagick/EndianType.MSBEndian///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-endian-type/-m-s-b-endian/index.html
 $dokka.location:com.cherryleafroad.kmagick/EndianType.UndefinedEndian///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-endian-type/-undefined-endian/index.html
 $dokka.location:com.cherryleafroad.kmagick/EndianType///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-endian-type/index.html
-$dokka.location:com.cherryleafroad.kmagick/EndianType/id/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-endian-type/id.html
 $dokka.location:com.cherryleafroad.kmagick/ExceptionType.BlobError///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-exception-type/-blob-error/index.html
 $dokka.location:com.cherryleafroad.kmagick/ExceptionType.BlobFatalError///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-exception-type/-blob-fatal-error/index.html
 $dokka.location:com.cherryleafroad.kmagick/ExceptionType.BlobWarning///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-exception-type/-blob-warning/index.html
@@ -340,12 +328,10 @@ $dokka.location:com.cherryleafroad.kmagick/ExceptionType.XServerError///Pointing
 $dokka.location:com.cherryleafroad.kmagick/ExceptionType.XServerFatalError///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-exception-type/-x-server-fatal-error/index.html
 $dokka.location:com.cherryleafroad.kmagick/ExceptionType.XServerWarning///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-exception-type/-x-server-warning/index.html
 $dokka.location:com.cherryleafroad.kmagick/ExceptionType///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-exception-type/index.html
-$dokka.location:com.cherryleafroad.kmagick/ExceptionType/id/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-exception-type/id.html
 $dokka.location:com.cherryleafroad.kmagick/FillRule.EvenOddRule///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-fill-rule/-even-odd-rule/index.html
 $dokka.location:com.cherryleafroad.kmagick/FillRule.NonZeroRule///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-fill-rule/-non-zero-rule/index.html
 $dokka.location:com.cherryleafroad.kmagick/FillRule.UndefinedRule///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-fill-rule/-undefined-rule/index.html
 $dokka.location:com.cherryleafroad.kmagick/FillRule///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-fill-rule/index.html
-$dokka.location:com.cherryleafroad.kmagick/FillRule/id/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-fill-rule/id.html
 $dokka.location:com.cherryleafroad.kmagick/FilterType.BartlettFilter///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-filter-type/-bartlett-filter/index.html
 $dokka.location:com.cherryleafroad.kmagick/FilterType.BlackmanFilter///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-filter-type/-blackman-filter/index.html
 $dokka.location:com.cherryleafroad.kmagick/FilterType.BohmanFilter///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-filter-type/-bohman-filter/index.html
@@ -380,7 +366,6 @@ $dokka.location:com.cherryleafroad.kmagick/FilterType.TriangleFilter///PointingT
 $dokka.location:com.cherryleafroad.kmagick/FilterType.UndefinedFilter///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-filter-type/-undefined-filter/index.html
 $dokka.location:com.cherryleafroad.kmagick/FilterType.WelchFilter///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-filter-type/-welch-filter/index.html
 $dokka.location:com.cherryleafroad.kmagick/FilterType///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-filter-type/index.html
-$dokka.location:com.cherryleafroad.kmagick/FilterType/id/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-filter-type/id.html
 $dokka.location:com.cherryleafroad.kmagick/GravityType.CenterGravity///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-gravity-type/-center-gravity/index.html
 $dokka.location:com.cherryleafroad.kmagick/GravityType.EastGravity///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-gravity-type/-east-gravity/index.html
 $dokka.location:com.cherryleafroad.kmagick/GravityType.ForgetGravity///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-gravity-type/-forget-gravity/index.html
@@ -393,7 +378,6 @@ $dokka.location:com.cherryleafroad.kmagick/GravityType.SouthWestGravity///Pointi
 $dokka.location:com.cherryleafroad.kmagick/GravityType.UndefinedGravity///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-gravity-type/-undefined-gravity/index.html
 $dokka.location:com.cherryleafroad.kmagick/GravityType.WestGravity///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-gravity-type/-west-gravity/index.html
 $dokka.location:com.cherryleafroad.kmagick/GravityType///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-gravity-type/index.html
-$dokka.location:com.cherryleafroad.kmagick/GravityType/id/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-gravity-type/id.html
 $dokka.location:com.cherryleafroad.kmagick/HSL///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-h-s-l/index.html
 $dokka.location:com.cherryleafroad.kmagick/HSL/HSL/#kotlin.Double#kotlin.Double#kotlin.Double/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-h-s-l/-h-s-l.html
 $dokka.location:com.cherryleafroad.kmagick/HSL/hue/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-h-s-l/hue.html
@@ -412,7 +396,6 @@ $dokka.location:com.cherryleafroad.kmagick/ImageType.TrueColorAlphaType///Pointi
 $dokka.location:com.cherryleafroad.kmagick/ImageType.TrueColorType///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-image-type/-true-color-type/index.html
 $dokka.location:com.cherryleafroad.kmagick/ImageType.UndefinedType///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-image-type/-undefined-type/index.html
 $dokka.location:com.cherryleafroad.kmagick/ImageType///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-image-type/index.html
-$dokka.location:com.cherryleafroad.kmagick/ImageType/id/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-image-type/id.html
 $dokka.location:com.cherryleafroad.kmagick/InterlaceType.GIFInterlace///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-interlace-type/-g-i-f-interlace/index.html
 $dokka.location:com.cherryleafroad.kmagick/InterlaceType.JPEGInterlace///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-interlace-type/-j-p-e-g-interlace/index.html
 $dokka.location:com.cherryleafroad.kmagick/InterlaceType.LineInterlace///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-interlace-type/-line-interlace/index.html
@@ -422,19 +405,16 @@ $dokka.location:com.cherryleafroad.kmagick/InterlaceType.PartitionInterlace///Po
 $dokka.location:com.cherryleafroad.kmagick/InterlaceType.PlaneInterlace///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-interlace-type/-plane-interlace/index.html
 $dokka.location:com.cherryleafroad.kmagick/InterlaceType.UndefinedInterlace///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-interlace-type/-undefined-interlace/index.html
 $dokka.location:com.cherryleafroad.kmagick/InterlaceType///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-interlace-type/index.html
-$dokka.location:com.cherryleafroad.kmagick/InterlaceType/id/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-interlace-type/id.html
 $dokka.location:com.cherryleafroad.kmagick/LineCap.ButtCap///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-line-cap/-butt-cap/index.html
 $dokka.location:com.cherryleafroad.kmagick/LineCap.RoundCap///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-line-cap/-round-cap/index.html
 $dokka.location:com.cherryleafroad.kmagick/LineCap.SquareCap///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-line-cap/-square-cap/index.html
 $dokka.location:com.cherryleafroad.kmagick/LineCap.UndefinedCap///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-line-cap/-undefined-cap/index.html
 $dokka.location:com.cherryleafroad.kmagick/LineCap///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-line-cap/index.html
-$dokka.location:com.cherryleafroad.kmagick/LineCap/id/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-line-cap/id.html
 $dokka.location:com.cherryleafroad.kmagick/LineJoin.BevelJoin///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-line-join/-bevel-join/index.html
 $dokka.location:com.cherryleafroad.kmagick/LineJoin.MiterJoin///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-line-join/-miter-join/index.html
 $dokka.location:com.cherryleafroad.kmagick/LineJoin.RoundJoin///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-line-join/-round-join/index.html
 $dokka.location:com.cherryleafroad.kmagick/LineJoin.UndefinedJoin///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-line-join/-undefined-join/index.html
 $dokka.location:com.cherryleafroad.kmagick/LineJoin///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-line-join/index.html
-$dokka.location:com.cherryleafroad.kmagick/LineJoin/id/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-line-join/id.html
 $dokka.location:com.cherryleafroad.kmagick/LogLevel.Debug///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-log-level/-debug/index.html
 $dokka.location:com.cherryleafroad.kmagick/LogLevel.Error///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-log-level/-error/index.html
 $dokka.location:com.cherryleafroad.kmagick/LogLevel.Info///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-log-level/-info/index.html
@@ -442,7 +422,6 @@ $dokka.location:com.cherryleafroad.kmagick/LogLevel.Off///PointingToDeclaration/
 $dokka.location:com.cherryleafroad.kmagick/LogLevel.Trace///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-log-level/-trace/index.html
 $dokka.location:com.cherryleafroad.kmagick/LogLevel.Warn///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-log-level/-warn/index.html
 $dokka.location:com.cherryleafroad.kmagick/LogLevel///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-log-level/index.html
-$dokka.location:com.cherryleafroad.kmagick/LogLevel/id/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-log-level/id.html
 $dokka.location:com.cherryleafroad.kmagick/Magick///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-magick/index.html
 $dokka.location:com.cherryleafroad.kmagick/Magick/close/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-magick/close.html
 $dokka.location:com.cherryleafroad.kmagick/Magick/destroyWandId/#kotlin.ULong/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-magick/destroy-wand-id.html
@@ -589,7 +568,6 @@ $dokka.location:com.cherryleafroad.kmagick/MetricType.StructuralDissimilarityErr
 $dokka.location:com.cherryleafroad.kmagick/MetricType.StructuralSimilarityErrorMetric///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-metric-type/-structural-similarity-error-metric/index.html
 $dokka.location:com.cherryleafroad.kmagick/MetricType.UndefinedErrorMetric///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-metric-type/-undefined-error-metric/index.html
 $dokka.location:com.cherryleafroad.kmagick/MetricType///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-metric-type/index.html
-$dokka.location:com.cherryleafroad.kmagick/MetricType/id/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-metric-type/id.html
 $dokka.location:com.cherryleafroad.kmagick/NativeMagickException///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-native-magick-exception/index.html
 $dokka.location:com.cherryleafroad.kmagick/NativeMagickException/NativeMagickException/#com.cherryleafroad.kmagick.ExceptionType#kotlin.String/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-native-magick-exception/-native-magick-exception.html
 $dokka.location:com.cherryleafroad.kmagick/NativeMagickException/exceptionType/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-native-magick-exception/exception-type.html
@@ -604,7 +582,6 @@ $dokka.location:com.cherryleafroad.kmagick/OrientationType.TopLeftOrientation///
 $dokka.location:com.cherryleafroad.kmagick/OrientationType.TopRightOrientation///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-orientation-type/-top-right-orientation/index.html
 $dokka.location:com.cherryleafroad.kmagick/OrientationType.UndefinedOrientation///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-orientation-type/-undefined-orientation/index.html
 $dokka.location:com.cherryleafroad.kmagick/OrientationType///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-orientation-type/index.html
-$dokka.location:com.cherryleafroad.kmagick/OrientationType/id/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-orientation-type/id.html
 $dokka.location:com.cherryleafroad.kmagick/PageGeometry///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-page-geometry/index.html
 $dokka.location:com.cherryleafroad.kmagick/PageGeometry/PageGeometry/#kotlin.Long#kotlin.Long#kotlin.Long#kotlin.Long/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-page-geometry/-page-geometry.html
 $dokka.location:com.cherryleafroad.kmagick/PageGeometry/height/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-page-geometry/height.html
@@ -624,7 +601,6 @@ $dokka.location:com.cherryleafroad.kmagick/PixelInterpolateMethod.NearestInterpo
 $dokka.location:com.cherryleafroad.kmagick/PixelInterpolateMethod.SplineInterpolatePixel///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-pixel-interpolate-method/-spline-interpolate-pixel/index.html
 $dokka.location:com.cherryleafroad.kmagick/PixelInterpolateMethod.UndefinedInterpolatePixel///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-pixel-interpolate-method/-undefined-interpolate-pixel/index.html
 $dokka.location:com.cherryleafroad.kmagick/PixelInterpolateMethod///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-pixel-interpolate-method/index.html
-$dokka.location:com.cherryleafroad.kmagick/PixelInterpolateMethod/id/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-pixel-interpolate-method/id.html
 $dokka.location:com.cherryleafroad.kmagick/PixelWand.Companion///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-pixel-wand/-companion/index.html
 $dokka.location:com.cherryleafroad.kmagick/PixelWand.Companion/destroyWandId/#kotlin.ULong/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-pixel-wand/-companion/destroy-wand-id.html
 $dokka.location:com.cherryleafroad.kmagick/PixelWand.Companion/destroyWandIds/#kotlin.ULongArray/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-pixel-wand/-companion/destroy-wand-ids.html
@@ -671,7 +647,6 @@ $dokka.location:com.cherryleafroad.kmagick/RenderingIntent.RelativeIntent///Poin
 $dokka.location:com.cherryleafroad.kmagick/RenderingIntent.SaturationIntent///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-rendering-intent/-saturation-intent/index.html
 $dokka.location:com.cherryleafroad.kmagick/RenderingIntent.UndefinedIntent///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-rendering-intent/-undefined-intent/index.html
 $dokka.location:com.cherryleafroad.kmagick/RenderingIntent///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-rendering-intent/index.html
-$dokka.location:com.cherryleafroad.kmagick/RenderingIntent/id/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-rendering-intent/id.html
 $dokka.location:com.cherryleafroad.kmagick/Resolution///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-resolution/index.html
 $dokka.location:com.cherryleafroad.kmagick/Resolution/Resolution/#kotlin.Double#kotlin.Double/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-resolution/-resolution.html
 $dokka.location:com.cherryleafroad.kmagick/Resolution/x/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-resolution/x.html
@@ -680,7 +655,6 @@ $dokka.location:com.cherryleafroad.kmagick/ResolutionType.PixelsPerCentimeterRes
 $dokka.location:com.cherryleafroad.kmagick/ResolutionType.PixelsPerInchResolution///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-resolution-type/-pixels-per-inch-resolution/index.html
 $dokka.location:com.cherryleafroad.kmagick/ResolutionType.UndefinedResolution///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-resolution-type/-undefined-resolution/index.html
 $dokka.location:com.cherryleafroad.kmagick/ResolutionType///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-resolution-type/index.html
-$dokka.location:com.cherryleafroad.kmagick/ResolutionType/id/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-resolution-type/id.html
 $dokka.location:com.cherryleafroad.kmagick/ResourceType.AreaResource///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-resource-type/-area-resource/index.html
 $dokka.location:com.cherryleafroad.kmagick/ResourceType.DiskResource///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-resource-type/-disk-resource/index.html
 $dokka.location:com.cherryleafroad.kmagick/ResourceType.FileResource///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-resource-type/-file-resource/index.html
@@ -694,7 +668,6 @@ $dokka.location:com.cherryleafroad.kmagick/ResourceType.TimeResource///PointingT
 $dokka.location:com.cherryleafroad.kmagick/ResourceType.UndefinedResource///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-resource-type/-undefined-resource/index.html
 $dokka.location:com.cherryleafroad.kmagick/ResourceType.WidthResource///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-resource-type/-width-resource/index.html
 $dokka.location:com.cherryleafroad.kmagick/ResourceType///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-resource-type/index.html
-$dokka.location:com.cherryleafroad.kmagick/ResourceType/id/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-resource-type/id.html
 $dokka.location:com.cherryleafroad.kmagick/StretchType.AnyStretch///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-stretch-type/-any-stretch/index.html
 $dokka.location:com.cherryleafroad.kmagick/StretchType.CondensedStretch///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-stretch-type/-condensed-stretch/index.html
 $dokka.location:com.cherryleafroad.kmagick/StretchType.ExpandedStretch///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-stretch-type/-expanded-stretch/index.html
@@ -707,7 +680,6 @@ $dokka.location:com.cherryleafroad.kmagick/StretchType.UltraCondensedStretch///P
 $dokka.location:com.cherryleafroad.kmagick/StretchType.UltraExpandedStretch///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-stretch-type/-ultra-expanded-stretch/index.html
 $dokka.location:com.cherryleafroad.kmagick/StretchType.UndefinedStretch///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-stretch-type/-undefined-stretch/index.html
 $dokka.location:com.cherryleafroad.kmagick/StretchType///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-stretch-type/index.html
-$dokka.location:com.cherryleafroad.kmagick/StretchType/id/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-stretch-type/id.html
 $dokka.location:com.cherryleafroad.kmagick/StyleType.AnyStyle///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-style-type/-any-style/index.html
 $dokka.location:com.cherryleafroad.kmagick/StyleType.BoldStyle///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-style-type/-bold-style/index.html
 $dokka.location:com.cherryleafroad.kmagick/StyleType.ItalicStyle///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-style-type/-italic-style/index.html
@@ -715,11 +687,9 @@ $dokka.location:com.cherryleafroad.kmagick/StyleType.NormalStyle///PointingToDec
 $dokka.location:com.cherryleafroad.kmagick/StyleType.ObliqueStyle///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-style-type/-oblique-style/index.html
 $dokka.location:com.cherryleafroad.kmagick/StyleType.UndefinedStyle///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-style-type/-undefined-style/index.html
 $dokka.location:com.cherryleafroad.kmagick/StyleType///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-style-type/index.html
-$dokka.location:com.cherryleafroad.kmagick/StyleType/id/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-style-type/id.html
 $dokka.location:com.cherryleafroad.kmagick/WandType.DrawingWand///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-wand-type/-drawing-wand/index.html
 $dokka.location:com.cherryleafroad.kmagick/WandType.MagickWand///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-wand-type/-magick-wand/index.html
 $dokka.location:com.cherryleafroad.kmagick/WandType.PixelWand///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-wand-type/-pixel-wand/index.html
 $dokka.location:com.cherryleafroad.kmagick/WandType///PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-wand-type/index.html
-$dokka.location:com.cherryleafroad.kmagick/WandType/id/#/PointingToDeclaration/kmagick/com.cherryleafroad.kmagick/-wand-type/id.html
 com.cherryleafroad.kmagick
 

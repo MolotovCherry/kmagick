@@ -2,7 +2,10 @@ package com.cherryleafroad.kmagick
 
 import java.io.Closeable
 
-// base exception class for all imagemagick exceptions
+/**
+ * The base exception class for all imagemagick exceptions.
+ */
+
 open class MagickException(message: String) : Exception(message)
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
@@ -17,14 +20,17 @@ object Magick : Closeable {
 
     /**
      * Returns any font that matches the specified pattern (e.g. "*" for all).
+     *
+     * &nbsp;
+     *
      * Returns `null` and an exception if there was an error.
      */
     @Throws(MagickException::class)
     external fun magickQueryFonts(pattern: String): Array<String>?
 
     /**
-     * Set the internal log level used. By default, a debug build = DEBUG log level,
-     * and a release build = INFO log level. But you can change it or even turn it off.
+     * Set the internal log level used. By default, a debug build = [LogLevel.Debug] log level,
+     * and a release build = [LogLevel.Info] log level. But you can change it or even turn it off.
      */
     fun setLogLevel(level: LogLevel) {
         nativeSetLogLevel(level.id)
@@ -35,7 +41,11 @@ object Magick : Closeable {
      * Initialize the environment - This ___MUST___ be called before calling anything else.
      * This ___IS NOT___ called automatically for you.
      *
+     * &nbsp;
+     *
      * ___REMEMBER___ to manually call [terminate] when you're finished to clean up.
+     *
+     * &nbsp;
      *
      * If you prefer something more idiomatic, you can try a `use` with resources block.
      * E.g. `Magick.initialize().use { }`
@@ -49,6 +59,8 @@ object Magick : Closeable {
     /**
      * Call this manually when you're finished to destruct the environment.
      * This ___WILL NOT___ be called automatically.
+     *
+     * &nbsp;
      *
      * If you would like to automatically call this, try a `use` with resources block.
      * E.g. `Magick.initialize().use { }`
@@ -70,13 +82,19 @@ object Magick : Closeable {
     external fun isInitialized(): Boolean
 
     /**
-     * Destroys all wands (same thing that happens when you call `terminate()`)
+     * Destroys all wands (same thing that happens when you call [terminate])
+     *
+     * &nbsp;
+     *
      * WARNING: DO NOT use the destroyed wands after. They are invalidated after that.
      */
     external fun destroyWands()
 
     /**
      * Destroys all wands with certain types that match ID's
+     *
+     * &nbsp;
+     *
      * WARNING: DO NOT use the destroyed wands after. They are invalidated after that.
      */
     @OptIn(ExperimentalUnsignedTypes::class)
@@ -85,20 +103,29 @@ object Magick : Closeable {
 
     /**
      * Destroys all wands of a certain type
+     *
+     * &nbsp;
+     *
      * WARNING: DO NOT use the destroyed wands after. They are invalidated after that.
      */
     @JvmName("destroyWandType")
     internal external fun destroyWandType(wandType: Int)
 
     /**
-     * Destroys a wand with a specific ID
+     * Destroys a wand with a specific id.
+     *
+     * &nbsp;
+     *
      * WARNING: DO NOT use the destroyed wand after. It is invalidated after that.
      */
     @JvmName("destroyWandIdType")
     internal external fun destroyWandIdType(id: ULong, wandType: Int)
 
     /**
-     * Destroys any kind of wand with a specific ID
+     * Destroys any kind of wand with a specific id.
+     *
+     * &nbsp;
+     *
      * WARNING: DO NOT use the destroyed wands after. They are invalidated after that.
      */
     @JvmName("destroyWandId")
@@ -106,6 +133,9 @@ object Magick : Closeable {
 
     /**
      * Destroys any kind of wand whose id is contained in the array
+     *
+     * &nbsp;
+     *
      * WARNING: DO NOT use the destroyed wands after. They are invalidated after that.
      */
     @JvmName("destroyWandIds")

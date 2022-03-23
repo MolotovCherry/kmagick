@@ -1,7 +1,9 @@
 package com.cherryleafroad.kmagick
 
-@Suppress("unused")
-enum class ExceptionType(val id: Int) {
+/**
+ * Represents an internal imagemagick exception type.
+ */
+enum class ExceptionType(internal val id: Int) {
     UndefinedException(0),
     WarningException(300),
     ResourceLimitWarning(300),

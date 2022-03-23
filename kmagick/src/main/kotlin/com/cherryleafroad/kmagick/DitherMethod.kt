@@ -1,7 +1,6 @@
 package com.cherryleafroad.kmagick
 
-@Suppress("unused")
-enum class DitherMethod(val id: Int) {
+enum class DitherMethod(internal val id: Int) {
     UndefinedDitherMethod(0),
     NoDitherMethod(1),
     RiemersmaDitherMethod(2),

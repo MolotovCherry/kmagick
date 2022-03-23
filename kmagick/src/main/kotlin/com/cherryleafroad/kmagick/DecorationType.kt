@@ -1,14 +1,34 @@
 package com.cherryleafroad.kmagick
 
-@Suppress("unused")
-enum class DecorationType(val id: Int) {
+/**
+ * The DecorationType enumerations are used to specify line decorations of rendered text.
+ */
+enum class DecorationType(internal val id: Int) {
+    /**
+     * Unset
+     */
     UndefinedDecoration(0),
+
+    /**
+     * No decoration
+     */
     NoDecoration(1),
+
+    /**
+     * Underlined text
+     */
     UnderlineDecoration(2),
+
+    /**
+     * Overlined text
+     */
     OverlineDecoration(3),
+
+    /**
+     * Strike-through text
+     */
     LineThroughDecoration(4);
 
-    @Suppress("unused")
     internal companion object {
         fun fromNative(id: Int): DecorationType {
             return (DecorationType::id::find)(id)!!

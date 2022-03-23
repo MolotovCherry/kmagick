@@ -4,12 +4,14 @@ import java.io.Closeable
 
 typealias Quantum = Float
 
+/**
+ * The exception that all [PixelWand]'s throw if there's an error.
+ */
 class PixelWandException(message: String) : MagickException(message)
 
 /**
- * PixelWand API. Used for specifying certain colors.
+ * [PixelWand] API. Used for specifying certain colors.
  */
-@Suppress("unused", "MemberVisibilityCanBePrivate")
 class PixelWand : Closeable {
     constructor() {
         new()
@@ -24,14 +26,15 @@ class PixelWand : Closeable {
 
     companion object {
         /**
-         * Internal use ONLY. Creates instance without calling constructor
+         * Internal use ONLY. Creates instance without calling constructor.
          */
         internal fun newInstance(): PixelWand {
             return pixelWandInstantiator.newInstance()
         }
 
         /**
-         * Destroys all PixelWand's
+         * Destroys all [PixelWand]'s
+         *
          * WARNING: DO NOT use the destroyed wands after. They are invalidated after that.
          */
         fun destroyWands() {
@@ -39,7 +42,8 @@ class PixelWand : Closeable {
         }
 
         /**
-         * Destroys all PixelWand's that match ids
+         * Destroys all [PixelWand]'s that match ids.
+         *
          * WARNING: DO NOT use the destroyed wands after. They are invalidated after that.
          */
         @OptIn(ExperimentalUnsignedTypes::class)
@@ -48,7 +52,8 @@ class PixelWand : Closeable {
         }
 
         /**
-         * Destroys a PixelWand with a certain ID
+         * Destroys a [PixelWand] with a certain id.
+         *
          * WARNING: DO NOT use the destroyed wand after. It is invalidated after that.
          */
         fun destroyWandId(id: ULong) {
@@ -63,8 +68,11 @@ class PixelWand : Closeable {
 
     /**
      * The unique id of the wand.
+     *
+     * &nbsp;
+     *
      * This id is guaranteed to be unique amongst ALL wands of ALL types
-     * (unless you overflow a ULong, then it'll wrap back around)
+     * (unless you overflow a [ULong], then it'll wrap back around)
       */
     val id: ULong
         get() = _id
@@ -72,9 +80,14 @@ class PixelWand : Closeable {
 
     /**
      * Check to see if this is initialized with the underlying C obj.
+     *
+     * &nbsp;
+     *
      * If it's not, then calling any functions will result in a null exception.
      *
-     * This object is _ALWAYS_ initialized, unless a destroy method, or [Magick.terminate] got called.
+     * &nbsp;
+     *
+     * This object is _ALWAYS_ initialized, unless a [destroy] method, or [Magick.terminate] got called.
      */
     val isInitialized: Boolean
         get() = handle != null
@@ -124,7 +137,8 @@ class PixelWand : Closeable {
 
     /**
      * It's recommended to manually destroy all wands when finished.
-     * Otherwise the memory will stay around forever until `Magick.terminate()`
+     *
+     * Otherwise the memory will stay around forever until [Magick.terminate]
      */
     external fun destroy()
 
@@ -140,14 +154,14 @@ class PixelWand : Closeable {
     /**
      * Check if the distance between two colors is less than the specified distance.
      *
-     * @param other The other PixelWand to compare to
+     * @param other The other [PixelWand] to compare to.
      * @param fuzz Any two colors that are less than or equal to this distance squared are considered similar.
      */
     @Throws(PixelWandException::class)
     external fun isSimilar(other: PixelWand, fuzz: Double): Boolean
 
     /**
-     * The normalized HSL color of the pixel wand.
+     * The normalized HSL color of the [PixelWand].
      */
     var hsl: HSL
         get() = pixelGetHSL()
@@ -158,7 +172,8 @@ class PixelWand : Closeable {
     private external fun pixelSetHSL(hsl: HSL)
 
     /**
-     * The color of the pixel wand as a string.
+     * The color of the [PixelWand] as a string.
+     *
      * (e.g. "blue", "#0000ff", "rgb(0,0,255)", "cmyk(100,100,100,10)", etc.).
      */
     var color: String
@@ -170,7 +185,7 @@ class PixelWand : Closeable {
     private external fun pixelGetColorAsString(): String
 
     /**
-     * The normalized color of the pixel wand as a string.
+     * The normalized color of the [PixelWand] as a string.
      */
     val normalizedColor: String
         get() = pixelGetColorAsNormalizedString()
@@ -189,7 +204,7 @@ class PixelWand : Closeable {
     private external fun pixelSetColorCount(count: Long)
 
     /**
-     *The colormap index of the pixel wand.
+     * The colormap index of the [PixelWand].
      */
     var index: Quantum
         get() = pixelGetIndex()
@@ -198,7 +213,7 @@ class PixelWand : Closeable {
     private external fun pixelSetIndex(index: Quantum)
 
     /**
-     * The fuzz value of the pixel wand.
+     * The fuzz value of the [PixelWand].
      */
     var fuzz: Double
         get() = pixelGetFuzz()
@@ -207,8 +222,13 @@ class PixelWand : Closeable {
     private external fun pixelSetFuzz(fuzz: Double)
 
     /**
-     * The normalized alpha value of the pixel wand.
-     * The level of transparency: 1.0 is fully opaque and 0.0 is fully transparent.
+     * The normalized alpha value of the [PixelWand].
+     *
+     * &nbsp;
+     *
+     * The level of transparency:
+     *
+     * 1.0 is fully opaque and 0.0 is fully transparent.
      */
     var alpha: Double
         get() = pixelGetAlpha()
@@ -217,7 +237,7 @@ class PixelWand : Closeable {
     private external fun pixelSetAlpha(alpha: Double)
 
     /**
-     * The alpha value of the pixel wand.
+     * The alpha value of the [PixelWand].
      */
     var alphaQuantum: Quantum
         get() = pixelGetAlphaQuantum()
@@ -226,7 +246,7 @@ class PixelWand : Closeable {
     private external fun pixelSetAlphaQuantum(alpha: Quantum)
 
     /**
-     * The normalized black color of the pixel wand.
+     * The normalized black color of the [PixelWand].
      */
     var black: Double
         get() = pixelGetBlack()
@@ -235,7 +255,7 @@ class PixelWand : Closeable {
     private external fun pixelSetBlack(black: Double)
 
     /**
-     * The black color of the pixel wand.
+     * The black color of the [PixelWand].
      */
     var blackQuantum: Quantum
         get() = pixelGetBlackQuantum()
@@ -244,7 +264,7 @@ class PixelWand : Closeable {
     private external fun pixelSetBlackQuantum(black: Quantum)
 
     /**
-     * The normalized blue color of the pixel wand.
+     * The normalized blue color of the [PixelWand].
      */
     var blue: Double
         get() = pixelGetBlue()
@@ -253,7 +273,7 @@ class PixelWand : Closeable {
     private external fun pixelSetBlue(blue: Double)
 
     /**
-     * The blue color of the pixel wand.
+     * The blue color of the [PixelWand].
      */
     var blueQuantum: Quantum
         get() = pixelGetBlueQuantum()
@@ -262,7 +282,7 @@ class PixelWand : Closeable {
     private external fun pixelSetBlueQuantum(blue: Quantum)
 
     /**
-     * The normalized cyan color of the pixel wand.
+     * The normalized cyan color of the [PixelWand].
      */
     var cyan: Double
         get() = pixelGetCyan()
@@ -271,7 +291,7 @@ class PixelWand : Closeable {
     private external fun pixelSetCyan(cyan: Double)
 
     /**
-     * The cyan color of the pixel wand.
+     * The cyan color of the [PixelWand].
      */
     var cyanQuantum: Quantum
         get() = pixelGetCyanQuantum()
@@ -280,7 +300,7 @@ class PixelWand : Closeable {
     private external fun pixelSetCyanQuantum(cyan: Quantum)
 
     /**
-     * The normalized green color of the pixel wand.
+     * The normalized green color of the [PixelWand].
      */
     var green: Double
         get() = pixelGetGreen()
@@ -289,7 +309,7 @@ class PixelWand : Closeable {
     private external fun pixelSetGreen(green: Double)
 
     /**
-     * The green color of the pixel wand.
+     * The green color of the [PixelWand].
      */
     var greenQuantum: Quantum
         get() = pixelGetGreenQuantum()
@@ -298,7 +318,7 @@ class PixelWand : Closeable {
     private external fun pixelSetGreenQuantum(green: Quantum)
 
     /**
-     * The normalized magenta color of the pixel wand.
+     * The normalized magenta color of the [PixelWand].
      */
     var magenta: Double
         get() = pixelGetMagenta()
@@ -307,7 +327,7 @@ class PixelWand : Closeable {
     private external fun pixelSetMagenta(magenta: Double)
 
     /**
-     * The magenta color of the pixel wand.
+     * The magenta color of the [PixelWand].
      */
     var magentaQuantum: Quantum
         get() = pixelGetMagentaQuantum()
@@ -316,7 +336,7 @@ class PixelWand : Closeable {
     private external fun pixelSetMagentaQuantum(magenta: Quantum)
 
     /**
-     * The normalized red color of the pixel wand.
+     * The normalized red color of the [PixelWand].
      */
     var red: Double
         get() = pixelGetRed()
@@ -325,7 +345,7 @@ class PixelWand : Closeable {
     private external fun pixelSetRed(red: Double)
 
     /**
-     * The red color of the pixel wand.
+     * The red color of the [PixelWand].
      */
     var redQuantum: Quantum
         get() = pixelGetRedQuantum()
@@ -334,7 +354,7 @@ class PixelWand : Closeable {
     private external fun pixelSetRedQuantum(red: Quantum)
 
     /**
-     * The normalized yellow color of the pixel wand.
+     * The normalized yellow color of the [PixelWand].
      */
     var yellow: Double
         get() = pixelGetYellow()
@@ -343,7 +363,7 @@ class PixelWand : Closeable {
     private external fun pixelSetYellow(yellow: Double)
 
     /**
-     * The yellow color of the pixel wand.
+     * The yellow color of the [PixelWand].
      */
     var yellowQuantum: Quantum
         get() = pixelGetYellowQuantum()
