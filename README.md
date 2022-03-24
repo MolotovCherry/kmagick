@@ -1,6 +1,6 @@
 # KMagick
 
-[![Build](https://github.com/cherryleafroad/kmagick/actions/workflows/build.yml/badge.svg?event=push)](https://github.com/cherryleafroad/kmagick/actions/workflows/build.yml) ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/cherryleafroad/kmagick?style=plastic)
+[![Build](https://github.com/cherryleafroad/kmagick/actions/workflows/build.yml/badge.svg?event=push)](https://github.com/cherryleafroad/kmagick/actions/workflows/build.yml) [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/cherryleafroad/kmagick)](https://github.com/cherryleafroad/kmagick/releases) [![Docs](https://img.shields.io/badge/docs-v0.2.0-orange)](https://cherryleafroad.github.io/kmagick/kmagick/com.cherryleafroad.kmagick/index.html)
 
 Kotlin bindings for ImageMagick; uses the ImageMagick wand API.
 
@@ -38,7 +38,7 @@ Debug messages can be found in Android logcat under the id `MAGICK`. Make sure y
 5. Either [download](http://objenesis.org/download.html) objenesis jar and place it along with your other jars, OR add this line (or similar depending on your build system) to your dependencies:  
 `implementation 'org.objenesis:objenesis:3.2'`
 
-## Docs
+## Documentation
 You can browse the latest docs [here](https://cherryleafroad.github.io/kmagick/kmagick/com.cherryleafroad.kmagick/index.html)
 
 ## Behavior
