@@ -132,6 +132,13 @@ If you want to contribute Rust code to this project, check out the [rust folder]
 ## Rust devs - a note for you all
 In the `Rust` directory, the two crates `jni-macros` and `jni-tools` offers some FULLY working macros which generate JNI bindings for Rust functions. Of course, it's only Kotlin compatible (no Java; although you _could_ edit the handle fn's to fix that). You can even use regular impl's which KEEP STATE between calls as if it was a real class instance! The `jni-tools` crate offers the visible public API for it. There's also docs on it to explain its usage, however, if you want to fully know how to use it, you should take a look at my Rust and Kotlin code as the prime example.
 
+# Did this library help you?
+
+[![Donate](https://raw.githubusercontent.com/cherryleafroad/Android-ImageMagick7/master/readme_files/donate.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=BKDN933UM444J)
+
+If you found this library useful, please consider showing appreciation and help fund it by sending a donation my way (maybe for a cup of coffee or a donut).
+I don't always have the time nor mental energy to keep this updated for free, so any donations will help this project continue to be supported for longer and get more frequent updates! Thanks for your support! <3
+
 ## 
 
 <p>
