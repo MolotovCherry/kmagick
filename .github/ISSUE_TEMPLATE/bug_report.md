@@ -17,6 +17,7 @@ Please answer the following questions for yourself before submitting an issue.
 - [ ] I checked that this isn't an [ImageMagick](https://github.com/ImageMagick/ImageMagick) bug itself, and is an actual problem with the bindings
 - [ ] I checked to make sure that this issue has not already been filed
 - [ ] I'm reporting the issue to the correct repository
+- [ ] I'm using the correct architecture (e.g. an x86 emulator runs x86, not arm)
 
 ## Context
 
