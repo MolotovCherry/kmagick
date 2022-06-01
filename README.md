@@ -118,6 +118,9 @@ For more examples and information on usage, please browse the API in your IDE or
 
 ## Reporting issues
 If you encountered a problem, please first check if you can find out what it is by running `getException()` and checking the details.  
+
+If that gives you no solution, then please check whether it's merely your usage of the api. **_Some things may appear to be bugs, but rather are in fact not bugs; just merely it's how imagemagick works, and you need to follow the imagemagick api. Kmagick is only a direct binding to the imagemagick c api and does not alter your images in any way. So make sure to check and understand the imagemagick c api so you can do things the way imagemagick expects you to_**  
+
 If this doesn't help and it's a real bug, then please check your `logcat` for your device and include the error log in the issue you make.
 
 ## Missing an API Function?
