@@ -1,6 +1,6 @@
 # KMagick
 
-[![Build](https://github.com/cherryleafroad/kmagick/actions/workflows/build.yml/badge.svg?event=push)](https://github.com/cherryleafroad/kmagick/actions/workflows/build.yml) [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/cherryleafroad/kmagick)](https://github.com/cherryleafroad/kmagick/releases) [![Docs](https://img.shields.io/badge/docs-v0.2.0-orange)](https://cherryleafroad.github.io/kmagick/kmagick/com.cherryleafroad.kmagick/index.html)
+[![Build](https://github.com/cherryleafroad/kmagick/actions/workflows/build.yml/badge.svg?event=push)](https://github.com/cherryleafroad/kmagick/actions/workflows/build.yml) [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/cherryleafroad/kmagick)](https://github.com/cherryleafroad/kmagick/releases) [![Docs](https://img.shields.io/badge/docs-v0.2.1-orange)](https://cherryleafroad.github.io/kmagick/kmagick/com.cherryleafroad.kmagick/index.html)
 
 Kotlin bindings for ImageMagick; uses the ImageMagick wand API.
 
