@@ -15,7 +15,7 @@ jobs:
     name: Generate Matrix
     runs-on: windows-latest
 
-    if: github.event_name != 'pull_request' && github.head_ref != 'docsupdate' && github.actor == 'cherryleafroad'
+    if: github.head_ref != 'docsupdate' && github.actor != 'cherryleafroad'
 
     steps:
       - uses: actions/checkout@v2
@@ -33,7 +33,7 @@ jobs:
     runs-on: windows-latest
     needs: metadata
 
-    if: github.event_name != 'pull_request' && github.head_ref != 'docsupdate' && github.actor == 'cherryleafroad'
+    if: github.head_ref != 'docsupdate' && github.actor != 'cherryleafroad'
 
     strategy:
       matrix: ${{ fromJson(needs.metadata.outputs.matrix) }}
@@ -173,7 +173,7 @@ jobs:
     name: Build KMagick Jar
     runs-on: windows-latest
 
-    if: github.event_name != 'pull_request' && github.head_ref != 'docsupdate' && github.actor == 'cherryleafroad'
+    if: github.head_ref != 'docsupdate' && github.actor != 'cherryleafroad'
 
     steps:
       - name: Checkout KMagick
