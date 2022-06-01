@@ -15,7 +15,7 @@ Please answer the following questions for yourself before submitting an issue.
 - [ ] I checked the documentation and examples and found no answer
 - [ ] I checked that it wasn't user error; it was not an ordinary exception that I could've found out and fixed by running `wand.getException()`
 - [ ] I checked that this isn't an [ImageMagick](https://github.com/ImageMagick/ImageMagick) bug itself, and is an actual problem with the bindings
-- [ ] I understand that kmagick does nothing to the images, but is only a direct binding to the imagmagick c api. I understand that imagemagick itself is the one processing the images. So I've checked and understood how to use the imagemagick c api and made sure the problem isn't due to a misuse or misunderstanding of the api itself
+- [ ] I understand that kmagick does nothing to the images, but is only a direct binding to the imagemagick c api. I understand that imagemagick itself is the one processing the images. So I've checked and understood how to use the imagemagick c api and made sure the problem isn't due to a misuse or misunderstanding of the imagemagick api itself
 - [ ] I checked to make sure that this issue has not already been filed
 - [ ] I'm reporting the issue to the correct repository
 - [ ] I'm using the correct architecture (e.g. an x86 emulator runs x86, not arm)
