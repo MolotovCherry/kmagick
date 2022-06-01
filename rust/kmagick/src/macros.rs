@@ -152,10 +152,10 @@ macro_rules! get_string {
                         let res = match self.$m_get() {
                             Ok(v) => v,
                             Err(e) => {
-                                return if e.starts_with(concat!("null ptr returned by ", stringify!($m_get))) {
+                                return if e.0.starts_with(concat!("null ptr returned by ", stringify!($m_get))) {
                                     Ok(std::ptr::null_mut())
                                 } else {
-                                    crate::utils::runtime_exception(e)?
+                                    crate::utils::runtime_exception(e.0)?
                                 };
                             }
                         };
@@ -203,10 +203,10 @@ macro_rules! get_set_string {
                         let res = match self.$m_get() {
                             Ok(v) => v,
                             Err(e) => {
-                                return if e.starts_with(concat!("null ptr returned by ", stringify!($m_get))) {
+                                return if e.0.starts_with(concat!("null ptr returned by ", stringify!($m_get))) {
                                     Ok(std::ptr::null_mut())
                                 } else {
-                                    crate::utils::runtime_exception(e)?
+                                    crate::utils::runtime_exception(e.0)?
                                 };
                             }
                         };
@@ -223,6 +223,47 @@ macro_rules! get_set_string {
             }
         }
     }
+}
+
+macro_rules! res_to_jniresult {
+    (
+        $res:expr
+    ) => {{
+        let res = $res;
+        match res {
+            Ok(v) => Ok(v),
+            Err(e) => {
+                Err(Box::new(e))
+            }
+        }
+    }}
+}
+
+macro_rules! to_jenum {
+    (
+        $env:ident, $enum:ident, $int:expr
+    ) => {{
+        let val = jni::objects::JValue::Int($int as jint);
+
+        let cls = $env.find_class(
+            concat!("com/cherryleafroad/kmagick/", concat!(stringify!($enum), "$Companion"))
+        )?;
+        let j_obj = $env.new_object(cls, "()V", &[])?;
+        let mid = $env.get_method_id(
+            cls,
+            "fromNative",
+            concat!("(I)Lcom/cherryleafroad/kmagick/", concat!(stringify!($enum), ";"))
+        )?;
+
+        $env.call_method_unchecked(
+            j_obj,
+            mid,
+            jni::signature::JavaType::Object(
+                concat!("Lcom/cherryleafroad/kmagick/", concat!(stringify!($enum), ";")).into()
+            ),
+            &[val]
+        )?.l()?.into_inner()
+    }}
 }
 
 // enums operate as i32 values

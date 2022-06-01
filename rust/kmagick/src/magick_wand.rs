@@ -3,6 +3,7 @@
 use std::convert::TryFrom;
 
 use jni::{JNIEnv, objects::{JObject, JString, JValue}, sys::{jboolean, jbyteArray, jdouble, jdoubleArray, jint, jlong, jobject, jobjectArray, jstring}};
+use jni::sys::jsize;
 
 use jni_tools::{Handle, jclass, jname, JNIResult, Utils};
 
@@ -39,6 +40,101 @@ impl MagickWand {
         let r_obj = env.get_handle::<PixelWand>(pixel_wand)?;
 
         Ok(self.new_image(columns, rows, &r_obj.instance)?)
+    }
+
+    fn stripImage(&self) -> JNIResult<()> {
+        res_to_jniresult!(self.strip_image())
+    }
+
+    fn getImageAlphaChannel(&self) -> JNIResult<jboolean> {
+        Ok(self.get_image_alpha_channel() as jboolean)
+    }
+
+    fn drawImage(&mut self, env: JNIEnv, _: JObject, drawing_wand: JObject) -> JNIResult<()> {
+        let drawing_wand = env.get_handle::<DrawingWand>(drawing_wand)?;
+
+        res_to_jniresult!(self.draw_image(&drawing_wand))
+    }
+
+    fn magickSetImageChannelMask(&mut self, env: JNIEnv, _: JObject, option: jint) -> JNIResult<jobject> {
+        #[cfg(target_os="android")]
+        let option = option as u32;
+
+        let jenum = to_jenum!(
+            env,
+            ChannelType,
+            self.set_image_channel_mask(option)
+        );
+
+        Ok(jenum)
+    }
+
+    fn magickEvaluateImage(&mut self, _: JNIEnv, _: JObject, op: jint, val: jdouble) -> JNIResult<()> {
+        #[cfg(target_os="android")]
+        let op = op as u32;
+
+        res_to_jniresult!(self.evaluate_image(op, val))
+    }
+
+    fn magickBorderImage(
+        &self,
+        env: JNIEnv,
+        _: JObject,
+        pixel_wand: JObject,
+        width: jlong,
+        height: jlong,
+        compose: jint
+    ) -> JNIResult<()> {
+        let pixel_wand = env.get_handle::<PixelWand>(pixel_wand)?;
+        let width = bytemuck::cast::<jlong, u64>(width);
+        let height = bytemuck::cast::<jlong, u64>(height);
+
+        #[cfg(target_os="android")]
+        let compose = compose as u32;
+
+        res_to_jniresult!(self.border_image(&pixel_wand, width as usize, height as usize, compose))
+    }
+
+    fn shadowImage(
+        &self,
+        _: JNIEnv,
+        _: JObject,
+        alpha: jdouble,
+        sigma: jdouble,
+        x: jlong,
+        y: jlong,
+    ) -> JNIResult<()> {
+        res_to_jniresult!(self.shadow_image(alpha, sigma, x as isize, y as isize))
+    }
+
+    fn importImagePixels(
+        &mut self,
+        env: JNIEnv,
+        _: JObject,
+        x: jlong,
+        y: jlong,
+        columns: jsize,
+        rows: jsize,
+        pixels: jbyteArray,
+    ) -> JNIResult<()> {
+        let bytes = env.convert_byte_array(pixels)?;
+
+        res_to_jniresult!(self.import_image_pixels(x as isize, y as isize, columns as usize, rows as usize, &bytes))
+    }
+
+    fn setFirstIterator(&self) {
+        self.set_first_iterator()
+    }
+
+    fn nextImage(&self) -> jboolean {
+        self.next_image() as jboolean
+    }
+
+    fn thumbnailImage(&self, _: JNIEnv, _: JObject, width: jlong, height: jlong) {
+        let width = bytemuck::cast::<jlong, u64>(width);
+        let height = bytemuck::cast::<jlong, u64>(height);
+
+        self.thumbnail_image(width as usize, height as usize)
     }
 
     fn setResourceLimit(&self, _: JNIEnv, _: JObject, resource: jint, limit: jlong) -> JNIResult<()> {

@@ -189,6 +189,123 @@ class MagickWand : Closeable {
     }
 
     /**
+     * Strips an image of all profiles and comments.
+     */
+    @Throws(MagickWandException::class)
+    external fun stripImage()
+
+    /**
+     * MagickGetImageAlphaChannel() returns MagickFalse if the image alpha channel is not activated. That is, the image
+     * is RGB rather than RGBA or CMYK rather than CMYKA.
+     */
+    @Throws(MagickWandException::class)
+    external fun getImageAlphaChannel(): Boolean
+
+    /**
+     * Renders the drawing wand on the current image.
+     */
+    @Throws(MagickWandException::class)
+    external fun drawImage(drawingWand: DrawingWand)
+
+    /**
+     * Sets image channel mask.
+     */
+    @Throws(MagickWandException::class)
+    fun setImageChannelMask(mask: ChannelType): ChannelType {
+        return magickSetImageChannelMask(mask.id)
+    }
+    @Throws(MagickWandException::class)
+    private external fun magickSetImageChannelMask(mask: Int): ChannelType
+
+    /**
+     * Applies an arithmetic, relational, or logical expression to an image. Use these operators to lighten or darken an
+     * image, to increase or decrease contrast in an image, or to produce the "negative" of an image.
+     *
+     * @param op A channel operator.
+     * @param value The value.
+     */
+    @Throws(MagickWandException::class)
+    fun evaluateImage(op: EvaluateOperator, value: Double) {
+        magickEvaluateImage(op.id, value)
+    }
+    @Throws(MagickWandException::class)
+    private external fun magickEvaluateImage(op: Int, value: Double)
+
+    /**
+     * Surrounds the image with a border of the color defined by the bordercolor pixel wand.
+     */
+    @Throws(MagickWandException::class)
+    fun borderImage(pixelWand: PixelWand, width: Long, height: Long, compose: CompositeOperator) {
+        magickBorderImage(pixelWand, width, height, compose.id)
+    }
+    @Throws(MagickWandException::class)
+    private external fun magickBorderImage(pixelWand: PixelWand, width: Long, height: Long, compose: Int)
+
+    /**
+     * Simulates an image shadow.
+     *
+     * @param alpha percentage transparency.
+     * @param sigma the standard deviation of the Gaussian, in pixels.
+     * @param x the shadow x-offset.
+     * @param y the shadow y-offset.
+     */
+    @Throws(MagickWandException::class)
+    external fun shadowImage(alpha: Double, Sigma: Double, x: Long, y: Long)
+
+    /**
+     * Sets the next image in the wand as the current image.
+     *
+     * It is typically used after MagickResetIterator(), after which its first use will set the first image as the
+     * current image (unless the wand is empty).
+     *
+     * It will return MagickFalse when no more images are left to be returned which happens when the wand is empty, or
+     * the current image is the last image.
+     *
+     * When the above condition (end of image list) is reached, the iterator is automaticall set so that you can start
+     * using MagickPreviousImage() to again iterate over the images in the reverse direction, starting with the last
+     * image (again). You can jump to this condition immeditally using MagickSetLastIterator().
+     */
+    @Throws(MagickWandException::class)
+    external fun nextImage()
+
+    /**
+     * Sets the wand iterator to the first image.
+     *
+     * After using any images added to the wand using MagickAddImage() or MagickReadImage() will be prepended before any
+     * image in the wand.
+     *
+     * Also the current image has been set to the first image (if any) in the Magick Wand. Using MagickNextImage() will
+     * then set the current image to the second image in the list (if present).
+     *
+     * This operation is similar to MagickResetIterator() but differs in how MagickAddImage(), MagickReadImage(), and
+     * MagickNextImage() behaves afterward.
+     */
+    @Throws(MagickWandException::class)
+    external fun setFirstIterator()
+
+    /**
+     * Changes the size of an image to the given dimensions and removes any associated profiles. The goal is to produce
+     * small low cost thumbnail images suited for display on the Web.
+     */
+    @Throws(MagickWandException::class)
+    external fun thumbnailImage(width: Long, height: Long)
+
+    /**
+     * Accepts pixel datand stores it in the image at the location you specify. The method returns MagickTrue on success
+     * otherwise MagickFalse if an error is encountered. The pixel data can be either char, short int, int, ssize_t,
+     * float, or double in the order specified by map.
+     *
+     * @param x Defines the perimeter of a region of pixels you want to define.
+     * @param y Defines the perimeter of a region of pixels you want to define.
+     * @param columns Defines the perimeter of a region of pixels you want to define.
+     * @param rows Defines the perimeter of a region of pixels you want to define.
+     * @param pixels This array of values contain the pixel components as defined by map and type. You must preallocate
+     *               this array where the expected length varies depending on the values of width, height, map, and type.
+     */
+    @Throws(MagickWandException::class)
+    external fun importImagePixels(x: Long, y: Long, columns: UInt, rows: UInt, pixels: ByteArray)
+
+    /**
      * The limit for a particular resource.
      *
      * @param type The type of resource.

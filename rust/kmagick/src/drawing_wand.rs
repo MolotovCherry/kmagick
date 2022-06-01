@@ -1,5 +1,6 @@
 use jni::{JNIEnv, objects::{JObject, JString}, sys::jdouble};
-use jni_tools::{Utils, jclass, JNIResult};
+
+use jni_tools::{jclass, JNIResult, Utils};
 
 wand_wrapper!(DrawingWand);
 
@@ -8,6 +9,10 @@ impl DrawingWand {
     fn drawAnnotation(&mut self, env: JNIEnv, _: JObject, x: jdouble, y: jdouble, text: JString) -> JNIResult<()> {
         let text =  &*env.get_jstring(text)?;
         Ok(self.draw_annotation(x, y, text)?)
+    }
+
+    fn drawCircle(&mut self, _: JNIEnv, _: JObject, ox: jdouble, oy: jdouble, px: jdouble, py: jdouble) {
+        self.draw_circle(ox, oy, px, py);
     }
 }
 

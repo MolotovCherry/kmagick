@@ -16,6 +16,8 @@ The build script has several flags you can use.
 `-release` build as release (default will build as debug)  
 `-expand` to use cargo expand to see the generated output  
 
+\* Please make sure you have Visual Studio Build Tools installed; you may also need to use the Visual Studio Dev console to find `stdio.h`
+
 ### Android
 - Download the entire [Android-ImageMagick](https://github.com/cherryleafroad/Android-ImageMagick7) repo
 - Place this kmagick repo in the Android-Imagemagick repo folder
