@@ -41,6 +41,8 @@ Debug messages can be found in Android logcat under the id `MAGICK`. Make sure y
 ## Documentation
 You can browse the latest docs [here](https://cherryleafroad.github.io/kmagick/kmagick/com.cherryleafroad.kmagick/index.html)
 
+⚠️ Please remember that KMagick is merely a thin wrapper around the C library ImageMagick functions. So anything you can do through the C api will translate almost directly. Any behavior that results from using the bindings is most likely imagemagick itself and how the imagemagick api was used (but if not, please report an issue). If you need to do a specific task, please check the imagemagick documentation / ask them how to achieve it through the C api. Any help and issues reported here should be related to kmagick itself, not imagemagick's api.
+
 ## Behavior
 As this is a low level library, crashes are not impossible. I've made every effort to make that impossible however.
 
