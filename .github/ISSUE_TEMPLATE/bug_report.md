@@ -30,6 +30,7 @@ Please provide any relevant information about your setup. This is important in c
 * JDK version:
 * ImageMagick version:
 * Operating System:
+* KMagick version: 
 
 ## Expected Behavior
 
