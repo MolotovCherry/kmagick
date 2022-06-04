@@ -11,7 +11,7 @@ assignees: ''
 
 <!--Please answer the following questions for yourself before submitting an issue.-->
 
-- [ ] This is not a request for new API to be exposed. (If it is, file an issue at [magick-rust](https://github.com/nlfiedler/magick-rust))
+- [ ] This is not a request for new API to be exposed. (If it is, file an issue at [magick-rust](https://github.com/nlfiedler/magick-rust). I will implement new functions as they are added upstream)
 
 ## Feature Request
 
