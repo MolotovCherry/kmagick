@@ -87,7 +87,7 @@ jobs:
         if: steps.cache-imagemagick.outputs.cache-hit != 'true' && matrix.windows
         uses: carlosperate/download-file-action@v1.0.3
         with:
-            file-url: 'https://download.imagemagick.org/ImageMagick/download/binaries/ImageMagick-${{ steps.tag.outputs.TAG }}-Q16-HDRI-${{ matrix.im_arch }}-dll.exe'
+            file-url: 'https://imagemagick.org/archive/binaries/ImageMagick-${{ steps.tag.outputs.TAG }}-Q16-HDRI-${{ matrix.im_arch }}-dll.exe'
             file-name: 'ImageMagick.exe'
 
       - name: Fetch latest Innoextract
