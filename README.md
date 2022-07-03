@@ -1,6 +1,6 @@
 # KMagick
 
-[![Build](https://github.com/MolotovCherry/kmagick/actions/workflows/build.yml/badge.svg?event=push)](https://github.com/MolotovCherry/kmagick/actions/workflows/build.yml) [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/MolotovCherry/kmagick)](https://github.com/MolotovCherry/kmagick/releases) [![Docs](https://img.shields.io/badge/docs-v0.2.1-orange)](https://MolotovCherry.github.io/kmagick/kmagick/com.MolotovCherry.kmagick/index.html)
+[![Build](https://github.com/MolotovCherry/kmagick/actions/workflows/build.yml/badge.svg?event=push)](https://github.com/MolotovCherry/kmagick/actions/workflows/build.yml) [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/MolotovCherry/kmagick)](https://github.com/MolotovCherry/kmagick/releases) [![Docs](https://img.shields.io/badge/docs-v0.2.1-orange)](https://molotovcherry.github.io/kmagick/kmagick/com.cherryleafroad.kmagick/index.html)
 
 Kotlin bindings for ImageMagick; uses the ImageMagick wand API.
 
@@ -39,7 +39,7 @@ Debug messages can be found in Android logcat under the id `MAGICK`. Make sure y
 `implementation 'org.objenesis:objenesis:3.2'`
 
 ## Documentation
-You can browse the latest docs [here](https://MolotovCherry.github.io/kmagick/kmagick/com.MolotovCherry.kmagick/index.html)
+You can browse the latest docs [here](https://molotovcherry.github.io/kmagick/kmagick/com.cherryleafroad.kmagick/index.html)
 
 ⚠️ Please remember that KMagick is merely a thin wrapper around the C library ImageMagick functions. So anything you can do through the C api will translate almost directly. Any behavior that results from using the bindings is most likely imagemagick itself and how the imagemagick api was used (but if not, please report an issue). If you need to do a specific task, please check the imagemagick documentation / ask them how to achieve it through the C api. Any help and issues reported here should be related to kmagick itself, not imagemagick's api.
 
@@ -114,7 +114,7 @@ clearException()
 getExceptionType()
 getException()
 ```
-You can cross reference the [`ExceptionType`](https://MolotovCherry.github.io/kmagick/kmagick/com.MolotovCherry.kmagick/-exception-type/index.html) in the source code to see what exact error it was. `getException()` also returns [`NativeMagickException`](https://MolotovCherry.github.io/kmagick/kmagick/com.MolotovCherry.kmagick/-native-magick-exception/index.html) which will give you both an `ExceptionType` and a message explaining what happened.
+You can cross reference the [`ExceptionType`](https://molotovcherry.github.io/kmagick/kmagick/com.cherryleafroad.kmagick/-exception-type/index.html) in the source code to see what exact error it was. `getException()` also returns [`NativeMagickException`](https://molotovcherry.github.io/kmagick/kmagick/com.cherryleafroad.kmagick/-native-magick-exception/index.html) which will give you both an `ExceptionType` and a message explaining what happened.
 
 For more examples and information on usage, please browse the API in your IDE or check ImageMagick's website.
 
