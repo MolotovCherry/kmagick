@@ -1,6 +1,6 @@
 # KMagick
 
-[![Build](https://github.com/cherryleafroad/kmagick/actions/workflows/build.yml/badge.svg?event=push)](https://github.com/cherryleafroad/kmagick/actions/workflows/build.yml) [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/cherryleafroad/kmagick)](https://github.com/cherryleafroad/kmagick/releases) [![Docs](https://img.shields.io/badge/docs-v0.2.1-orange)](https://cherryleafroad.github.io/kmagick/kmagick/com.cherryleafroad.kmagick/index.html)
+[![Build](https://github.com/MolotovCherry/kmagick/actions/workflows/build.yml/badge.svg?event=push)](https://github.com/MolotovCherry/kmagick/actions/workflows/build.yml) [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/MolotovCherry/kmagick)](https://github.com/MolotovCherry/kmagick/releases) [![Docs](https://img.shields.io/badge/docs-v0.2.1-orange)](https://MolotovCherry.github.io/kmagick/kmagick/com.MolotovCherry.kmagick/index.html)
 
 Kotlin bindings for ImageMagick; uses the ImageMagick wand API.
 
@@ -10,17 +10,17 @@ Windows and Android*
 \* Others may work too, but I have not tested Mac or Linux.
 
 ## Download
-All downloads are in the [releases section](https://github.com/cherryleafroad/kmagick/releases).
+All downloads are in the [releases section](https://github.com/MolotovCherry/kmagick/releases).
 
 ## Setup
 
 ### Android
-A full example of the below setup can be found [here](https://github.com/cherryleafroad/kmagick/tree/main/example/android-setup)
+A full example of the below setup can be found [here](https://github.com/MolotovCherry/kmagick/tree/main/example/android-setup)
 
 1. Grab the jar and sources jar.
 2. Add this line to your dependencies: `implementation fileTree(dir: 'libs', include: ['*.jar'])`
 3. Place the jars in the `app/libs` folder.
-4. Place the [Android ImageMagick shared library](https://github.com/cherryleafroad/Android-ImageMagick7/releases) `so` files in your `app/src/main/jniLibs` folder along with the Android `kmagick.so` library.
+4. Place the [Android ImageMagick shared library](https://github.com/MolotovCherry/Android-ImageMagick7/releases) `so` files in your `app/src/main/jniLibs` folder along with the Android `kmagick.so` library.
 5. Either [download](http://objenesis.org/download.html) objenesis jar and place it in the libs folder, OR add this line to your dependencies:  
 `implementation 'org.objenesis:objenesis:3.2'`
 
@@ -28,7 +28,7 @@ Debug messages can be found in Android logcat under the id `MAGICK`. Make sure y
 
 \* I plan to add a Maven config sometime, but I've been too busy and tired.
 
-(The Android ImageMagick library can be found [here](https://github.com/cherryleafroad/Android-ImageMagick7))
+(The Android ImageMagick library can be found [here](https://github.com/MolotovCherry/Android-ImageMagick7))
 
 ### Windows
 1. Grab the `kmagick.dll` file along with the jar and sources jar.
@@ -39,7 +39,7 @@ Debug messages can be found in Android logcat under the id `MAGICK`. Make sure y
 `implementation 'org.objenesis:objenesis:3.2'`
 
 ## Documentation
-You can browse the latest docs [here](https://cherryleafroad.github.io/kmagick/kmagick/com.cherryleafroad.kmagick/index.html)
+You can browse the latest docs [here](https://MolotovCherry.github.io/kmagick/kmagick/com.MolotovCherry.kmagick/index.html)
 
 ⚠️ Please remember that KMagick is merely a thin wrapper around the C library ImageMagick functions. So anything you can do through the C api will translate almost directly. Any behavior that results from using the bindings is most likely imagemagick itself and how the imagemagick api was used (but if not, please report an issue). If you need to do a specific task, please check the imagemagick documentation / ask them how to achieve it through the C api. Any help and issues reported here should be related to kmagick itself, not imagemagick's api.
 
@@ -55,7 +55,7 @@ I have no control if the C code segfaults your project. Sorry. If there is one, 
 ## API and Examples
 First of all, check out the official [ImageMagick](https://imagemagick.org/script/magick-wand.php) function reference. If you have any confusion/questions, it'll be answered there. Also, the sources jar contains comments for every function which should be good enough in most cases.
 
-<ins>Note</ins>: The majority of API functions throw exceptions if they fail. The ones used are `java/lang/RuntimeException` and a related `com/cherryleafroad/kmagick/*Exception` (check the function for which exception it may return). It is strongly recommended you handle all exceptions if you don't want your program/app to crash! I realize this is Kotlin and exceptions aren't fun to handle, but because this is a low level library, many things can go wrong! Please see the Exception section below to find out how to get Exception details so you can know why it's happening to you.
+<ins>Note</ins>: The majority of API functions throw exceptions if they fail. The ones used are `java/lang/RuntimeException` and a related `com/MolotovCherry/kmagick/*Exception` (check the function for which exception it may return). It is strongly recommended you handle all exceptions if you don't want your program/app to crash! I realize this is Kotlin and exceptions aren't fun to handle, but because this is a low level library, many things can go wrong! Please see the Exception section below to find out how to get Exception details so you can know why it's happening to you.
 
 There's an [example](/example/src/main/kotlin/com/example/cli/Main.kt) under the `example` directory as well.  
 The example shows all the different kmagick features to be aware of (which aren't all covered below).
@@ -114,7 +114,7 @@ clearException()
 getExceptionType()
 getException()
 ```
-You can cross reference the [`ExceptionType`](https://cherryleafroad.github.io/kmagick/kmagick/com.cherryleafroad.kmagick/-exception-type/index.html) in the source code to see what exact error it was. `getException()` also returns [`NativeMagickException`](https://cherryleafroad.github.io/kmagick/kmagick/com.cherryleafroad.kmagick/-native-magick-exception/index.html) which will give you both an `ExceptionType` and a message explaining what happened.
+You can cross reference the [`ExceptionType`](https://MolotovCherry.github.io/kmagick/kmagick/com.MolotovCherry.kmagick/-exception-type/index.html) in the source code to see what exact error it was. `getException()` also returns [`NativeMagickException`](https://MolotovCherry.github.io/kmagick/kmagick/com.MolotovCherry.kmagick/-native-magick-exception/index.html) which will give you both an `ExceptionType` and a message explaining what happened.
 
 For more examples and information on usage, please browse the API in your IDE or check ImageMagick's website.
 
@@ -132,14 +132,14 @@ We're using `magick-rust` for our bindings. So, if some API that you need is mis
 ## Contributions
 Contributions are welcome! If you have an improvement, please send a PR or make an issue about it and I'll see what we can do. 😉 If you know Rust, contributions are even more welcome, especially to [magick-rust](https://github.com/nlfiedler/magick-rust) (because it'll make the functions available downstream for me).
 
-If you want to contribute Rust code to this project, check out the [rust folder](https://github.com/cherryleafroad/kmagick/tree/main/rust) which has directions on how to compile it locally.
+If you want to contribute Rust code to this project, check out the [rust folder](https://github.com/MolotovCherry/kmagick/tree/main/rust) which has directions on how to compile it locally.
 
 ## Rust devs - a note for you all
 In the `Rust` directory, the two crates `jni-macros` and `jni-tools` offers some FULLY working macros which generate JNI bindings for Rust functions. Of course, it's only Kotlin compatible (no Java; although you _could_ edit the handle fn's to fix that). You can even use regular impl's which KEEP STATE between calls as if it was a real class instance! The `jni-tools` crate offers the visible public API for it. There's also docs on it to explain its usage, however, if you want to fully know how to use it, you should take a look at my Rust and Kotlin code as the prime example.
 
 # Did this library help you?
 
-[![Donate](https://raw.githubusercontent.com/cherryleafroad/Android-ImageMagick7/master/readme_files/donate.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=BKDN933UM444J)
+[![Donate](https://raw.githubusercontent.com/MolotovCherry/Android-ImageMagick7/master/readme_files/donate.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=BKDN933UM444J)
 
 If you found this library useful, please consider showing appreciation and help fund it by sending a donation my way.  
 All donations help this project continue to be supported for longer and receive more frequent updates! Thanks for your support! <3
@@ -148,5 +148,5 @@ All donations help this project continue to be supported for longer and receive 
 
 <p>
   <div style="vertical-align: baseline;">This project is proudly supported by JetBrains OSS License</div>
-  <a href="https://jb.gg/OpenSourceSupport"><img src="https://github.com/cherryleafroad/kmagick/blob/main/readme_files/jb_beam.png" height="150px" width="150px"/></a>
+  <a href="https://jb.gg/OpenSourceSupport"><img src="https://github.com/MolotovCherry/kmagick/blob/main/readme_files/jb_beam.png" height="150px" width="150px"/></a>
 </p>
