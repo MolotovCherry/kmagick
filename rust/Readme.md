@@ -19,9 +19,9 @@ The build script has several flags you can use.
 \* Please make sure you have Visual Studio Build Tools installed; you may also need to use the Visual Studio Dev console to find `stdio.h`
 
 ### Android
-- Download the entire [Android-ImageMagick](https://github.com/cherryleafroad/Android-ImageMagick7) repo
+- Download the entire [Android-ImageMagick](https://github.com/MolotovCherry/Android-ImageMagick7) repo
 - Place this kmagick repo in the Android-Imagemagick repo folder
-- Download the [latest Android-Imagemagick shared lib release](https://github.com/cherryleafroad/Android-ImageMagick7/releases)
+- Download the [latest Android-Imagemagick shared lib release](https://github.com/MolotovCherry/Android-ImageMagick7/releases)
 - Make a `jniLibs` folder in the Android-Imagemagick repo root
 - Place the shared libs in the `jniLibs` folder (structure should look like `Android-Imagemagick/jniLibs/arm64-v8a/*.so`)
 - Download and install the [Android ndk](https://developer.android.com/ndk/downloads) version r22b (newer version has a bug which breaks building; See [here](https://github.com/rust-lang/rust/pull/85806))
