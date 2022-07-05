@@ -38,7 +38,7 @@ jobs:
       - name: Checkout Android ImageMagick
         uses: actions/checkout@v2
         with:
-          repository: cherryleafroad/Android-ImageMagick7
+          repository: molotovcherry/Android-ImageMagick7
 
       - name: Checkout KMagick
         uses: actions/checkout@v2
@@ -64,7 +64,7 @@ jobs:
         uses: i3h/download-release-asset@v1
         with:
           tag: latest
-          owner: cherryleafroad
+          owner: molotovcherry
           repo: Android-ImageMagick7
           file: imagemagick-7-android-shared.zip
           path: jniLibs/
