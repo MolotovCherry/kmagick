@@ -125,6 +125,9 @@ If that gives you no solution, then please check whether it's merely your usage 
 
 If this doesn't help and it's a real bug, then please check your `logcat` for your device and include the error log in the issue you make.
 
+## Asking questions?
+If you have a question or comment that isn't suited for an issue report, please use [Discussions](https://github.com/MolotovCherry/kmagick/discussions) instead
+
 ## Missing an API Function?
 
 We're using `magick-rust` for our bindings. So, if some API that you need is missing, please make a feature request or send a PR to [magick-rust](https://github.com/nlfiedler/magick-rust) and it'll make its way downstream to me.
