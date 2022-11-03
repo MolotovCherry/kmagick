@@ -873,8 +873,10 @@ class MagickWand : Closeable {
     /**
      * Gets the number of unique colors in the image.
      */
+    val getImageColors: Long
+        get() = magickGetImageColors()
     @Throws(MagickWandException::class)
-    external fun getImageColors(): Long
+    private external fun magickGetImageColors(): Long
 
     /**
      * The filename associated with an image sequence.
