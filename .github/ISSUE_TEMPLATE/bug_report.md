@@ -11,6 +11,7 @@ assignees: ''
 
 Please answer the following questions for yourself before submitting an issue.
 
+- [ ] I checked, and this is a bug report, and does not belong in the [discussions](https://github.com/MolotovCherry/kmagick/discussions) section.
 - [ ] I am running the latest version
 - [ ] I checked the documentation and examples and found no answer
 - [ ] I checked that it wasn't user error; it was not an ordinary exception that I could've found out and fixed by running `wand.getException()`
