@@ -144,10 +144,3 @@ In the `Rust` directory, the two crates `jni-macros` and `jni-tools` offers some
 
 If you found this library useful, please consider showing appreciation and help fund it by sending a donation my way.  
 All donations help this project continue to be supported for longer and receive more frequent updates! Thanks for your support! <3
-
-## 
-
-<p>
-  <div style="vertical-align: baseline;">This project is proudly supported by JetBrains OSS License</div>
-  <a href="https://jb.gg/OpenSourceSupport"><img src="https://github.com/MolotovCherry/kmagick/blob/main/readme_files/jb_beam.png" height="150px" width="150px"/></a>
-</p>
