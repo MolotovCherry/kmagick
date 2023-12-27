@@ -4,6 +4,8 @@
 
 Kotlin bindings for ImageMagick; uses the ImageMagick wand API.
 
+*Note: This project is on hold indefinitely, and is unlikely to receive updates or fixes.*
+
 ## Supported Platforms
 Windows and Android*
 
